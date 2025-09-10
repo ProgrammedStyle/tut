@@ -1,0 +1,22 @@
+.logoCont {
+    --def-height: 40px;
+    height: var(--def-height);
+    overflow: hidden;
+    position: relative;
+    width: 29.7px
+}
+
+.logo {
+    color: transparent;
+    object-position: 0px -2px;
+    position: absolute;
+    height: calc(var(--def-height) + 15.9px);
+    width: calc(var(--def-height) + 15.5px);
+    top: -8.6px;
+    left: -13.5px;
+    object-position: 0px -2px
+}
+
+.click {
+    cursor: pointer
+}

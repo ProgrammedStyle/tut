@@ -1,0 +1,66 @@
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import User from "../../models/User.js";
+import emailSchema from "../../../modules/userValidation_email.js";
+import passwordSchema from "../../../modules/userValidation_password.js";
+
+const create = async ( req, res ) => {
+    try {
+        const emailParsedData = await emailSchema.safeParseAsync({ email: req.body.email });
+        const passwordParsedData = await passwordSchema.safeParseAsync({ password: req.body.password, confirmPassword: req.body.confirmPassword });
+
+        if ( !emailParsedData.success )
+            return res.status(400).json({ message: emailParsedData.error.errors[0].message });
+        
+        if ( !passwordParsedData.success )
+            return res.status(400).json({ message: passwordParsedData.error.errors[0].message });
+
+        const { email } = emailParsedData.data;
+        const { password } = passwordParsedData.data;
+
+        const existingUser = await User.findOne({ email });
+        if ( existingUser )
+            return res.status(400).json({ message: "This email was token" });
+
+        const hashedPassword = await bcrypt.hash(password, 12);
+
+        const newUser = new User({
+            email,
+            password: hashedPassword
+        });
+
+        newUser.save();
+
+        const token = jwt.sign(
+            {
+                id: newUser._id,
+                email
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: "1d"
+            }
+        );
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "lax",
+            maxAge: 1000 * 60 * 60 * 24
+        });
+
+        res.status(201).json(
+            {
+                user: {
+                    id: newUser._id,
+                    email
+                },
+                message: "account created successfuly"
+            }
+        );
+    } catch ( error ) {
+        res.status(500).json({ message: "Some error occured while creating your account" });
+    }
+};
+
+export default create;

@@ -1,0 +1,36 @@
+.inputTextBox {
+    width: 400px !important;
+    height: 50px !important
+}
+
+.cont {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 30px;
+    border-radius: 30px;
+    background-color: #fff
+}
+
+.cont > *:not(:first-child) {
+    margin-left: 120px
+}
+
+.contTitle {
+    font-size: 32px;
+    color: #000;
+    line-height: 1
+}
+
+.contLBox > *:not(:first-child) {
+    margin-top: 15px
+}
+
+.form > *:not(:first-child) {
+    margin-top: 20px
+}
+
+.formSubmitBox {
+    display: flex;
+    justify-content: flex-end
+}

@@ -1,0 +1,36 @@
+.header {
+    padding: 11px var(--app-padding-x);
+    box-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12);
+    background-color: var(--main-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    z-index: 1000;
+    width: 100%
+}
+
+.hLeftB {
+    display: flex;
+    align-items: center
+}
+
+.hLeftB > *:not(:first-child) {
+    margin-left: 20px
+}
+
+.hRightB {
+    display: flex;
+    align-items: center;
+    justify-content: center
+}
+
+.hRightB > *:not(:first-child) {
+    margin-left: 11px
+}
+
+.menuItemsStyle {
+    font-size: 12px
+}

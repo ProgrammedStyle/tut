@@ -1,0 +1,15 @@
+.body {
+    --app-padding-x: 100px;
+    --main-color: #1976d2;
+    --error-color: #dc004e;
+    height: 100%;
+    padding: 0px
+}
+
+.html {
+    height: 100%
+}
+
+.bodyCont {
+    padding: 15px var(--app-padding-x)
+}

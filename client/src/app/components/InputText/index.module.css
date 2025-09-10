@@ -1,0 +1,177 @@
+.inputBox {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: text;
+    --input-padding-y: 10px;
+    --input-padding-x: 11px;
+    --fontSize: 13px;
+    --textColor: #fff;
+    --labelColor: #fff;
+    --inputBorderColor: #fff;
+    --inputBorderRadius: 4px;
+    --inputBorderBoxLeft: calc(var(--input-padding-x) + 10px);
+    --inputOpacity: 0.3;
+    --inputBorderWidth: 1px;
+    --focusInputBorderWidth: 2px;
+    --inputBorderRightSpace: 23px;
+    --inputTransform: scale(0.8);
+    --inputBorderBoxLeftSpace: 14px;
+    height: 36px;
+    width: 200px
+}
+
+.inputBox *, .inputBox {
+    box-sizing: border-box
+}
+
+.inputBox.blackColor {
+    --labelColor: #000 !important;
+    --textColor: #000 !important;
+    --inputBorderColor: #000 !important
+}
+
+.inputBox input {
+    padding: var(--input-padding-y) var(--input-padding-x);
+    border: 0px;
+    opacity: var(--inputOpacity);
+    border-radius: var(--inputBorderRadius);
+    font-size: var(--fontSize);
+    color: var(--textColor) !important;
+    caret-color: var(--textColor) !important;
+    outline: 0px;
+    background-color: rgba(0, 0, 0, 0);
+    box-shadow: none;
+    width: 100%;
+    height: 100%
+}
+
+.inputBox input:-webkit-autofill,
+.inputBox input:-webkit-autofill:hover,
+.inputBox input:-webkit-autofill:focus,
+.inputBox input:-internal-autofill-selected {
+    transition:  background-color 9999s ease-in-out 0s;
+    background-color: rgba(0, 0, 0, 0) !important;
+    -webkit-box-shadow: none !important;
+    -webkit-text-fill-color: var(--textColor) !important;
+    caret-color: var(--textColor) !important
+}
+
+.inputBox input[type = "search"]::-webkit-search-cancel-button {
+    display: none
+}
+
+.inputBox > :not(input):not(.inputIconBox) {
+    pointer-events: none;
+    z-index: 1
+}
+
+.inputBox .leftBorderBox .leftBorder {  
+    border-right: 0px;
+    left: 0px;
+    border-bottom-color: rgba(0, 0, 0, 0)
+}
+
+.inputBox .rightBorderBox .rightBorder {  
+    border-left: 0px;
+    right: 0px;
+    border-bottom-color: rgba(0, 0, 0, 0);
+}
+
+.inputBox .bottomBorderBox .bottomBorder {  
+    border-top: 0px;
+    border-left-color: rgba(0, 0, 0, 0);
+    border-right-color: rgba(0, 0, 0, 0);
+    width: unset;
+    right: 0px;
+    left: 0px
+}
+
+.inputBox .borderBox {
+    height: 100%;
+    position: absolute;
+    top: 0px;
+    overflow: hidden
+}
+
+.inputBox .bottomBorderBox {
+    right: 0px;
+    left: 0px
+}
+
+.inputBox .rightBorderBox {
+    right: 0px;
+    --rightBorderBoxWidth: calc(100% - var(--inputBorderBoxLeft));
+    width: var(--rightBorderBoxWidth);
+    transition: width 0.1s ease-out
+}
+
+.inputBox .leftBorderBox {
+    left: 0px;
+    width: var(--inputBorderBoxLeft);
+    transition: width 0.1s ease-out
+}
+
+.inputBox:has(input:focus, input[inputempty = "false"]) .rightBorderBox {
+    width: calc(var(--rightBorderBoxWidth) - var(--inputBorderRightSpace))
+}
+
+.inputBox:has(input:focus, input[inputempty = "false"]) .leftBorderBox {
+    width: calc(var(--inputBorderBoxLeft) - var(--inputBorderBoxLeftSpace))
+}
+
+.inputBox .borderBox > div {
+    position: absolute;
+    width: calc(100% + 10px);
+    height: 100%;
+    top: 0px;
+    box-sizing: border-box;
+    border: var(--inputBorderWidth) solid var(--inputBorderColor);
+    opacity: var(--inputOpacity);
+    border-radius: var(--inputBorderRadius)
+}
+
+.inputBox input, .inputBox .borderBox > div {
+    transition: border-color 70ms linear 0s, border-width 70ms linear 0s
+}
+
+.inputBox:has(input:focus, input[inputempty = "false"])::after {
+    top: -7px;
+    transform: var(--inputTransform)
+}
+
+.inputBox:hover {
+    --inputOpacity: 0.7
+}
+
+.inputBox.focusMainColor:has(input:focus) {
+    --labelColor: var(--main-color) !important;
+    --inputBorderColor: var(--main-color) !important
+}
+
+.inputBox:has(input:focus) {
+    --inputBorderWidth: var(--focusInputBorderWidth);
+    --inputOpacity: 1
+}
+
+.inputBox .inputIconBox {
+    position: absolute;
+    right: 0px;
+    padding-right: 3px
+}
+
+.error {
+    display: none;
+    color: var(--error-color);
+    font-size: 12px;
+    margin-top: 5px
+}
+
+.inputTextCont:has(input[error = "true"]) .error {
+    display: block
+}
+
+.inputBox:has(input[error = "true"]) {
+    --labelColor: var(--error-color) !important;
+    --inputBorderColor: var(--error-color) !important
+}

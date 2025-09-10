@@ -1,0 +1,9 @@
+.menuItemBox {
+    display: flex;
+    align-items: center;
+    justify-content: center
+}
+
+.menuItemBox > :not(:first-child) {
+    margin-left: 13px
+}
