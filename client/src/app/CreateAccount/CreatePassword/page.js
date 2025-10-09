@@ -1,10 +1,10 @@
 "use client";
 
-import SignInCont from "../components/SignInCont";
-import signInContStyles from "../components/SignInCont/index.module.css";
+import SignInCont from "../../components/SignInCont";
+import signInContStyles from "../../components/SignInCont/index.module.css";
 import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
-import SignInContBox from "../components/SignInContBox";
-import InputText from "../components/InputText";
+import SignInContBox from "../../components/SignInContBox";
+import InputText from "../../components/InputText";
 import { Button } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
