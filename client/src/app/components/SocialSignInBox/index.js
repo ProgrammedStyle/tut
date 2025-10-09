@@ -9,7 +9,7 @@ import styles from "./index.module.css";
 const SocialSignInBox = () => {
     var onGoogleLogin, onFacebookLogin;
 
-    useEffect(() => {
+
         onGoogleLogin = () => {
             //window.location.href = "http://localhost:5000/api/user/google";
         };
@@ -17,7 +17,7 @@ const SocialSignInBox = () => {
         onFacebookLogin = () => {
             //window.location.href = "http://localhost:5000/api/user/facebook";
         };
-    }, []);
+
 
     return (
         <React.Fragment>
