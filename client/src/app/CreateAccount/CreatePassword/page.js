@@ -8,7 +8,7 @@ import InputText from "../components/InputText";
 import { Button } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import passwordSchema from "../../../../modules/userValidation_password.js";
+import passwordSchema from "../../../../../modules/userValidation_password.js";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
