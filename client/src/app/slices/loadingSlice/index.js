@@ -11,10 +11,10 @@ const loadingSlice = createSlice({
         }
     },
     reducers: {
-        showLoading: state => {
+        showLoading: (state) => {
             state.show = true;
         },
-        hideLoading: state => {
+        hideLoading: (state) => {
             state.show = false;
         },
         setBoundingRect: (state, payload) => {
@@ -23,5 +23,5 @@ const loadingSlice = createSlice({
     }
 });
 
-export const { show, hide } = loadingSlice.actions;
+export const { showLoading, hideLoading, setBoundingRect } = loadingSlice.actions;
 export default loadingSlice.reducer;

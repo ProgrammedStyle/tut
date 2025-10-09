@@ -1,0 +1,9 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/CreateAccount/CreatePassword/page": "/CreateAccount/CreatePassword",
+  "/CreateAccount/page": "/CreateAccount",
+  "/CreateAccount/VerifyEmail/page": "/CreateAccount/VerifyEmail",
+  "/CreateAccount/VerifyEmail/Check/page": "/CreateAccount/VerifyEmail/Check",
+  "/about/page": "/about",
+  "/page": "/"
+}

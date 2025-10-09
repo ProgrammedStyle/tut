@@ -110,6 +110,6 @@ const InputText = forwardRef((
     )
 });
 
-//InputText.displayName = "InputText";
+InputText.displayName = "InputText";
 
 export default InputText;

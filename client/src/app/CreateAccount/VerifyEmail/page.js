@@ -1,8 +1,8 @@
 "use client";
 
-import SignInCont from "../components/SignInCont";
+import SignInCont from "../../components/SignInCont";
 import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
-import SignInContBox from "../components/SignInContBox";
+import SignInContBox from "../../components/SignInContBox";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { hideLoading } from "@/app/slices/loadingSlice";
