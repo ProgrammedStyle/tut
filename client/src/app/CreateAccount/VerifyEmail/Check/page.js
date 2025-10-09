@@ -12,6 +12,7 @@ const VerifyEmail_Check = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const dispatch = useDispatch();
+    const [ error, setError ] = useState(null);
 
     useEffect(async () => {
         dispatch(showLoading());
@@ -21,7 +22,7 @@ const VerifyEmail_Check = () => {
             sessionStorage.setItem("emailVerified", "true");
             router.push("/CreateAccount/CreatePassword");
         } catch ( error ) {
-
+            setError(error.message);
         }
     }, []);
 
