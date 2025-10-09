@@ -1,20 +1,23 @@
 "use client";
 
-import signInContStyles from "../SignInCont/index.module.css";
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@mui/material";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebookF } from "react-icons/fa";
 import styles from "./index.module.css";
 
 const SocialSignInBox = () => {
-    const onGoogleLogin = () => {
-        window.location.href = "http://localhost:5000/api/user/google";
-    };
+    var onGoogleLogin, onFacebookLogin;
 
-    const onFacebookLogin = () => {
-        window.location.href = "http://localhost:5000/api/user/facebook";
-    };
+    useEffect(() => {
+        onGoogleLogin = () => {
+            window.location.href = "http://localhost:5000/api/user/google";
+        };
+
+        onFacebookLogin = () => {
+            window.location.href = "http://localhost:5000/api/user/facebook";
+        };
+    }, []);
 
     return (
         <React.Fragment>
