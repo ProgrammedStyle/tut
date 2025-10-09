@@ -1,9 +1,9 @@
 {
   "/_not-found/page": "/_not-found",
+  "/CreateAccount/VerifyEmail/Check/page": "/CreateAccount/VerifyEmail/Check",
   "/CreateAccount/CreatePassword/page": "/CreateAccount/CreatePassword",
   "/CreateAccount/page": "/CreateAccount",
-  "/CreateAccount/VerifyEmail/page": "/CreateAccount/VerifyEmail",
-  "/CreateAccount/VerifyEmail/Check/page": "/CreateAccount/VerifyEmail/Check",
+  "/page": "/",
   "/about/page": "/about",
-  "/page": "/"
+  "/CreateAccount/VerifyEmail/page": "/CreateAccount/VerifyEmail"
 }

@@ -1,9 +1,9 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
+  "/CreateAccount/VerifyEmail/Check/page": "app/CreateAccount/VerifyEmail/Check/page.js",
   "/CreateAccount/CreatePassword/page": "app/CreateAccount/CreatePassword/page.js",
   "/CreateAccount/page": "app/CreateAccount/page.js",
-  "/CreateAccount/VerifyEmail/page": "app/CreateAccount/VerifyEmail/page.js",
-  "/CreateAccount/VerifyEmail/Check/page": "app/CreateAccount/VerifyEmail/Check/page.js",
+  "/page": "app/page.js",
   "/about/page": "app/about/page.js",
-  "/page": "app/page.js"
+  "/CreateAccount/VerifyEmail/page": "app/CreateAccount/VerifyEmail/page.js"
 }
