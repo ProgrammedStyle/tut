@@ -6,6 +6,7 @@ import SignInContBox from "../../../components/SignInContBox";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { showLoading } from "../../../slices/loadingSlice";
+import axios from "axios";
 
 const VerifyEmail_Check = () => {
     const router = useRouter();
@@ -23,6 +24,7 @@ const VerifyEmail_Check = () => {
 
         }
     }, []);
+
     return (
         <SignInContBox>
             <SignInCont>

@@ -14,6 +14,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { showLoading } from "../slices/loadingSlice";
 import SocialSignInBox from "../components/SocialSignInBox";
+import axios from "axios";
 
 const CreateEmail = () => {
     const router = useRouter();
