@@ -7,6 +7,7 @@ import Header from "./components/Header";
 import styles from "./layoutIndex.module.css";
 import { Provider } from "react-redux";
 import { store } from "./store";
+import LoadingCont from "./components/LoadingCont";
 
 export default function RootLayout({ children }) {
   return (
@@ -17,6 +18,7 @@ export default function RootLayout({ children }) {
             <CssBaseline />
             <Header />
             {children}
+            <LoadingCont />
           </ThemeProvider>
         </Provider>
       </body>

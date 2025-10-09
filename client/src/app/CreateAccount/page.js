@@ -1,6 +1,6 @@
 "use client";
 
-import SignInCont from "../components/SignInCont";
+import SignInCont from "../components/SignInCont/index.js";
 import signInContStyles from "../components/SignInCont/index.module.css";
 import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
 import SignInContBox from "../components/SignInContBox";
@@ -11,14 +11,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import emailSchema from "../../../../modules/userValidation_email.js";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { showLoading } from "../slices/loadingSlice";
+import SocialSignInBox from "../components/SocialSignInBox";
 
 const CreateEmail = () => {
     const router = useRouter();
+    const dispatch = useDispatch();
     const [ error, setError ] = useState(null);
     const { register, handleSubmit, formState: {errors} } = useForm( { resolver: zodResolver(emailSchema) } );
 
     const onSucceededSubmit = async ( data ) => {
         try {
+            dispatch(showLoading());
             const res = await axios.post("http://localhost:5000/api/user/email/verify/send", data);
             sessionStorage.setItem("emailToRegister", data.email);
             sessionStorage.removeItem("emailVerified");
@@ -54,6 +59,7 @@ const CreateEmail = () => {
                         </Button>
                     </div>
                 </form>
+                <SocialSignInBox />
             </SignInCont>
         </SignInContBox>
     );

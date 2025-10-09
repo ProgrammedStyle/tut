@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { setUserData } from "@/app/slices/userSlice";
+import { hideLoading, showLoading } from "../../slices/loadingSlice";
 
 const CreateAccount = () => {
     const router = useRouter();
@@ -21,12 +22,14 @@ const CreateAccount = () => {
     const { register, handleSubmit, formState: {errors} } = useForm( { resolver: zodResolver(passwordSchema) } );
 
     useEffect(() => {
+        dispatch(hideLoading());
         if ( !sessionStorage.getItem("emailToRegister") || !sessionStorage.getItem("emailVerified") )
             router.push("/CreateAccount");
     }, []);
 
     const onSucceededSubmit = async ( data ) => {
         try {
+            dispatch(showLoading());
             data.email = sessionStorage.getItem("emailToRegister");
             const res = await axios.post("http://localhost:5000/api/user/create", data);
             dispatch(setUserData(data));
@@ -35,6 +38,8 @@ const CreateAccount = () => {
             router.push("/");
         } catch ( error ) {
             setError(error.message);
+        } finally {
+            dispatch(hideLoading());
         }
     };
 

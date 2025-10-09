@@ -1,0 +1,38 @@
+.socialIconBox {
+    margin-right: 5px;
+    display: flex
+}
+
+.socialButtonsBox {
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap
+}
+
+.socialButtonsBox > * {
+    display: flex;
+    align-items: center
+}
+
+.socialButtonsBox > :not(:first-child) {
+    margin-left: 9px
+}
+
+.socialButtonsHRBox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0px
+}
+
+.socialButtonsHR {
+    flex: 1;
+    height: 0px;
+    border-top: 1px solid #ddd
+}
+
+.socialButtonsHROr {
+    padding: 0px 5px;
+    color: #bbb;
+    font-size: 14px
+}

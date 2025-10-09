@@ -4,12 +4,16 @@ import { useEffect } from "react";
 import SignInCont from "../components/SignInCont";
 import SignInContBox from "../components/SignInContBox";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { showLoading } from "../../../slices/loadingSlice";
 
 const VerifyEmail_Check = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const dispatch = useDispatch();
 
     useEffect(async () => {
+        dispatch(showLoading());
         try {
             const data = { token: searchParams.get("token") };
             const res = await axios.post("http://localhost:5000/api/user/email/verify/check", data);

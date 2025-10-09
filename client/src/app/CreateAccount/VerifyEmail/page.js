@@ -3,8 +3,17 @@
 import SignInCont from "../components/SignInCont";
 import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
 import SignInContBox from "../components/SignInContBox";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { hideLoading } from "@/app/slices/loadingSlice";
 
 const VerifyEmail_Pending = () => {
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        dispatch(hideLoading());
+    }, []);
+
     return (
         <SignInContBox>
             <SignInCont title="Create Account" image={<PersonAddAltOutlinedIcon sx={{fontSize: "180px", opacity: "0.2", color: "var(--main-color)"}} />}>
