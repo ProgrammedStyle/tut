@@ -16,7 +16,7 @@ const send = async ( req, res ) => {
         email: req.body.email
     }, process.env.EMAIL_VERIFY_JWT_SECRET, { expiresIn: "15m" });
 
-    const verifyURL = `http://localhost:3000/CreateAccount/VerifyEmail/Check/?token=${token}`;
+    const verifyURL = `${process.env.CLIENT_URL}/CreateAccount/VerifyEmail/Check/?token=${token}`;
 
     await transporter.sendMail({
         from: "TUT",
