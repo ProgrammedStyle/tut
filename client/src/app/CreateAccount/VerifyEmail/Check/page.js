@@ -10,14 +10,15 @@ import axios from "axios";
 
 const VerifyEmail_Check = () => {
     const router = useRouter();
-    const searchParams = useSearchParams();
+    //const searchParams = useSearchParams();
     const dispatch = useDispatch();
     const [ error, setError ] = useState(null);
 
     useEffect(async () => {
         dispatch(showLoading());
         try {
-            const data = { token: searchParams.get("token") };
+            //const data = { token: searchParams.get("token") };
+            const data = { token: "ss34df" };
             const res = await axios.post("http://localhost:5000/api/user/email/verify/check", data);
             sessionStorage.setItem("emailVerified", "true");
             outer.push("/CreateAccount/CreatePassword");
