@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import SignInCont from "../../../components/SignInCont";
 import SignInContBox from "../../../components/SignInContBox";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -9,12 +9,12 @@ import { showLoading } from "../../../slices/loadingSlice";
 import axios from "axios";
 
 const VerifyEmail_Check = () => {
-    //const router = useRouter();
-    //const searchParams = useSearchParams();
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const dispatch = useDispatch();
-    //const [ error, setError ] = useState(null);
+    const [ error, setError ] = useState(null);
 
-    /*useEffect(async () => {
+    useEffect(async () => {
         dispatch(showLoading());
         try {
             const data = { token: searchParams.get("token") };
@@ -24,7 +24,7 @@ const VerifyEmail_Check = () => {
         } catch ( error ) {
             setError(error.message);
         }
-    }, []);*/
+    }, []);
 
     return (
         <SignInContBox>
