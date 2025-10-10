@@ -64,67 +64,34 @@ import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-import iconUrl from "leaflet/dist/images/marker-icon.png";
-import iconShadowUrl from "leaflet/dist/images/marker-shadow.png";
-
-// إعداد أيقونة الماركر
-const DefaultIcon = L.icon({
-  iconUrl,
-  shadowUrl: iconShadowUrl,
-  iconAnchor: [12, 41],
-});
-L.Marker.prototype.options.icon = DefaultIcon;
-
-const LiveTrackingMap = () => {
+export default function LiveTrackingMap() {
   const mapRef = useRef(null);
   const markerRef = useRef(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      // إنشاء الخريطة
-      mapRef.current = L.map("map").setView([31.9539, 35.9106], 13);
+    // إنشاء الخريطة مرة واحدة فقط
+    mapRef.current = L.map("map").setView([0, 0], 13);
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }).addTo(mapRef.current);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(mapRef.current);
 
-      // التأكد أن المتصفح يدعم الموقع
-      if (navigator.geolocation) {
-        // watchPosition لتتبع الموقع مباشرة
-        navigator.geolocation.watchPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
+    // تتبع موقع المستخدم
+    if (navigator.geolocation) {
+      navigator.geolocation.watchPosition((position) => {
+        const { latitude, longitude } = position.coords;
 
-            // إذا الماركر موجود حدث موقعه، وإذا لا أضفه
-            if (!markerRef.current) {
-              markerRef.current = L.marker([latitude, longitude])
-                .addTo(mapRef.current)
-                .bindPopup("أنت هنا")
-                .openPopup();
-            } else {
-              markerRef.current.setLatLng([latitude, longitude]);
-            }
+        // إنشاء Marker أو تحريكه
+        if (!markerRef.current) {
+          markerRef.current = L.marker([latitude, longitude]).addTo(mapRef.current);
+        } else {
+          markerRef.current.setLatLng([latitude, longitude]);
+        }
 
-            // تحديث مركز الخريطة لمكان المستخدم
-            mapRef.current.setView([latitude, longitude], 15);
-          },
-          (error) => {
-            console.error("خطأ في الحصول على الموقع:", error);
-          },
-          {
-            enableHighAccuracy: true,
-            maximumAge: 1000,
-            timeout: 5000,
-          }
-        );
-      } else {
-        alert("متصفحك لا يدعم خدمة تحديد الموقع.");
-      }
+        mapRef.current.setView([latitude, longitude], mapRef.current.getZoom());
+      });
     }
   }, []);
 
-  return <div id="map" style={{ height: "500px", width: "100%" }}></div>;
-};
-
-export default LiveTrackingMap;
+  return <div id="map" style={{ height: "100vh", width: "100%" }}></div>;
+}
