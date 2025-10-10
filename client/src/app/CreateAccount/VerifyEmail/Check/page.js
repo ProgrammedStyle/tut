@@ -12,7 +12,7 @@ const VerifyEmail_Check = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const dispatch = useDispatch();
-    const [ error, setError ] = useState(null);
+    //const [ error, setError ] = useState(null);
 
     useEffect(async () => {
         dispatch(showLoading());
