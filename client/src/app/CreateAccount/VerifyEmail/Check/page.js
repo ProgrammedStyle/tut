@@ -14,17 +14,17 @@ const VerifyEmail_Check = () => {
     const dispatch = useDispatch();
     const [ error, setError ] = useState(null);
 
-    useEffect(async () => {
+    //useEffect(async () => {
         //dispatch(showLoading());
-        try {
+        //try {
             //const data = { token: searchParams.get("token") };
             //const res = await axios.post("http://localhost:5000/api/user/email/verify/check", data);
             //sessionStorage.setItem("emailVerified", "true");
             //outer.push("/CreateAccount/CreatePassword");
-        } catch ( error ) {
+        //} catch ( error ) {
             //setError(error.message);
-        }
-    }, []);
+        //}
+    //}, []);
 
     return (
         <SignInContBox>
