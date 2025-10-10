@@ -7,14 +7,14 @@ const send = async ( req, res ) => {
         //port: process.env.SMTP_PORT,
         service: "gmail",
         auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS
+            user: `${process.env.SMTP_USER}`,
+            pass: `${process.env.SMTP_PASS}`
         }
     });
 
     const token = jwt.sign({
         email: req.body.email
-    }, process.env.EMAIL_VERIFY_JWT_SECRET, { expiresIn: "15m" });
+    }, `${process.env.EMAIL_VERIFY_JWT_SECRET}`, { expiresIn: "15m" });
 
     const verifyURL = `${process.env.CLIENT_URL}/CreateAccount/VerifyEmail/Check/?token=${token}`;
 

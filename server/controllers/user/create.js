@@ -36,7 +36,7 @@ const create = async ( req, res ) => {
                 id: newUser._id,
                 email
             },
-            process.env.JWT_SECRET,
+            `${process.env.JWT_SECRET}`,
             {
                 expiresIn: "1d"
             }

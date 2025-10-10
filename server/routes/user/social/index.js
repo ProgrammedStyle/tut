@@ -9,7 +9,7 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 router.get('/google/callback',
   passport.authenticate('google', { session: false, failureRedirect: `${process.env.CLIENT_URL}/api/user/failure` }),
   (req, res) => {
-    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: req.user._id }, `${process.env.JWT_SECRET}`, { expiresIn: '7d' });
     res.cookie("token", token, {
       httpOnly: true,
       secure: false,
@@ -25,7 +25,7 @@ router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }))
 router.get('/facebook/callback',
   passport.authenticate('facebook', { session: false, failureRedirect: `${process.env.CLIENT_URL}/api/user/failure` }),
   (req, res) => {
-    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: req.user._id }, `${process.env.JWT_SECRET}`, { expiresIn: '7d' });
     res.cookie("token", token, {
       httpOnly: true,
       secure: false,
