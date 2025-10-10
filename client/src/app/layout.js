@@ -8,6 +8,7 @@ import styles from "./layoutIndex.module.css";
 import { Provider } from "react-redux";
 import { store } from "./store";
 import LoadingCont from "./components/LoadingCont";
+import "./index.css";
 
 export default function RootLayout({ children }) {
   return (
