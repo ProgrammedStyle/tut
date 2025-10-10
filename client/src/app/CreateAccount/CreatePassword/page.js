@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { setUserData } from "@/app/slices/userSlice";
 import { hideLoading, showLoading } from "../../slices/loadingSlice";
+import axios from "axios";
 
 const CreateAccount = () => {
     const router = useRouter();

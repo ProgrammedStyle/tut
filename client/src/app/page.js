@@ -7,7 +7,7 @@ import "./index.css";
 const Home = () => {
     return (
         <div className={layoutStyles.bodyCont}>
-            <LiveMap />
+            
         </div>
     );
 };
