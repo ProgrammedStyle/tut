@@ -10,7 +10,7 @@ import axios from "axios";
 
 const VerifyEmail_Check = () => {
     const router = useRouter();
-    //const searchParams = useSearchParams();
+    // const searchParams = useSearchParams();
     const dispatch = useDispatch();
     const [ error, setError ] = useState(null);
 
