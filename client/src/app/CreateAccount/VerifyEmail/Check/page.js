@@ -17,12 +17,12 @@ const VerifyEmail_Check = () => {
     useEffect(async () => {
         dispatch(showLoading());
         try {
-            const data = { token: searchParams.get("token") };
-            const res = await axios.post("http://localhost:5000/api/user/email/verify/check", data);
-            sessionStorage.setItem("emailVerified", "true");
+            //const data = { token: searchParams.get("token") };
+            //const res = await axios.post("http://localhost:5000/api/user/email/verify/check", data);
+            //sessionStorage.setItem("emailVerified", "true");
             router.push("/CreateAccount/CreatePassword");
         } catch ( error ) {
-            setError(error.message);
+            //setError(error.message);
         }
     }, []);
 
