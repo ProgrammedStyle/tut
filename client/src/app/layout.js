@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { ThemeProvider } from "@mui/material";
 import { CssBaseline } from "@mui/material";
@@ -25,4 +25,4 @@ export default function RootLayout({ children }) {
       </body>
     </html>
   );
-}
+};
