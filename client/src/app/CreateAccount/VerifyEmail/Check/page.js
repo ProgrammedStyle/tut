@@ -15,7 +15,7 @@ const VerifyEmail_Check = () => {
     //const [ error, setError ] = useState(null);
 
     useEffect(async () => {
-        dispatch(showLoading());
+        //dispatch(showLoading());
        /* try {
             const data = { token: searchParams.get("token") };
             const res = await axios.post("http://localhost:5000/api/user/email/verify/check", data);
