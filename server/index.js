@@ -12,21 +12,13 @@ const app = express();
 
 app.use(cookieParser());
 
-// Global, permissive CORS (reflect origin and allow credentials)
 const corsOptions = {
-    origin: (origin, callback) => {
-        // Reflect the request origin in CORS headers
-        callback(null, true);
-    },
+    origin: [`${process.env.CLIENT_URL}`],
     credentials: true,
-    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
-    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"],
-    exposedHeaders: ["Set-Cookie"]
+    methods: ["GET", "PUT", "POST", "DELETE"]
 };
 
 app.use(cors(corsOptions));
-// Enable preflight for all routes
-app.options("(.*)", cors(corsOptions));
 
 connectDB();
 
