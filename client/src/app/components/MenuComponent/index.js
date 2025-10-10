@@ -1,3 +1,5 @@
+"use client";
+
 import { Divider, Menu, MenuItem } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

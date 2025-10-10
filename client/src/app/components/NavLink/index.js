@@ -1,3 +1,5 @@
+"use client";
+
 import { Box, Tooltip } from "@mui/material";
 import Link from "next/link";
 import WhiteIconButton from "../WhiteIconButton";

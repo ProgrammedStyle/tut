@@ -1,4 +1,6 @@
-/*import React, { useEffect, useState } from "react";
+
+
+import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
 
@@ -56,4 +58,4 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       </MapContainer>
     </div>
   );
-}*/
+}
