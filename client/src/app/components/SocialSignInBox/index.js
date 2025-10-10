@@ -11,11 +11,11 @@ const SocialSignInBox = () => {
 
 
         onGoogleLogin = () => {
-            //window.location.href = "http://localhost:5000/api/user/google";
+            window.location.href = "http://localhost:5000/api/user/google";
         };
 
         onFacebookLogin = () => {
-            //window.location.href = "http://localhost:5000/api/user/facebook";
+            window.location.href = "http://localhost:5000/api/user/facebook";
         };
 
 
