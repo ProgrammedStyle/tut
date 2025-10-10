@@ -14,7 +14,7 @@ const VerifyEmail_Check = () => {
     const dispatch = useDispatch();
     const [ error, setError ] = useState(null);
 
-    useEffect(async () => {
+    /*useEffect(async () => {
         dispatch(showLoading());
         try {
             const data = { token: searchParams.get("token") };
@@ -24,7 +24,7 @@ const VerifyEmail_Check = () => {
         } catch ( error ) {
             setError(error.message);
         }
-    }, []);
+    }, []);*/
 
     return (
         <SignInContBox>
