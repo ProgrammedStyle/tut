@@ -32,7 +32,7 @@ const CreateAccount = () => {
         try {
             dispatch(showLoading());
             data.email = sessionStorage.getItem("emailToRegister");
-            const res = await axios.post("http://localhost:5000/api/user/create", data);
+            const res = await axios.post(`${process.env.SERVER_URL}/api/user/create`, data);
             dispatch(setUserData(data));
             sessionStorage.removeItem("emailToRegister");
             sessionStorage.removeItem("emailVerified");

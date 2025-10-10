@@ -19,7 +19,7 @@ const VerifyEmail_Check = () => {
         try {
             //const data = { token: searchParams.get("token") };
             const data = { token: "ss34df" };
-            const res = await axios.post("http://localhost:5000/api/user/email/verify/check", data);
+            const res = await axios.post(`${process.env.SERVER_URL}/api/user/email/verify/check`, data);
             sessionStorage.setItem("emailVerified", "true");
             outer.push("/CreateAccount/CreatePassword");
         } catch ( error ) {

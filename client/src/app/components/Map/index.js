@@ -59,39 +59,3 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
     </div>
   );
 }
-
-/*import { useEffect, useRef } from "react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
-
-export default function LiveTrackingMap() {
-  const mapRef = useRef(null);
-  const markerRef = useRef(null);
-
-  useEffect(() => {
-    // إنشاء الخريطة مرة واحدة فقط
-    mapRef.current = L.map("map").setView([0, 0], 13);
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; OpenStreetMap contributors',
-    }).addTo(mapRef.current);
-
-    // تتبع موقع المستخدم
-    if (navigator.geolocation) {
-      navigator.geolocation.watchPosition((position) => {
-        const { latitude, longitude } = position.coords;
-
-        // إنشاء Marker أو تحريكه
-        if (!markerRef.current) {
-          markerRef.current = L.marker([latitude, longitude]).addTo(mapRef.current);
-        } else {
-          markerRef.current.setLatLng([latitude, longitude]);
-        }
-
-        mapRef.current.setView([latitude, longitude], mapRef.current.getZoom());
-      });
-    }
-  }, []);
-
-  return <div id="map" style={{ height: "100vh", width: "100%" }}></div>;
-}*/
