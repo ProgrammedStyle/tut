@@ -60,7 +60,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
   );
 }*/
 
-import { useEffect, useRef } from "react";
+/*import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -94,4 +94,4 @@ export default function LiveTrackingMap() {
   }, []);
 
   return <div id="map" style={{ height: "100vh", width: "100%" }}></div>;
-}
+}*/
