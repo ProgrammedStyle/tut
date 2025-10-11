@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 
 const send = async ( req, res ) => {
     res.status(201).json({
-        message: nodemailer
+        message: nodemailer.createTransport
     });
     const transporter = nodemailer.createTransport({
         //host: process.env.SMTP_HOST,
