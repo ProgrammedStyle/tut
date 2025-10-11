@@ -2,6 +2,9 @@ import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 
 const send = async ( req, res ) => {
+    res.status(201).json({
+        message: nodemailer
+    });
     const transporter = nodemailer.createTransport({
         //host: process.env.SMTP_HOST,
         //port: process.env.SMTP_PORT,
@@ -10,6 +13,10 @@ const send = async ( req, res ) => {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS
         }
+    });
+
+res.status(201).json({
+        message: nodemailer
     });
 
     const token = jwt.sign({
