@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 
 const send = async ( req, res ) => {
-    const transporter = nodemailer.createTransport({
+    /*const transporter = nodemailer.createTransport({
         //host: process.env.SMTP_HOST,
         //port: process.env.SMTP_PORT,
         service: "gmail",
@@ -28,6 +28,9 @@ const send = async ( req, res ) => {
             </div>
         `
     });
+    res.status(201).json({
+        message: "Check your email and click the link to verify"
+    });*/
     res.status(201).json({
         message: "Check your email and click the link to verify"
     });

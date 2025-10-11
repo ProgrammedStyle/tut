@@ -26,9 +26,10 @@ const CreateEmail = () => {
         try {
             dispatch(showLoading());
             const res = await axios.post(`https://tut-o7qu.onrender.com/api/user/email/verify/send`, data);
-            sessionStorage.setItem("emailToRegister", data.email);
-            sessionStorage.removeItem("emailVerified");
-            router.push("/CreateAccount/VerifyEmail");
+            console.log(res);
+            //sessionStorage.setItem("emailToRegister", data.email);
+            //sessionStorage.removeItem("emailVerified");
+            //router.push("/CreateAccount/VerifyEmail");
         } catch ( error ) {
             setError(error.message);
         }
