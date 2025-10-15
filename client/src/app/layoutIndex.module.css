@@ -1,15 +1,72 @@
+.html {
+    --app-padding-x: 100px; /* Moved to html for global access */
+    height: 100%
+}
+
 .body {
-    --app-padding-x: 100px;
     --main-color: #1976d2;
     --error-color: #dc004e;
     height: 100%;
     padding: 0px
 }
 
-.html {
-    height: 100%
-}
-
 .bodyCont {
     padding: 15px var(--app-padding-x)
+}
+
+/* Responsive padding */
+@media (max-width: 1024px) {
+    .html {
+        --app-padding-x: 50px;
+    }
+}
+
+@media (max-width: 768px) {
+    .html {
+        --app-padding-x: 30px;
+    }
+    
+    .bodyCont {
+        padding: 10px var(--app-padding-x);
+    }
+}
+
+@media (max-width: 480px) {
+    .html {
+        --app-padding-x: 15px;
+    }
+    
+    .bodyCont {
+        padding: 20px var(--app-padding-x);
+    }
+}
+
+@media (max-width: 320px) {
+    .html {
+        --app-padding-x: 10px;
+    }
+    
+    .bodyCont {
+        padding: 20px var(--app-padding-x);
+    }
+}
+
+@media (max-width: 280px) {
+    .html {
+        --app-padding-x: 8px;
+    }
+    
+    .bodyCont {
+        padding: 18px var(--app-padding-x);
+    }
+}
+
+@media (max-width: 250px) {
+    .html {
+        --app-padding-x: 5px;
+    }
+    
+    .bodyCont {
+        padding: 15px var(--app-padding-x);
+    }
 }

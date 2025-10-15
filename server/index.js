@@ -1,6 +1,19 @@
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Try loading .env from server directory first, then parent directory
+dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
+
+console.log('Environment variables loaded:');
+console.log('- GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET ✓' : 'NOT SET ✗');
+console.log('- GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'SET ✓' : 'NOT SET ✗');
+console.log('- FACEBOOK_CLIENT_ID:', process.env.FACEBOOK_CLIENT_ID ? 'SET ✓' : 'NOT SET ✗');
+console.log('- FACEBOOK_CLIENT_SECRET:', process.env.FACEBOOK_CLIENT_SECRET ? 'SET ✓' : 'NOT SET ✗');
 
 import express from "express";
 import connectDB from "./config/db.js";
@@ -13,27 +26,69 @@ const app = express();
 app.use(cookieParser());
 
 const corsOptions = {
-    origin: [`${process.env.CLIENT_URL}`],
+    origin: (origin, callback) => {
+        // Allow requests from localhost during development
+        if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            callback(null, true);
+        } else if (process.env.CLIENT_URL && origin === process.env.CLIENT_URL) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
-    methods: ["GET", "PUT", "POST", "DELETE"]
+    methods: ["GET", "PUT", "POST", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 };
 
 app.use(cors(corsOptions));
 
 connectDB();
 
-import "./config/passport.js";
-import userRoute from "./routes/user/index.js";
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(passport.initialize());
 
-app.use("/api/user", userRoute);
+// Load passport config AFTER environment variables are set
+await import("./config/passport.js");
+console.log('✓ Passport configuration loaded');
 
-const PORT = `${process.env.PORT}` || 5000;
+import userRoute from "./routes/user/index.js";
+import analyticsRoute from "./routes/analytics/index.js";
+import translationsRoute from "./routes/translations/index.js";
+import contactRoute from "./routes/contact.js";
+import checkPasswordExpiry from "./middleware/passwordExpiry.js";
+
+app.use("/api/user", userRoute);
+app.use("/api/analytics", analyticsRoute);
+app.use("/api/translations", translationsRoute);
+app.use("/api/contact", contactRoute);
+
+// Apply password expiry check to all protected routes
+app.use(checkPasswordExpiry);
+
+// Test route to verify server is working
+app.get("/api/test", (req, res) => {
+    res.json({ message: "Server is working!" });
+});
+
+// Debug route to check all registered routes
+app.get("/api/debug/routes", (req, res) => {
+    const routes = [];
+    app._router.stack.forEach((middleware) => {
+        if (middleware.route) {
+            routes.push({
+                path: middleware.route.path,
+                methods: Object.keys(middleware.route.methods)
+            });
+        }
+    });
+    res.json({ routes });
+});
+
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-    console.log("Server running successfuly");
+    console.log("Server running successfuly, Port: " + PORT);
 });

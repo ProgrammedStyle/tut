@@ -1,22 +1,49 @@
 .logoCont {
-    --def-height: 40px;
+    --def-height: 50px;
     height: var(--def-height);
-    overflow: hidden;
-    position: relative;
-    width: 29.7px
+    width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .logo {
-    color: transparent;
-    object-position: 0px -2px;
-    position: absolute;
-    height: calc(var(--def-height) + 15.9px);
-    width: calc(var(--def-height) + 15.5px);
-    top: -8.6px;
-    left: -13.5px;
-    object-position: 0px -2px
+    height: var(--def-height);
+    width: auto;
+    object-fit: contain;
 }
 
 .click {
     cursor: pointer
+}
+
+@media (max-width: 768px) {
+    .logoCont {
+        --def-height: 42px;
+    }
+}
+
+@media (max-width: 480px) {
+    .logoCont {
+        --def-height: 36px;
+    }
+}
+
+@media (max-width: 360px) {
+    .logoCont {
+        --def-height: 32px;
+    }
+}
+
+@media (max-width: 280px) {
+    .logoCont {
+        --def-height: 28px;
+    }
+}
+
+@media (max-width: 250px) {
+    .logoCont {
+        --def-height: 24px;
+    }
 }

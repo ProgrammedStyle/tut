@@ -1,3 +1,34 @@
 .searchInputTextBox {
-    width: 200px
+    width: 200px;
+    max-width: 100%;
+}
+
+@media (max-width: 768px) {
+    .searchInputTextBox {
+        width: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .searchInputTextBox {
+        width: 100px;
+    }
+}
+
+@media (max-width: 360px) {
+    .searchInputTextBox {
+        width: 80px;
+    }
+}
+
+@media (max-width: 280px) {
+    .searchInputTextBox {
+        width: 60px;
+    }
+}
+
+@media (max-width: 250px) {
+    .searchInputTextBox {
+        display: none;
+    }
 }

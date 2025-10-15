@@ -7,16 +7,24 @@ import { FaFacebookF } from "react-icons/fa";
 import styles from "./index.module.css";
 
 const SocialSignInBox = () => {
+    // Social login buttons are visible but OAuth is not configured yet
+    // To make them work: Add GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, FACEBOOK_CLIENT_ID, FACEBOOK_CLIENT_SECRET to server/.env
+    // See GOOGLE_OAUTH_SETUP.md for instructions
+    const SOCIAL_LOGIN_ENABLED = true; // Changed to true - buttons will show but won't work until OAuth is configured
+
+    if (!SOCIAL_LOGIN_ENABLED) {
+        return null; // Hide social login buttons when not configured
+    }
+
     var onGoogleLogin, onFacebookLogin;
 
+            onGoogleLogin = () => {
+                window.location.href = "http://localhost:5000/api/user/google";
+            };
 
-        onGoogleLogin = () => {
-            window.location.href = "http://localhost:5000/api/user/google";
-        };
-
-        onFacebookLogin = () => {
-            window.location.href = "http://localhost:5000/api/user/facebook";
-        };
+            onFacebookLogin = () => {
+                window.location.href = "http://localhost:5000/api/user/facebook";
+            };
 
 
     return (
@@ -29,21 +37,33 @@ const SocialSignInBox = () => {
                 <div className={styles.socialButtonsHR}></div>
             </div>
             <div className={styles.socialButtonsBox}>
-                <Button onClick={onGoogleLogin}>
+                <Button 
+                    onClick={onGoogleLogin}
+                    sx={{
+                        fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.875rem' },
+                        padding: { xs: '6px 8px', sm: '8px 12px' },
+                        minWidth: 0,
+                        textTransform: 'none'
+                    }}
+                >
                     <div className={styles.socialIconBox}>
-                        <FcGoogle size={24} />
+                        <FcGoogle size={20} />
                     </div>
-                    <div>
-                        Sign in using Google
-                    </div>
+                    Sign in using Google
                 </Button>
-                <Button onClick={onFacebookLogin}>
+                <Button 
+                    onClick={onFacebookLogin}
+                    sx={{
+                        fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.875rem' },
+                        padding: { xs: '6px 8px', sm: '8px 12px' },
+                        minWidth: 0,
+                        textTransform: 'none'
+                    }}
+                >
                     <div className={styles.socialIconBox}>
-                        <FaFacebookF size={20} />
+                        <FaFacebookF size={18} />
                     </div>
-                    <div>
-                        Sign in using Facebook
-                    </div>
+                    Sign in using Facebook
                 </Button>
             </div>
         </React.Fragment>

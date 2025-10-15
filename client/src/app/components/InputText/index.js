@@ -53,7 +53,7 @@ const InputText = forwardRef((
     const handleInput = e => {
         (e.target.value.trim() == "")? e.target.setAttribute("inputempty", "true") : e.target.setAttribute("inputempty", "false");
         setValue(e.target.value);
-    }
+    };
 
     useEffect(() => {
         const e = document.createElement("div");
@@ -81,7 +81,7 @@ const InputText = forwardRef((
             <InputTextComponent ref={componentRef} label={label} className={(bgColor? `${styles.bgColor} `:``) + (styles[linesColor]) + ` ` + (styles[focusLinesColor]) + ` ` + (borderBottom? `${styles.borderBottom} `: ``) + styles.inputBox + (inputProps.inputTextStyle == ``? ``:` ${inputProps.inputTextStyle}`)} onClick={handleDivClick}>
                 <input
                     { ...rest }
-                    autoComplete="off"
+                    autoComplete="on"
                     type={inputProps.type}
                     name={inputProps.name}
                     value={value}

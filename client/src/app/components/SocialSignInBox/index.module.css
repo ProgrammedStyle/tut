@@ -1,38 +1,101 @@
 .socialIconBox {
     margin-right: 5px;
-    display: flex
+    display: flex;
+    flex-shrink: 0;
 }
 
 .socialButtonsBox {
     display: flex;
     justify-content: space-evenly;
-    flex-wrap: wrap
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .socialButtonsBox > * {
     display: flex;
-    align-items: center
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .socialButtonsBox > :not(:first-child) {
-    margin-left: 9px
+    margin-left: 0;
 }
 
 .socialButtonsHRBox {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 20px 0px
+    margin: 20px 0px;
 }
 
 .socialButtonsHR {
     flex: 1;
     height: 0px;
-    border-top: 1px solid #ddd
+    border-top: 1px solid #ddd;
 }
 
 .socialButtonsHROr {
-    padding: 0px 5px;
+    padding: 0px 10px;
     color: #bbb;
-    font-size: 14px
+    font-size: 14px;
+}
+
+/* Responsive styles */
+@media (max-width: 600px) {
+    .socialButtonsBox {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .socialButtonsBox > * {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .socialButtonsHRBox {
+        margin: 15px 0px;
+    }
+}
+
+@media (max-width: 480px) {
+    .socialIconBox {
+        margin-right: 4px;
+    }
+    
+    .socialButtonsHROr {
+        padding: 0px 8px;
+    }
+}
+
+@media (max-width: 360px) {
+    .socialButtonsHROr {
+        padding: 0px 6px;
+    }
+    
+    .socialButtonsHRBox {
+        margin: 12px 0px;
+    }
+}
+
+@media (max-width: 280px) {
+    .socialIconBox {
+        margin-right: 3px;
+    }
+    
+    .socialButtonsHROr {
+        padding: 0px 4px;
+    }
+    
+    .socialButtonsHRBox {
+        margin: 10px 0px;
+    }
+}
+
+@media (max-width: 250px) {
+    .socialButtonsHROr {
+        padding: 0px 3px;
+    }
 }

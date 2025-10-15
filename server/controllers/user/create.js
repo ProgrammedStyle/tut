@@ -9,27 +9,31 @@ const create = async ( req, res ) => {
         const emailParsedData = await emailSchema.safeParseAsync({ email: req.body.email });
         const passwordParsedData = await passwordSchema.safeParseAsync({ password: req.body.password, confirmPassword: req.body.confirmPassword });
 
-        if ( !emailParsedData.success )
+        if ( !emailParsedData.success ) {
+            console.log("Email validation failed:", emailParsedData.error.errors);
             return res.status(400).json({ message: emailParsedData.error.errors[0].message });
+        }
         
-        if ( !passwordParsedData.success )
+        if ( !passwordParsedData.success ) {
             return res.status(400).json({ message: passwordParsedData.error.errors[0].message });
+        }
 
         const { email } = emailParsedData.data;
         const { password } = passwordParsedData.data;
 
         const existingUser = await User.findOne({ email });
         if ( existingUser )
-            return res.status(400).json({ message: "This email was token" });
+            return res.status(400).json({ message: "This email was taken" });
 
         const hashedPassword = await bcrypt.hash(password, 12);
 
         const newUser = new User({
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            role: "admin"
         });
 
-        newUser.save();
+        await newUser.save();
 
         const token = jwt.sign(
             {
@@ -59,7 +63,11 @@ const create = async ( req, res ) => {
             }
         );
     } catch ( error ) {
-        res.status(500).json({ message: "Some error occured while creating your account" });
+        console.error("User creation error:", error);
+        res.status(500).json({ 
+            message: "Some error occured while creating your account",
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 };
 

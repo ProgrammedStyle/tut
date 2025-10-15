@@ -18,7 +18,32 @@
     --inputTransform: scale(0.8);
     --inputBorderBoxLeftSpace: 14px;
     height: 36px;
-    width: 200px
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+}
+
+@media (max-width: 360px) {
+    .inputBox {
+        --fontSize: 13px;
+        --input-padding-x: 10px;
+    }
+}
+
+@media (max-width: 280px) {
+    .inputBox {
+        --fontSize: 12px;
+        --input-padding-x: 9px;
+        --input-padding-y: 9px;
+    }
+}
+
+@media (max-width: 250px) {
+    .inputBox {
+        --fontSize: 11px;
+        --input-padding-x: 8px;
+        --input-padding-y: 8px;
+    }
 }
 
 .inputBox *, .inputBox {

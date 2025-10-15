@@ -1,9 +1,8 @@
 import styles from "./index.module.css";
-import layoutStyles from "../../layoutIndex.module.css";
 
 const SignInContBox = ({ children }) => {
     return (
-        <div className={styles.cont + " " + layoutStyles.bodyCont}>
+        <div className={styles.cont}>
             {children}
         </div>
     );

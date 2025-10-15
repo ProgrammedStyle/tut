@@ -1,0 +1,13 @@
+MONGO_URI=mongodb://localhost:27017/jerusalem-guide
+JWT_SECRET=f8j2k9d0s1m4n6b7v9c3x5z0a1w2e4r5t6y7u8i9o0p1q2s3d4f5g6h7j8k9l0
+EMAIL_VERIFY_JWT_SECRET=p0o9i8u7y6t5r4e3w2q1a0s9d8f7g6h5j4k3l2m1n0b9v8c7x6z5a4s3d2f1g0
+SMTP_USER=programmedstyle@gmail.com
+SMTP_PASS=brao ywhw gzux rhib
+CLIENT_URL=http://localhost:3000
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+FACEBOOK_CLIENT_ID=
+FACEBOOK_CLIENT_SECRET=
+PORT=5000
+NODE_ENV=development
+

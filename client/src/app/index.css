@@ -1,1 +1,63 @@
 @import "leaflet/dist/leaflet.css";
+
+/* Global responsive resets */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    overflow-x: hidden;
+    overflow-y: auto; /* Allow scrolling when needed */
+    font-size: 16px;
+    height: 100%;
+}
+
+body {
+    overflow-x: hidden;
+    width: 100%;
+    min-width: 240px;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+/* Ensure images are visible and responsive */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Ensure inputs don't overflow on mobile */
+input, textarea, select {
+    max-width: 100%;
+    font-size: 16px;
+}
+
+/* Prevent text from overflowing */
+.MuiTypography-root {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Responsive font sizing - keeping text readable on mobile */
+@media (max-width: 600px) {
+    html {
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 400px) {
+    html {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 300px) {
+    html {
+        font-size: 13px;
+    }
+    
+    body {
+        min-width: 240px;
+    }
+}

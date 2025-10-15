@@ -1,20 +1,30 @@
 .header {
-    padding: 11px var(--app-padding-x);
     box-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12);
     background-color: var(--main-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     position: fixed;
     top: 0px;
     left: 0px;
+    /* Width is set dynamically via JavaScript to account for scrollbar */
     z-index: 1000;
-    width: 100%
+    box-sizing: border-box;
+    padding: 11px 0; /* Vertical padding only */
+}
+
+.headerContent {
+    padding: 0 var(--app-padding-x); /* Horizontal padding to match body */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .hLeftB {
     display: flex;
-    align-items: center
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .hLeftB > *:not(:first-child) {
@@ -24,7 +34,8 @@
 .hRightB {
     display: flex;
     align-items: center;
-    justify-content: center
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .hRightB > *:not(:first-child) {
@@ -33,4 +44,85 @@
 
 .menuItemsStyle {
     font-size: 12px
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .header {
+        padding: 10px 0; /* Vertical padding only */
+    }
+    
+    .hLeftB > *:not(:first-child) {
+        margin-left: 10px;
+    }
+    
+    .hRightB > *:not(:first-child) {
+        margin-left: 8px;
+    }
+}
+
+@media (max-width: 600px) {
+    .header {
+        padding: 8px 0; /* Vertical padding only */
+    }
+    
+    .hLeftB > *:nth-child(2) {
+        display: none; /* Hide search on very small screens */
+    }
+    
+    .hLeftB > *:not(:first-child) {
+        margin-left: 8px;
+    }
+    
+    .hRightB > *:not(:first-child) {
+        margin-left: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 8px 0; /* Vertical padding only */
+    }
+    
+    .hLeftB > *:not(:first-child) {
+        margin-left: 6px;
+    }
+    
+    .hRightB > *:not(:first-child) {
+        margin-left: 5px;
+    }
+}
+
+@media (max-width: 320px) {
+    .header {
+        padding: 6px 0; /* Vertical padding only */
+    }
+}
+
+@media (max-width: 280px) {
+    .header {
+        padding: 5px 0; /* Vertical padding only */
+    }
+    
+    .hLeftB > *:not(:first-child) {
+        margin-left: 4px;
+    }
+    
+    .hRightB > *:not(:first-child) {
+        margin-left: 3px;
+    }
+}
+
+@media (max-width: 250px) {
+    .header {
+        padding: 4px 0; /* Vertical padding only */
+    }
+    
+    .hLeftB > *:not(:first-child) {
+        margin-left: 3px;
+    }
+    
+    .hRightB > *:not(:first-child) {
+        margin-left: 2px;
+    }
 }

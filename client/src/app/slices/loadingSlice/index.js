@@ -3,12 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const loadingSlice = createSlice({
     name: "loading",
     initialState: {
-        show: false,
-        boundingRect: {
-            width: "60%",
-            left: "20%",
-            top: "30%"
-        }
+        show: false
     },
     reducers: {
         showLoading: (state) => {
@@ -16,12 +11,9 @@ const loadingSlice = createSlice({
         },
         hideLoading: (state) => {
             state.show = false;
-        },
-        setBoundingRect: (state, payload) => {
-            state.boundingRect = { ...payload };
         }
     }
 });
 
-export const { showLoading, hideLoading, setBoundingRect } = loadingSlice.actions;
+export const { showLoading, hideLoading } = loadingSlice.actions;
 export default loadingSlice.reducer;

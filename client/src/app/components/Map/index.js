@@ -38,7 +38,10 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       setPosition([lat, lng]);
     };
 
-    const error = (err) => console.error("Geolocation error:", err);
+    const error = (err) => {
+      // Silently handle geolocation errors - user location is optional
+      console.log("Location access not available - using default position");
+    };
 
     const options = { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 };
     const watchId = navigator.geolocation.watchPosition(success, error, options);

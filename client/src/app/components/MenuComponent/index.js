@@ -15,10 +15,12 @@ const MenuComponent = ({ menuItemsStyle = ``, menuAnchor, menuItems }) => {
         setAnchorEl(e.currentTarget);
     };
 
-    const handleClose = ( link = null ) => {
-        setAnchorEl(null);
-        link && router.push(link);
-    };
+        const handleClose = ( link = null ) => {
+            setAnchorEl(null);
+            if (link) {
+                router.push(link);
+            }
+        };
 
     return (
         <div>

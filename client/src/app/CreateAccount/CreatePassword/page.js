@@ -24,7 +24,15 @@ const CreateAccount = () => {
 
     useEffect(() => {
         dispatch(hideLoading());
-        if ( !sessionStorage.getItem("emailToRegister") || !sessionStorage.getItem("emailVerified") )
+        const emailToRegister = sessionStorage.getItem("emailToRegister");
+        const emailVerified = sessionStorage.getItem("emailVerified");
+        
+        console.log("SessionStorage check:", {
+            emailToRegister,
+            emailVerified
+        });
+        
+        if ( !emailToRegister || !emailVerified )
             router.push("/CreateAccount");
     }, []);
 
@@ -32,13 +40,34 @@ const CreateAccount = () => {
         try {
             dispatch(showLoading());
             data.email = sessionStorage.getItem("emailToRegister");
-            const res = await axios.post(`${process.env.SERVER_URL}/api/user/create`, data);
-            dispatch(setUserData(data));
+            
+            console.log("Creating user with data:", {
+                email: data.email,
+                password: data.password ? "***" : "missing",
+                confirmPassword: data.confirmPassword ? "***" : "missing"
+            });
+            
+            const res = await axios.post(`http://localhost:5000/api/user/create`, data, {
+                withCredentials: true
+            });
+            
+            console.log("User created successfully:", res.data);
+            
+            // Store only necessary user data (not password)
+            const userData = {
+                email: data.email,
+                id: res.data.user?.id
+            };
+            dispatch(setUserData(userData));
+            localStorage.setItem('userData', JSON.stringify(userData));
             sessionStorage.removeItem("emailToRegister");
             sessionStorage.removeItem("emailVerified");
-            router.push("/");
+            router.push("/Dashboard");
         } catch ( error ) {
-            setError(error.message);
+            console.error("User creation error:", error);
+            console.error("Error response:", error.response);
+            console.error("Error data:", error.response?.data);
+            setError(error.response?.data?.message || error.message || "An error occurred");
         } finally {
             dispatch(hideLoading());
         }
@@ -46,7 +75,7 @@ const CreateAccount = () => {
 
     return (
         <SignInContBox>
-            <SignInCont title="Create Account" image={<PersonAddAltOutlinedIcon sx={{fontSize: "180px", opacity: "0.2", color: "var(--main-color)"}} />}>
+            <SignInCont title="Create Account" image={<PersonAddAltOutlinedIcon sx={{ fontSize: { xs: "120px", sm: "150px", md: "180px" }, opacity: "0.2", color: "var(--main-color)" }} />}>
                 <form onSubmit={handleSubmit(onSucceededSubmit)} className={signInContStyles.form}>
                     <InputText 
                         inputProps={{
@@ -77,11 +106,20 @@ const CreateAccount = () => {
                         linesColor={"blackColor"}
                         focusLinesColor={"focusMainColor"}
                         label="Confirm Password"
-                        focus={true}
+                        focus={false}
                         { ...register("confirmPassword") }
                     />
                     <div className={signInContStyles.formSubmitBox}>
-                        <Button type="submit" variant="contained" color="primary">
+                        <Button 
+                            type="submit" 
+                            variant="contained" 
+                            color="primary"
+                            fullWidth
+                            sx={{ 
+                                minWidth: { xs: '100%', sm: 'auto' },
+                                padding: { xs: '10px 20px', sm: '8px 22px' }
+                            }}
+                        >
                             Create Account
                         </Button>
                     </div>
