@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Box, Container, Typography, Grid, Card, CardMedia, CardContent, Button, Chip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { ArrowForward, LocationOn, Explore, History, Map } from '@mui/icons-material';
@@ -14,6 +14,12 @@ export default function Home() {
     const routesRef = useRef(null);
     const mapRef = useRef(null);
     const { t } = useLanguage();
+    const [animationDistance, setAnimationDistance] = useState(-50); // Default for SSR
+    
+    useEffect(() => {
+        // Set animation distance based on screen size after mount
+        setAnimationDistance(window.innerWidth < 768 ? -50 : -300);
+    }, []);
 
     const routes = [
         { 
@@ -394,7 +400,11 @@ export default function Home() {
                         }}
                     >
                         <motion.div
-                            initial={{ opacity: 0, x: -300, rotate: -360 }}
+                            initial={{ 
+                                opacity: 0, 
+                                x: animationDistance,
+                                rotate: -360 
+                            }}
                             whileInView={{ opacity: 1, x: 0, rotate: 0 }}
                             viewport={{ once: true, amount: 0.3 }}
                             transition={{ duration: 1.2, ease: "easeOut", delay: 0.1 }}
@@ -402,17 +412,20 @@ export default function Home() {
                                 flex: '0 0 auto',
                                 display: 'flex',
                                 justifyContent: 'center',
-                                alignItems: 'center'
+                                alignItems: 'center',
+                                width: '100%',
+                                maxWidth: '350px'
                             }}
                         >
                                 <Box
                                     sx={{
                                         position: 'relative',
                                         borderRadius: '50%',
-                                        width: { xs: '300px', md: '350px' },
-                                        height: { xs: '300px', md: '350px' },
+                                        width: { xs: '250px', sm: '300px', md: '350px' },
+                                        height: { xs: '250px', sm: '300px', md: '350px' },
                                         overflow: 'hidden',
                                         boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                                        margin: '0 auto',
                                         '&:hover': {
                                             transform: 'scale(1.05)',
                                             boxShadow: '0 30px 80px rgba(0,0,0,0.2)'
