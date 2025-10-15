@@ -72,7 +72,7 @@ const InputText = forwardRef((
         componentRef.current.removeChild(e);
         inputRef.current.style.paddingRight = (parseInt(window.getComputedStyle(inputRef.current).paddingRight) + inputIconBoxRef.current.offsetWidth) + "px";
         focus && inputRef.current.focus();
-    }, [label]);
+    }, [label, focus]);
 
     useImperativeHandle(extRef, () => inputRef.current);
 

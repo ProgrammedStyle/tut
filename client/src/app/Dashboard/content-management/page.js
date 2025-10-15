@@ -728,7 +728,7 @@ const ContentManagement = () => {
     };
     
     loadTexts();
-  }, [currentLanguage, currentPage]);
+  }, [currentLanguage, currentPage, defaultTexts]);
 
   const handleLanguageChange = (event) => {
     setCurrentLanguage(event.target.value);

@@ -59,7 +59,7 @@ const EmailVerificationSent = () => {
                                 Please check your email inbox
                             </Typography>
                             <Typography variant="body2">
-                                We've sent a verification link to:
+                                We&apos;ve sent a verification link to:
                             </Typography>
                             <Typography variant="body2" sx={{ fontWeight: 'bold', mt: 1 }}>
                                 {pendingEmail || 'your new email address'}
@@ -98,7 +98,7 @@ const EmailVerificationSent = () => {
                         </Button>
 
                         <Typography variant="caption" display="block" sx={{ mt: 2, color: 'text.secondary' }}>
-                            Didn't receive the email? Check your spam folder or try changing your email again.
+                            Didn&apos;t receive the email? Check your spam folder or try changing your email again.
                         </Typography>
                     </CardContent>
                 </Card>

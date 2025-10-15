@@ -145,8 +145,9 @@ const Header = () => {
       window.addEventListener('resize', updateHeaderWidth);
     
       return () => {
-        if (headerElem.current) {
-          observer.unobserve(headerElem.current);
+        const currentHeader = headerElem.current;
+        if (currentHeader) {
+          observer.unobserve(currentHeader);
         }
         window.removeEventListener('resize', updateHeaderWidth);
       };

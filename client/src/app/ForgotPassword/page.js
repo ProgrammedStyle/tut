@@ -84,7 +84,7 @@ const ForgotPassword = () => {
                                 fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' }
                             }}
                         >
-                            We've sent a password reset link to your email address.
+                            We&apos;ve sent a password reset link to your email address.
                         </Typography>
                         <Typography 
                             variant="body2" 
@@ -127,7 +127,7 @@ const ForgotPassword = () => {
                         color="text.secondary" 
                         sx={{ mb: 3, textAlign: 'center' }}
                     >
-                        Enter your email address and we'll send you a link to reset your password.
+                        Enter your email address and we&apos;ll send you a link to reset your password.
                     </Typography>
 
                     {error && (

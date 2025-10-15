@@ -427,7 +427,7 @@ const Contact = () => {
                                     fontSize: { xs: '1.1rem', md: '1.25rem' }
                                 }}
                             >
-                                We're Here to Help
+                                We&apos;re Here to Help
                             </Typography>
                             <Typography
                                 variant="body1"

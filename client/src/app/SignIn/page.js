@@ -141,7 +141,7 @@ const SignIn = () => {
 
                     <Box sx={{ mt: 3, textAlign: 'center' }}>
                         <Typography variant="body2" color="text.secondary">
-                            Don't have an account?{' '}
+                            Don&apos;t have an account?{' '}
                             <LoadingLink href="/CreateAccount" style={{ textDecoration: 'none' }}>
                                 <span style={{ color: 'var(--main-color)', cursor: 'pointer', fontWeight: 'medium' }}>
                                     Create Account

@@ -492,7 +492,7 @@ const Dashboard = () => {
                             Dashboard
                         </Typography>
                         <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                            Welcome back! Here's what's happening with your website.
+                            Welcome back! Here&apos;s what&apos;s happening with your website.
                         </Typography>
                     </Box>
                 </Fade>
