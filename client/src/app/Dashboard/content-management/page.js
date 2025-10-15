@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { 
   Box, 
@@ -50,28 +50,6 @@ import {
   Verified,
   ArrowBack
 } from '@mui/icons-material';
-
-const ContentManagement = () => {
-  const { updateTranslations, languageData } = useLanguage();
-  const [currentLanguage, setCurrentLanguage] = useState('gb');
-  const [editableTexts, setEditableTexts] = useState({});
-  const [editingMode, setEditingMode] = useState(false);
-  const [editedTexts, setEditedTexts] = useState({});
-  const [currentPage, setCurrentPage] = useState('home');
-
-  const languages = [
-    { code: 'sa', name: 'العربية', flag: '🇸🇦', englishName: 'Arabic (Saudi Arabia)' },
-    { code: 'de', name: 'Deutsch', flag: '🇩🇪', englishName: 'German' },
-    { code: 'gb', name: 'English', flag: '🇬🇧', englishName: 'English (UK)' },
-    { code: 'it', name: 'Italiano', flag: '🇮🇹', englishName: 'Italian' },
-    { code: 'es', name: 'Español', flag: '🇪🇸', englishName: 'Spanish' },
-    { code: 'ir', name: 'فارسی', flag: '🇮🇷', englishName: 'Persian' },
-    { code: 'pk', name: 'اردو', flag: '🇵🇰', englishName: 'Urdu' },
-    { code: 'tr', name: 'Türkçe', flag: '🇹🇷', englishName: 'Turkish' },
-    { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩', englishName: 'Indonesian' },
-    { code: 'ru', name: 'Русский', flag: '🇷🇺', englishName: 'Russian' },
-    { code: 'in', name: 'हिन्दी', flag: '🇮🇳', englishName: 'Hindi' }
-  ];
 
   // Comprehensive text content for ALL pages and ALL text elements
   const defaultTexts = {
@@ -646,6 +624,28 @@ const ContentManagement = () => {
     // Add more languages as needed
   };
 
+const ContentManagement = () => {
+  const { updateTranslations, languageData } = useLanguage();
+  const [currentLanguage, setCurrentLanguage] = useState('gb');
+  const [editableTexts, setEditableTexts] = useState({});
+  const [editingMode, setEditingMode] = useState(false);
+  const [editedTexts, setEditedTexts] = useState({});
+  const [currentPage, setCurrentPage] = useState('home');
+
+  const languages = [
+    { code: 'sa', name: 'العربية', flag: '🇸🇦', englishName: 'Arabic (Saudi Arabia)' },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪', englishName: 'German' },
+    { code: 'gb', name: 'English', flag: '🇬🇧', englishName: 'English (UK)' },
+    { code: 'it', name: 'Italiano', flag: '🇮🇹', englishName: 'Italian' },
+    { code: 'es', name: 'Español', flag: '🇪🇸', englishName: 'Spanish' },
+    { code: 'ir', name: 'فارسی', flag: '🇮🇷', englishName: 'Persian' },
+    { code: 'pk', name: 'اردو', flag: '🇵🇰', englishName: 'Urdu' },
+    { code: 'tr', name: 'Türkçe', flag: '🇹🇷', englishName: 'Turkish' },
+    { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩', englishName: 'Indonesian' },
+    { code: 'ru', name: 'Русский', flag: '🇷🇺', englishName: 'Russian' },
+    { code: 'in', name: 'हिन्दी', flag: '🇮🇳', englishName: 'Hindi' }
+  ];
+
   const pages = [
     { id: 'home', name: 'Home Page', icon: <Home />, description: 'Main landing page content' },
     { id: 'header', name: 'Header Navigation', icon: <ArrowBack />, description: 'Navigation and header elements' },
@@ -683,14 +683,14 @@ const ContentManagement = () => {
         if (response.ok) {
           const data = await response.json();
           console.log('📡 Database response data:', data);
-          if (data.success && data.translations) {
+        if (data.success && data.translations) {
             // Merge defaults with DB so missing new keys still show up
             const defaults = defaultTexts[currentLanguage] || defaultTexts['gb'];
             const mergedFromDb = { ...defaults, ...data.translations };
             console.log('✓ Loaded translations from database, merged keys:', Object.keys(mergedFromDb));
             setEditableTexts(mergedFromDb);
             setEditedTexts(mergedFromDb);
-            return;
+          return;
           }
         } else if (response.status === 404) {
           console.log('No translations in database, using defaults');
@@ -728,7 +728,7 @@ const ContentManagement = () => {
     };
     
     loadTexts();
-  }, [currentLanguage, currentPage, defaultTexts]);
+  }, [currentLanguage, currentPage]);
 
   const handleLanguageChange = (event) => {
     setCurrentLanguage(event.target.value);

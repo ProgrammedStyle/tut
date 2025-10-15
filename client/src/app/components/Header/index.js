@@ -116,17 +116,18 @@ const Header = () => {
   };
 
   useEffect(() => {
-    if ( headerElem ) {
+    const currentHeader = headerElem.current;
+    if ( currentHeader ) {
       const updateHeaderWidth = () => {
         // Calculate scrollbar width
         const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
         
           // Set header width to exclude scrollbar
-          if (headerElem.current) {
-            headerElem.current.style.width = `calc(100% - ${scrollbarWidth}px)`;
+          if (currentHeader) {
+            currentHeader.style.width = `calc(100% - ${scrollbarWidth}px)`;
             
             // Set body padding to exactly match header height
-            document.body.style.paddingTop = `${headerElem.current.offsetHeight}px`;
+            document.body.style.paddingTop = `${currentHeader.offsetHeight}px`;
           }
       };
       
@@ -134,8 +135,8 @@ const Header = () => {
         updateHeaderWidth();
       });
 
-      if (headerElem.current) {
-        observer.observe(headerElem.current);
+      if (currentHeader) {
+        observer.observe(currentHeader);
       }
       
       // Initial update
@@ -145,7 +146,6 @@ const Header = () => {
       window.addEventListener('resize', updateHeaderWidth);
     
       return () => {
-        const currentHeader = headerElem.current;
         if (currentHeader) {
           observer.unobserve(currentHeader);
         }

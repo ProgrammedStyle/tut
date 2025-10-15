@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import {
     Box,
     Container,
@@ -23,7 +23,7 @@ import { useDispatch } from 'react-redux';
 import { showLoading, hideLoading } from '../../slices/loadingSlice';
 import { setUserData } from '../../slices/userSlice';
 
-const VerifyEmail = () => {
+const VerifyEmailContent = () => {
     const theme = useTheme();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -198,6 +198,24 @@ const VerifyEmail = () => {
                 </Card>
             </Container>
         </Box>
+    );
+};
+
+const VerifyEmail = () => {
+    return (
+        <Suspense fallback={
+            <Box sx={{ 
+                minHeight: '100vh',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}>
+                <CircularProgress />
+            </Box>
+        }>
+            <VerifyEmailContent />
+        </Suspense>
     );
 };
 

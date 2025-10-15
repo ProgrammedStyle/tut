@@ -34,7 +34,7 @@ const CreateAccount = () => {
         
         if ( !emailToRegister || !emailVerified )
             router.push("/CreateAccount");
-    }, [router]);
+    }, [router, dispatch]);
 
     const onSucceededSubmit = async ( data ) => {
         try {
