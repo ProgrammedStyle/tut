@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import SignInCont from "../../../components/SignInCont";
 import SignInContBox from "../../../components/SignInContBox";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { showLoading } from "../../../slices/loadingSlice";
 import axios from "axios";
+import { CircularProgress, Box } from "@mui/material";
 
-const VerifyEmail_Check = () => {
+const VerifyEmail_CheckContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const dispatch = useDispatch();
@@ -44,6 +45,22 @@ const VerifyEmail_Check = () => {
                 Verifying your email
             </SignInCont>
         </SignInContBox>
+    );
+};
+
+const VerifyEmail_Check = () => {
+    return (
+        <Suspense fallback={
+            <SignInContBox>
+                <SignInCont>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 4 }}>
+                        <CircularProgress />
+                    </Box>
+                </SignInCont>
+            </SignInContBox>
+        }>
+            <VerifyEmail_CheckContent />
+        </Suspense>
     );
 };
 

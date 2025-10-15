@@ -5,12 +5,12 @@ import signInContStyles from "../components/SignInCont/index.module.css";
 import LockResetOutlinedIcon from "@mui/icons-material/LockResetOutlined";
 import SignInContBox from "../components/SignInContBox";
 import InputText from "../components/InputText";
-import { Button, Typography, Box } from "@mui/material";
+import { Button, Typography, Box, CircularProgress } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { showLoading, hideLoading } from "../slices/loadingSlice";
 import axios from "axios";
@@ -25,7 +25,7 @@ const resetPasswordSchema = z.object({
     path: ["confirmPassword"]
 });
 
-const ResetPassword = () => {
+const ResetPasswordContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const dispatch = useDispatch();
@@ -219,6 +219,25 @@ const ResetPassword = () => {
                 </form>
             </SignInCont>
         </SignInContBox>
+    );
+};
+
+const ResetPassword = () => {
+    return (
+        <Suspense fallback={
+            <SignInContBox>
+                <SignInCont 
+                    title="Reset Password"
+                    image={<LockResetOutlinedIcon sx={{ fontSize: { xs: "120px", sm: "150px", md: "180px" }, opacity: "0.2", color: "var(--main-color)" }} />}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 4 }}>
+                        <CircularProgress />
+                    </Box>
+                </SignInCont>
+            </SignInContBox>
+        }>
+            <ResetPasswordContent />
+        </Suspense>
     );
 };
 
