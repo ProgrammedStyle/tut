@@ -160,7 +160,7 @@ const VerifyEmail_Pending = () => {
                             lineHeight: 1.7,
                         }}
                     >
-                        We've sent a verification link to
+                        We&apos;ve sent a verification link to
                     </Typography>
 
                     {/* Email Display */}
@@ -234,7 +234,7 @@ const VerifyEmail_Pending = () => {
                             mb: 3,
                         }}
                     >
-                        Didn't receive the email? Check your spam folder
+                        Didn&apos;t receive the email? Check your spam folder
                     </Typography>
 
                     {/* Success/Error Messages for Resend */}

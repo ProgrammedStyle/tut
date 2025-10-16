@@ -14,6 +14,13 @@ import { usePageTracking } from "./hooks/usePageTracking";
 import UniversalLoadingHandler from "./components/UniversalLoadingHandler";
 import { useAuthPersistence } from "./hooks/useAuthPersistence";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { Oswald } from "next/font/google";
+
+const oswald = Oswald({ 
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  display: 'swap',
+});
 
 function LayoutContent({ children }) {
   // Track page views
@@ -38,11 +45,8 @@ export default function RootLayout({ children }) {
     <html lang="en" className={styles.html}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className={styles.body}>
+      <body className={`${styles.body} ${oswald.className}`}>
         <Provider store={ store }>
           <LanguageProvider>
             <ThemeProvider theme={theme}>
