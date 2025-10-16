@@ -1,7 +1,7 @@
 "use client";
 
 import SignInContBox from "../../components/SignInContBox";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useDispatch } from "react-redux";
 import { showLoading, hideLoading } from "@/app/slices/loadingSlice";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -32,7 +32,7 @@ const pulseAnimation = keyframes`
     }
 `;
 
-const VerifyEmail_Pending = () => {
+const VerifyEmail_PendingContent = () => {
     const dispatch = useDispatch();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -336,6 +336,42 @@ const VerifyEmail_Pending = () => {
                 </Paper>
             </Box>
         </SignInContBox>
+    );
+};
+
+const VerifyEmail_Pending = () => {
+    return (
+        <Suspense fallback={
+            <SignInContBox>
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        minHeight: "70vh",
+                        py: 4,
+                    }}
+                >
+                    <Paper
+                        elevation={3}
+                        sx={{
+                            maxWidth: 600,
+                            width: "100%",
+                            p: { xs: 3, sm: 5 },
+                            borderRadius: 4,
+                            textAlign: "center",
+                        }}
+                    >
+                        <CircularProgress size={60} sx={{ color: "var(--main-color)" }} />
+                        <Typography sx={{ mt: 2, color: "#546e7a" }}>
+                            Loading...
+                        </Typography>
+                    </Paper>
+                </Box>
+            </SignInContBox>
+        }>
+            <VerifyEmail_PendingContent />
+        </Suspense>
     );
 };
 
