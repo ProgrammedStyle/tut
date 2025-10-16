@@ -29,7 +29,7 @@ export default function Footer() {
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
                                 mb: 2,
-                                fontSize: { xs: '2rem', md: '2.5rem' }
+                                fontSize: '2.5rem'
                             }}
                         >
                             AL-QUDS

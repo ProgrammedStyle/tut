@@ -125,7 +125,7 @@ const VerifyEmailContent = () => {
                                 fontWeight: 'bold', 
                                 mb: 2,
                                 color: `${getStatusColor()}.main`,
-                                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' }
+                                fontSize: '2.125rem'
                             }}
                         >
                             {status === 'verifying' && 'Verifying Email...'}

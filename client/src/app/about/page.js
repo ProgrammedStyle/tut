@@ -36,7 +36,7 @@ const About = () => {
 
     return (
         <div className={layoutStyles.bodyCont} style={{ background: '#fafafa' }}>
-            <Container maxWidth="lg">
+            <Container maxWidth="lg" sx={{ px: { xs: 3, md: 3 } }}>
                 <Box sx={{ py: { xs: 6, md: 10 } }}>
                     {/* Hero Section */}
                     <Fade in={true} timeout={800}>
@@ -63,7 +63,7 @@ const About = () => {
                                 variant="h1"
                                 sx={{
                                     mb: 3,
-                                    fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
+                                    fontSize: '4.5rem',
                                     fontWeight: 800,
                                     lineHeight: 1.1,
                                     color: '#1a1a1a',
@@ -90,7 +90,7 @@ const About = () => {
                                     color: '#666',
                                     maxWidth: '650px',
                                     mx: 'auto',
-                                    fontSize: { xs: '1.1rem', md: '1.25rem' },
+                                    fontSize: '1.25rem',
                                     lineHeight: 1.7,
                                     fontWeight: 400
                                 }}
@@ -126,7 +126,7 @@ const About = () => {
                                 variant="h3"
                                 sx={{
                                     mb: 3,
-                                    fontSize: { xs: '1.75rem', md: '2.25rem' },
+                                    fontSize: '2.25rem',
                                     fontWeight: 700,
                                     color: '#1a1a1a',
                                     textAlign: 'center'
@@ -137,7 +137,7 @@ const About = () => {
                             <Typography
                                 variant="body1"
                                 sx={{
-                                    fontSize: { xs: '1rem', md: '1.125rem' },
+                                    fontSize: '1.125rem',
                                     lineHeight: 1.9,
                                     color: '#555',
                                     textAlign: 'center',
@@ -151,7 +151,7 @@ const About = () => {
                             <Typography
                                 variant="body1"
                                 sx={{
-                                    fontSize: { xs: '1rem', md: '1.125rem' },
+                                    fontSize: '1.125rem',
                                     lineHeight: 1.9,
                                     color: '#555',
                                     textAlign: 'center',
@@ -170,7 +170,7 @@ const About = () => {
                         variant="h3" 
                         sx={{ 
                                 mb: 2,
-                                fontSize: { xs: '1.75rem', md: '2.25rem' },
+                                fontSize: '2.25rem',
                                 fontWeight: 700,
                                 color: '#1a1a1a',
                                 textAlign: 'center'
@@ -236,7 +236,7 @@ const About = () => {
                                                 sx={{
                                                     mb: 1.5,
                                                     fontWeight: 700,
-                                                    fontSize: { xs: '1.25rem', md: '1.5rem' },
+                                                    fontSize: '1.5rem',
                                                     color: '#1a1a1a'
                                                 }}
                                             >
@@ -247,7 +247,7 @@ const About = () => {
                                                 sx={{
                                                     color: '#666',
                                                     lineHeight: 1.8,
-                                                    fontSize: { xs: '0.95rem', md: '1.05rem' }
+                                                    fontSize: '1.05rem'
                                                 }}
                                             >
                                                 {t(value.descKey)}
@@ -305,7 +305,7 @@ const About = () => {
                                             variant="h2"
                                             sx={{
                                                 fontWeight: 800,
-                                                fontSize: { xs: '2.5rem', md: '3rem' },
+                                                fontSize: '3rem',
                                                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                                 WebkitBackgroundClip: 'text',
                                                 WebkitTextFillColor: 'transparent',
@@ -363,7 +363,7 @@ const About = () => {
                                 sx={{
                                     mb: 2,
                                     fontWeight: 700,
-                                    fontSize: { xs: '2rem', md: '2.75rem' },
+                                    fontSize: '2.75rem',
                                     color: 'white',
                                     position: 'relative',
                                     zIndex: 1
@@ -375,7 +375,7 @@ const About = () => {
                                 variant="h6"
                                 sx={{
                                     color: 'rgba(255,255,255,0.95)',
-                                    fontSize: { xs: '1.05rem', md: '1.2rem' },
+                                    fontSize: '1.2rem',
                                     maxWidth: '600px',
                                     mx: 'auto',
                                     lineHeight: 1.7,

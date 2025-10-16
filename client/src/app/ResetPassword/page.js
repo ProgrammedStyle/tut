@@ -81,10 +81,10 @@ const ResetPasswordContent = () => {
                     image={<LockResetOutlinedIcon sx={{ fontSize: "180px", opacity: "0.2", color: "var(--main-color)" }} />}
                 >
                     <Box sx={{ textAlign: 'center', py: { xs: 2, sm: 3 }, px: { xs: 1, sm: 0 } }}>
-                        <Typography variant="h6" sx={{ mb: 2, color: 'success.main', fontWeight: 'bold', fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+                        <Typography variant="h6" sx={{ mb: 2, color: 'success.main', fontWeight: 'bold', fontSize: '1.25rem' }}>
                             ✅ Password Changed Successfully!
                         </Typography>
-                        <Typography variant="body1" sx={{ mb: 3, color: 'text.secondary', fontSize: { xs: '0.95rem', sm: '1rem' } }}>
+                        <Typography variant="body1" sx={{ mb: 3, color: 'text.secondary', fontSize: '1rem' }}>
                             {isAuthenticated 
                                 ? "Your password has been updated. You're still logged in with your new password."
                                 : "Your password has been reset. You can now sign in with your new password."
@@ -136,7 +136,7 @@ const ResetPasswordContent = () => {
         <SignInContBox>
             <SignInCont 
                 title="Reset Password" 
-                image={<LockResetOutlinedIcon sx={{ fontSize: { xs: "120px", sm: "150px", md: "180px" }, opacity: "0.2", color: "var(--main-color)" }} />}
+                image={<LockResetOutlinedIcon sx={{ fontSize: "180px", opacity: "0.2", color: "var(--main-color)" }} />}
             >
                 <form onSubmit={handleSubmit(onSucceededSubmit)} className={signInContStyles.form}>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center' }}>
@@ -228,7 +228,7 @@ const ResetPassword = () => {
             <SignInContBox>
                 <SignInCont 
                     title="Reset Password"
-                    image={<LockResetOutlinedIcon sx={{ fontSize: { xs: "120px", sm: "150px", md: "180px" }, opacity: "0.2", color: "var(--main-color)" }} />}
+                    image={<LockResetOutlinedIcon sx={{ fontSize: "180px", opacity: "0.2", color: "var(--main-color)" }} />}
                 >
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 4 }}>
                         <CircularProgress />

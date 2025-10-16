@@ -31,49 +31,47 @@
 
 @media (max-width: 768px) {
     .cont {
-        padding: 50px 10px;
+        padding: 50px 20px;
         min-height: 100vh;
     }
 }
 
 @media (max-width: 480px) {
     .cont {
-        padding: 45px 5px;
+        padding: 45px 7px;
         min-height: 100vh;
     }
 }
 
 @media (max-width: 360px) {
     .cont {
-        padding: 40px 3px;
-        min-height: 100vh;
+        padding: 40px 7px;
+        min-height: 100vh
     }
 }
 
 @media (max-width: 320px) {
     .cont {
-        padding: 38px 3px;
-        min-height: 100vh;
+        padding: 38px 7px;
+        min-height: 100vh
     }
 }
 
 @media (max-width: 300px) {
     .cont {
-        padding: 35px 2px;
-        min-height: 100vh;
+        padding: 35px 7px;
+        min-height: 100vh
     }
 }
 
 @media (max-width: 280px) {
     .cont {
-        padding: 32px 2px;
-        min-height: 100vh;
+        min-height: 100vh
     }
 }
 
 @media (max-width: 250px) {
     .cont {
-        padding: 30px 1px;
-        min-height: 100vh;
+        min-height: 100vh
     }
 }

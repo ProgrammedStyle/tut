@@ -87,7 +87,7 @@ const Contact = () => {
 
     return (
         <div className={layoutStyles.bodyCont} style={{ background: '#fafafa' }}>
-            <Container maxWidth="lg">
+            <Container maxWidth="lg" sx={{ px: { xs: 3, md: 3 } }}>
                 <Box sx={{ py: { xs: 6, md: 10 } }}>
                     {/* Hero Section */}
                     <Fade in={true} timeout={800}>
@@ -114,7 +114,7 @@ const Contact = () => {
                                 variant="h1"
                                 sx={{
                                     mb: 3,
-                                    fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
+                                    fontSize: '4.5rem',
                                     fontWeight: 800,
                                     lineHeight: 1.1,
                                     color: '#1a1a1a',
@@ -141,7 +141,7 @@ const Contact = () => {
                                     color: '#666',
                                     maxWidth: '650px',
                                     mx: 'auto',
-                                    fontSize: { xs: '1.1rem', md: '1.25rem' },
+                                    fontSize: '1.25rem',
                                     lineHeight: 1.7,
                                     fontWeight: 400
                                 }}
@@ -238,7 +238,7 @@ const Contact = () => {
                                 variant="h4"
                                 sx={{
                                     mb: 1,
-                                    fontSize: { xs: '1.5rem', md: '1.75rem' },
+                                    fontSize: '1.75rem',
                                     fontWeight: 700,
                                     color: '#1a1a1a',
                                     textAlign: 'center'
@@ -424,7 +424,7 @@ const Contact = () => {
                                     mb: 2,
                                     fontWeight: 700,
                                     color: '#1a1a1a',
-                                    fontSize: { xs: '1.1rem', md: '1.25rem' }
+                                    fontSize: '1.25rem'
                                 }}
                             >
                                 We&apos;re Here to Help

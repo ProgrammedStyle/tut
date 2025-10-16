@@ -32,6 +32,20 @@ const MenuComponent = ({ menuItemsStyle = ``, menuAnchor, menuItems }) => {
                 open={open}
                 onClose={() => handleClose(null)}
                 onClick={() => handleClose(null)}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            '& .MuiMenuItem-root': {
+                                padding: '6px 16px',
+                                minHeight: '48px',
+                                fontSize: '1rem'
+                            },
+                            '& .MuiList-root': {
+                                padding: '8px 0'
+                            }
+                        }
+                    }
+                }}
             >
                 { myMenuItems.map(( item, index ) => {
                     return (

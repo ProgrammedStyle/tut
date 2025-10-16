@@ -3,9 +3,9 @@
     display: flex;
     align-items: center;
     cursor: text;
-    --input-padding-y: 10px;
-    --input-padding-x: 11px;
-    --fontSize: 13px;
+    --input-padding-y: 12px;
+    --input-padding-x: 12px;
+    --fontSize: 15px;
     --textColor: #fff;
     --labelColor: #fff;
     --inputBorderColor: #fff;
@@ -17,32 +17,18 @@
     --inputBorderRightSpace: 23px;
     --inputTransform: scale(0.8);
     --inputBorderBoxLeftSpace: 14px;
+    font-weight: normal;
     height: 36px;
     width: 100%;
     min-width: 0;
     max-width: 100%;
 }
 
-@media (max-width: 360px) {
-    .inputBox {
-        --fontSize: 13px;
-        --input-padding-x: 10px;
-    }
-}
-
-@media (max-width: 280px) {
-    .inputBox {
-        --fontSize: 12px;
-        --input-padding-x: 9px;
-        --input-padding-y: 9px;
-    }
-}
-
 @media (max-width: 250px) {
     .inputBox {
-        --fontSize: 11px;
-        --input-padding-x: 8px;
-        --input-padding-y: 8px;
+        --fontSize: 14px;
+        --input-padding-x: 11px;
+        --input-padding-y: 11px;
     }
 }
 
@@ -51,9 +37,9 @@
 }
 
 .inputBox.blackColor {
-    --labelColor: #000 !important;
-    --textColor: #000 !important;
-    --inputBorderColor: #000 !important
+    --labelColor: #666 !important;
+    --textColor: #111 !important;
+    --inputBorderColor: #111 !important
 }
 
 .inputBox input {
@@ -161,7 +147,7 @@
 }
 
 .inputBox:has(input:focus, input[inputempty = "false"])::after {
-    top: -7px;
+    top: -8px;
     transform: var(--inputTransform)
 }
 
@@ -190,6 +176,13 @@
     color: var(--error-color);
     font-size: 12px;
     margin-top: 5px
+}
+
+@media (max-width: 550px) {
+    .error {
+        font-size: 12px;
+        margin-top: 5px;
+    }
 }
 
 .inputTextCont:has(input[error = "true"]) .error {

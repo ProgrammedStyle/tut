@@ -66,8 +66,8 @@ const SignOut = () => {
             padding: { xs: 2, sm: 3 }
         }}>
             <Container maxWidth="sm" sx={{ textAlign: 'center' }}>
-                <CircularProgress sx={{ color: 'white', mb: 2, width: { xs: '40px', sm: '50px' }, height: { xs: '40px', sm: '50px' } }} />
-                <Typography variant="h6" sx={{ color: 'white', fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+                <CircularProgress sx={{ color: 'white', mb: 2, width: '50px', height: '50px' }} />
+                <Typography variant="h6" sx={{ color: 'white', fontSize: '1.25rem' }}>
                     Signing out...
                 </Typography>
             </Container>

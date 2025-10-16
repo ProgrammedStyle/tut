@@ -62,7 +62,7 @@ const ForgotPassword = () => {
             <SignInContBox>
                 <SignInCont 
                     title="Check Your Email"
-                    image={<LockResetOutlinedIcon sx={{ fontSize: { xs: "120px", sm: "150px", md: "180px" }, opacity: "0.2", color: "var(--main-color)" }} />}
+                    image={<LockResetOutlinedIcon sx={{ fontSize: "180px", opacity: "0.2", color: "var(--main-color)" }} />}
                 >
                     <div className={signInContStyles.form} style={{ textAlign: 'center' }}>
                         <Typography 
@@ -71,7 +71,7 @@ const ForgotPassword = () => {
                                 mb: { xs: 1.5, sm: 2 }, 
                                 color: 'success.main', 
                                 fontWeight: 'bold', 
-                                fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' }
+                                fontSize: '1.25rem'
                             }}
                         >
                             ✅ Email Sent Successfully!
@@ -81,7 +81,7 @@ const ForgotPassword = () => {
                             sx={{ 
                                 mb: { xs: 2, sm: 3 }, 
                                 color: 'text.secondary', 
-                                fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' }
+                                fontSize: '1rem'
                             }}
                         >
                             We&apos;ve sent a password reset link to your email address.
@@ -91,7 +91,7 @@ const ForgotPassword = () => {
                             sx={{ 
                                 mb: { xs: 2, sm: 3 }, 
                                 color: 'text.secondary', 
-                                fontSize: { xs: '0.8rem', sm: '0.85rem', md: '0.875rem' }
+                                fontSize: '0.875rem'
                             }}
                         >
                             Please check your inbox and click the link to reset your password.
@@ -103,8 +103,8 @@ const ForgotPassword = () => {
                             onClick={() => router.push(isLoggedIn ? "/Dashboard" : "/SignIn")}
                             fullWidth
                             sx={{ 
-                                padding: { xs: '12px 24px', sm: '10px 22px', md: '8px 22px' },
-                                fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }
+                                padding: '8px 22px',
+                                fontSize: '1rem'
                             }}
                         >
                             {isLoggedIn ? "Return to Dashboard" : "Back to Sign In"}
@@ -119,7 +119,7 @@ const ForgotPassword = () => {
         <SignInContBox>
             <SignInCont 
                 title="Forgot Password"
-                image={<LockResetOutlinedIcon sx={{ fontSize: { xs: "120px", sm: "150px", md: "180px" }, opacity: "0.2", color: "var(--main-color)" }} />}
+                image={<LockResetOutlinedIcon sx={{ fontSize: "180px", opacity: "0.2", color: "var(--main-color)" }} />}
             >
                 <form onSubmit={handleSubmit(onSucceededSubmit)} className={signInContStyles.form}>
                     <Typography 

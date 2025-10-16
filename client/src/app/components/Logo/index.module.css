@@ -18,32 +18,4 @@
     cursor: pointer
 }
 
-@media (max-width: 768px) {
-    .logoCont {
-        --def-height: 42px;
-    }
-}
-
-@media (max-width: 480px) {
-    .logoCont {
-        --def-height: 36px;
-    }
-}
-
-@media (max-width: 360px) {
-    .logoCont {
-        --def-height: 32px;
-    }
-}
-
-@media (max-width: 280px) {
-    .logoCont {
-        --def-height: 28px;
-    }
-}
-
-@media (max-width: 250px) {
-    .logoCont {
-        --def-height: 24px;
-    }
-}
+/* No size changes for mobile - using desktop size (50px) for all screens */

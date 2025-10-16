@@ -139,7 +139,7 @@ export default function Home() {
                     }}
                 />
 
-                <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 3 }}>
+                <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 3, px: { xs: 3, md: 3 } }}>
                     <Grid container spacing={6} alignItems="center">
                         <Grid item xs={12} md={6}>
                             <motion.div
@@ -150,7 +150,7 @@ export default function Home() {
                                 <Typography
                                     variant="h1"
                                     sx={{
-                                        fontSize: { xs: '3rem', md: '4.5rem', lg: '5.5rem' },
+                                        fontSize: '5.5rem',
                                         fontWeight: 800,
                                         color: 'white',
                                         mb: 3,
@@ -166,14 +166,14 @@ export default function Home() {
                                 
                                 <Typography
                                     sx={{
-                                        fontSize: { xs: '1.2rem', md: '1.5rem' },
+                                        fontSize: '1.5rem',
                                         color: 'rgba(255,255,255,0.95)',
                                         mb: 4,
                                         fontWeight: 300,
                                         lineHeight: 1.6,
                                         textShadow: '0 2px 10px rgba(0,0,0,0.4)',
                                         background: 'rgba(0,0,0,0.1)',
-                                        padding: 2,
+                                        padding: { xs: 2.5, md: 2 },
                                         borderRadius: 2,
                                         backdropFilter: 'blur(10px)',
                                         border: '1px solid rgba(255,255,255,0.1)'
@@ -182,9 +182,9 @@ export default function Home() {
                                     {t('home-hero-subtitle')}
                                 </Typography>
 
-                                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 4 }}>
+                                <Box sx={{ display: 'flex', gap: { xs: 2.5, md: 2 }, flexWrap: 'wrap', mb: 4 }}>
                                     <Chip 
-                                        icon={<LocationOn />} 
+                                        icon={<LocationOn sx={{ fontSize: '1.2rem !important' }} />} 
                                         label={t('home-badge-routes')} 
                                         sx={{ 
                                             background: 'rgba(255,255,255,0.15)', 
@@ -193,6 +193,10 @@ export default function Home() {
                                             border: '1px solid rgba(255,255,255,0.25)',
                                             fontWeight: 500,
                                             fontSize: '0.9rem',
+                                            height: '32px',
+                                            '& .MuiChip-label': {
+                                                padding: { xs: '0 16px', md: '0 12px' }
+                                            },
                                             '&:hover': {
                                                 background: 'rgba(255,255,255,0.25)',
                                                 transform: 'translateY(-1px)'
@@ -201,7 +205,7 @@ export default function Home() {
                                         }} 
                                     />
                                     <Chip 
-                                        icon={<Explore />} 
+                                        icon={<Explore sx={{ fontSize: '1.2rem !important' }} />} 
                                         label={t('home-badge-map')} 
                                         sx={{ 
                                             background: 'rgba(255,255,255,0.15)', 
@@ -210,6 +214,10 @@ export default function Home() {
                                             border: '1px solid rgba(255,255,255,0.25)',
                                             fontWeight: 500,
                                             fontSize: '0.9rem',
+                                            height: '32px',
+                                            '& .MuiChip-label': {
+                                                padding: { xs: '0 16px', md: '0 12px' }
+                                            },
                                             '&:hover': {
                                                 background: 'rgba(255,255,255,0.25)',
                                                 transform: 'translateY(-1px)'
@@ -218,7 +226,7 @@ export default function Home() {
                                         }} 
                                     />
                                     <Chip 
-                                        icon={<History />} 
+                                        icon={<History sx={{ fontSize: '1.2rem !important' }} />} 
                                         label={t('home-badge-history')} 
                                         sx={{ 
                                             background: 'rgba(255,255,255,0.15)', 
@@ -227,6 +235,10 @@ export default function Home() {
                                             border: '1px solid rgba(255,255,255,0.25)',
                                             fontWeight: 500,
                                             fontSize: '0.9rem',
+                                            height: '32px',
+                                            '& .MuiChip-label': {
+                                                padding: { xs: '0 16px', md: '0 12px' }
+                                            },
                                             '&:hover': {
                                                 background: 'rgba(255,255,255,0.25)',
                                                 transform: 'translateY(-1px)'
@@ -239,7 +251,7 @@ export default function Home() {
                                 <Button
                                     variant="contained"
                                     size="large"
-                                    endIcon={<ArrowForward />}
+                                    endIcon={<ArrowForward sx={{ fontSize: '1.2rem !important' }} />}
                                     onClick={() => routesRef.current?.scrollIntoView({ behavior: 'smooth' })}
                                     sx={{
                                         px: 5,
@@ -321,19 +333,19 @@ export default function Home() {
             </Box>
 
             {/* VIDEO SECTION */}
-            <Box sx={{ py: 12, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-                <Container maxWidth="lg">
+            <Box sx={{ py: { xs: 8, md: 12 }, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+                <Container maxWidth="lg" sx={{ px: { xs: 3, md: 3 } }}>
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
                     >
-                        <Box sx={{ textAlign: 'center', mb: 6 }}>
+                        <Box sx={{ textAlign: 'center', mb: { xs: 5, md: 6 } }}>
                             <Typography
                                 variant="h2"
                                 sx={{
-                                    fontSize: { xs: '2.5rem', md: '3.5rem' },
+                                    fontSize: '3.5rem',
                                     fontWeight: 700,
                                     color: 'white',
                                     mb: 3
@@ -347,7 +359,8 @@ export default function Home() {
                                     color: 'rgba(255,255,255,0.9)',
                                     maxWidth: '600px',
                                     mx: 'auto',
-                                    lineHeight: 1.6
+                                    lineHeight: 1.6,
+                                    px: { xs: 2, md: 0 }
                                 }}
                             >
                                 {t('home-video-subtitle')}
@@ -388,8 +401,8 @@ export default function Home() {
             </Box>
 
             {/* ALQUDS GUIDE SECTION */}
-            <Box sx={{ py: 12, background: '#ffffff' }}>
-                <Container maxWidth="lg">
+            <Box sx={{ py: { xs: 8, md: 12 }, background: '#ffffff' }}>
+                <Container maxWidth="lg" sx={{ px: { xs: 3, md: 3 } }}>
                     <Box
                         sx={{
                             display: 'flex',
@@ -467,7 +480,7 @@ export default function Home() {
                             >
                                     <Typography
                                         sx={{
-                                            fontSize: { xs: '1.5rem', md: '1.8rem' },
+                                            fontSize: '1.8rem',
                                             fontWeight: 700,
                                             color: '#000000',
                                             mb: 4,
@@ -482,7 +495,7 @@ export default function Home() {
 
                                     <Typography
                                         sx={{
-                                            fontSize: { xs: '1.3rem', md: '1.4rem' },
+                                            fontSize: '1.4rem',
                                             color: '#444444',
                                             mb: 3,
                                             lineHeight: 1.6,
@@ -497,7 +510,7 @@ export default function Home() {
 
                                     <Typography
                                         sx={{
-                                            fontSize: { xs: '1.3rem', md: '1.4rem' },
+                                            fontSize: '1.4rem',
                                             color: '#444444',
                                             mb: 4,
                                             lineHeight: 1.6,
@@ -517,8 +530,8 @@ export default function Home() {
             </Box>
 
             {/* FEATURES SECTION */}
-            <Box ref={routesRef} sx={{ py: 12, background: '#f8fafc' }}>
-                <Container maxWidth="lg">
+            <Box ref={routesRef} sx={{ py: { xs: 8, md: 12 }, background: '#f8fafc' }}>
+                <Container maxWidth="lg" sx={{ px: { xs: 3, md: 3 } }}>
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -528,7 +541,7 @@ export default function Home() {
                         <Typography
                             variant="h2"
                             sx={{
-                                fontSize: { xs: '2.5rem', md: '3.5rem' },
+                                fontSize: '3.5rem',
                                 fontWeight: 700,
                                 textAlign: 'center',
                                 mb: 8,
@@ -539,9 +552,18 @@ export default function Home() {
                         </Typography>
                     </motion.div>
 
-                    <Grid container spacing={4} sx={{ justifyContent: 'center' }}>
+                    <Grid container spacing={{ xs: 3, md: 4 }} sx={{ justifyContent: 'center' }}>
                         {routes.map((route, index) => (
-                            <Grid item xs={12} sm={6} md={4} lg={4} key={route.id}>
+                            <Grid item xs={12} sm={6} md={4} lg={3} key={route.id}
+                                sx={{
+                                    '@media (max-width: 550px)': {
+                                        maxWidth: '96%',
+                                        flexBasis: '96%',
+                                        paddingLeft: '0 !important',
+                                        paddingRight: '0 !important'
+                                    }
+                                }}
+                            >
                                 <motion.div
                                     initial={{ opacity: 0, y: 30 }}
                                     whileInView={{ opacity: 1, y: 0 }}
@@ -550,8 +572,8 @@ export default function Home() {
                                 >
                                     <Card
                                         sx={{
-                                            height: '400px',
-                                            borderRadius: 3,
+                                            height: { xs: '420px', md: '400px' },
+                                            borderRadius: { xs: 4, md: 3 },
                                             overflow: 'hidden',
                                             boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                                             transition: 'all 0.3s ease',
@@ -567,8 +589,7 @@ export default function Home() {
                                         <Box sx={{ 
                                             position: 'relative', 
                                             width: '100%', 
-                                            height: '250px',
-                                            aspectRatio: '1 / 1',
+                                            height: { xs: '280px', md: '250px' },
                                             overflow: 'hidden' 
                                         }}>
                                             <Image
@@ -604,16 +625,18 @@ export default function Home() {
                                             </Box>
                                         </Box>
 
-                                        <CardContent sx={{ p: 3, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                                        <CardContent sx={{ p: { xs: 3.5, md: 3 }, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                                             <Box>
                                                 <Chip
                                                     label={route.type}
-                                                    size="small"
+                                                    size="medium"
                                                     sx={{
                                                         background: 'rgba(102, 126, 234, 0.1)',
                                                         color: '#667eea',
                                                         fontWeight: 500,
-                                                        mb: 2
+                                                        mb: 2,
+                                                        fontSize: '0.85rem',
+                                                        height: '32px'
                                                     }}
                                                 />
                                                 
@@ -651,21 +674,21 @@ export default function Home() {
             </Box>
 
             {/* MAP SECTION */}
-            <Box ref={mapRef} sx={{ py: 12, background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' }}>
-                <Container maxWidth="lg">
+            <Box ref={mapRef} sx={{ py: { xs: 8, md: 12 }, background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' }}>
+                <Container maxWidth="lg" sx={{ px: { xs: 3, md: 3 } }}>
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
                     >
-                        <Box sx={{ textAlign: 'center', mb: 8 }}>
+                        <Box sx={{ textAlign: 'center', mb: { xs: 6, md: 8 } }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3 }}>
                                 <Map sx={{ fontSize: '2rem', color: '#667eea', mr: 2 }} />
                                 <Typography
                                     variant="h2"
                                     sx={{
-                                        fontSize: { xs: '2.5rem', md: '3.5rem' },
+                                        fontSize: '3.5rem',
                                         fontWeight: 700,
                                         color: '#1a202c',
                                         background: 'linear-gradient(45deg, #667eea 0%, #764ba2 100%)',
@@ -683,7 +706,8 @@ export default function Home() {
                                     color: '#4a5568',
                                     maxWidth: '600px',
                                     mx: 'auto',
-                                    lineHeight: 1.6
+                                    lineHeight: 1.6,
+                                    px: { xs: 2, md: 0 }
                                 }}
                             >
                                 {t('home-map-subtitle')}
@@ -765,7 +789,7 @@ export default function Home() {
                     color: 'white'
                 }}
             >
-                <Container maxWidth="md">
+                <Container maxWidth="md" sx={{ px: { xs: 3, md: 3 } }}>
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -775,7 +799,7 @@ export default function Home() {
                         <Typography
                             variant="h2"
                             sx={{
-                                fontSize: { xs: '2.5rem', md: '3.5rem' },
+                                fontSize: '3.5rem',
                                 fontWeight: 700,
                                 mb: 3,
                                 background: 'linear-gradient(45deg, #ffffff 0%, #e3f2fd 100%)',
@@ -794,7 +818,8 @@ export default function Home() {
                                 mb: 4,
                                 maxWidth: '600px',
                                 mx: 'auto',
-                                lineHeight: 1.6
+                                lineHeight: 1.6,
+                                px: { xs: 2, md: 0 }
                             }}
                         >
                             {t('home-cta-subtitle')}
@@ -803,7 +828,7 @@ export default function Home() {
                         <Button
                             variant="contained"
                             size="large"
-                            endIcon={<ArrowForward />}
+                            endIcon={<ArrowForward sx={{ fontSize: '1.2rem !important' }} />}
                             onClick={() => mapRef.current?.scrollIntoView({ behavior: 'smooth' })}
                             sx={{
                                 px: 6,

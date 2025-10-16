@@ -22,12 +22,7 @@ const NavLink = ({ role = null, title = "", link = null }) => {
             sx={{
                 cursor: link ? 'pointer' : 'default',
                 '& svg': {
-                    fontSize: { 
-                        xs: '18px',
-                        sm: '20px', 
-                        md: '22px',
-                        lg: '23px'
-                    }
+                    fontSize: '23px' // Fixed desktop size for all screens
                 }
             }}
         >
@@ -37,22 +32,9 @@ const NavLink = ({ role = null, title = "", link = null }) => {
     return (
         <WhiteIconButton
             sx={{
-                p: { 
-                    xs: "5px",
-                    sm: "6px", 
-                    md: "7px",
-                    lg: "8px"
-                },
-                minWidth: { 
-                    xs: '32px',
-                    sm: '36px',
-                    md: '40px'
-                },
-                minHeight: { 
-                    xs: '32px',
-                    sm: '36px',
-                    md: '40px'
-                }
+                p: "8px", // Fixed desktop padding for all screens
+                minWidth: '40px', // Fixed desktop size for all screens
+                minHeight: '40px' // Fixed desktop size for all screens
             }}
         >
             <Tooltip title={title}>

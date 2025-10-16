@@ -167,13 +167,22 @@ const Header = () => {
             onClick={handleLanguageClick}
             sx={{ 
               color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              px: 1.5,
+              borderRadius: '12px',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
               '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                backgroundColor: 'rgba(255, 255, 255, 0.2)'
               }
             }}
             title="Select Language"
           >
-            <LanguageIcon sx={{ fontSize: "23px" }} />
+            <Typography sx={{ fontSize: '1.3rem' }}>
+              {languages.find(l => l.code === languageData.code)?.flag || '🇬🇧'}
+            </Typography>
+            <LanguageIcon sx={{ fontSize: "20px" }} />
           </IconButton>
           
           <Menu
@@ -191,32 +200,50 @@ const Header = () => {
               }
             }}
           >
-            {languages.map((language) => (
-              <MenuItem 
-                key={language.code}
-                onClick={() => handleLanguageSelect(language)}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  '&:hover': {
-                    backgroundColor: 'rgba(0, 0, 0, 0.04)'
-                  }
-                }}
-              >
-                <Typography sx={{ fontSize: '1.5rem' }}>
-                  {language.flag}
-                </Typography>
-                <Box>
-                  <Typography sx={{ fontWeight: 500, fontSize: '0.9rem' }}>
-                    {language.name}
+            {languages.map((language) => {
+              const isSelected = languageData.code === language.code;
+              return (
+                <MenuItem 
+                  key={language.code}
+                  onClick={() => handleLanguageSelect(language)}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    backgroundColor: isSelected ? 'rgba(102, 126, 234, 0.1)' : 'transparent',
+                    borderLeft: isSelected ? '4px solid #667eea' : '4px solid transparent',
+                    '&:hover': {
+                      backgroundColor: isSelected ? 'rgba(102, 126, 234, 0.15)' : 'rgba(0, 0, 0, 0.04)'
+                    }
+                  }}
+                >
+                  <Typography sx={{ fontSize: '1.5rem' }}>
+                    {language.flag}
                   </Typography>
-                  <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                    {language.englishName}
-                  </Typography>
-                </Box>
-              </MenuItem>
-            ))}
+                  <Box sx={{ flex: 1 }}>
+                    <Typography sx={{ 
+                      fontWeight: isSelected ? 600 : 500, 
+                      fontSize: '0.9rem',
+                      color: isSelected ? '#667eea' : 'inherit'
+                    }}>
+                      {language.name}
+                    </Typography>
+                    <Typography sx={{ 
+                      fontSize: '0.75rem', 
+                      color: isSelected ? '#667eea' : 'text.secondary',
+                      opacity: isSelected ? 0.8 : 1
+                    }}>
+                      {language.englishName}
+                    </Typography>
+                  </Box>
+                  {isSelected && (
+                    <Typography sx={{ fontSize: '1.2rem', color: '#667eea' }}>
+                      ✓
+                    </Typography>
+                  )}
+                </MenuItem>
+              );
+            })}
           </Menu>
           
           {/* Profile Menu */}

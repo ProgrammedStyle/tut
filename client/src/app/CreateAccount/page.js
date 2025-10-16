@@ -14,7 +14,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { showLoading } from "../slices/loadingSlice";
 import SocialSignInBox from "../components/SocialSignInBox";
-import axios from "axios";
+import axios from "../utils/axios";
 import LoadingLink from "../components/LoadingLink";
 
 const CreateEmail = () => {
@@ -27,14 +27,40 @@ const CreateEmail = () => {
     });
 
     const onSucceededSubmit = async (submittedData) => {
-        dispatch(showLoading());
-        router.push(`/CreateAccount/CreatePassword?email=${submittedData.email}`);
+        try {
+            dispatch(showLoading());
+            setError(null);
+            
+            // Send verification email
+            const response = await axios.post('/api/user/email/verify/send', {
+                email: submittedData.email
+            });
+            
+            // If successful, navigate to verify email page
+            router.push(`/CreateAccount/VerifyEmail?email=${encodeURIComponent(submittedData.email)}`);
+        } catch (err) {
+            console.error('Email verification send error:', err);
+            setError(err.response?.data?.message || 'Failed to send verification email. Please try again.');
+        }
     };
 
     return (
         <SignInContBox>
-            <SignInCont title="Create Account" image={<PersonAddAltOutlinedIcon sx={{ fontSize: { xs: "120px", sm: "150px", md: "180px" }, opacity: "0.2", color: "var(--main-color)" }} />}>
+            <SignInCont title="Create Account" image={<PersonAddAltOutlinedIcon sx={{ fontSize: "180px", opacity: "0.2", color: "var(--main-color)" }} />}>
                 <form onSubmit={handleSubmit(onSucceededSubmit)} className={signInContStyles.form}>
+                        {error && (
+                            <Box sx={{ 
+                                p: 2, 
+                                mb: 2, 
+                                bgcolor: '#ffebee', 
+                                color: '#c62828', 
+                                borderRadius: 1,
+                                fontSize: '0.875rem'
+                            }}>
+                                {error}
+                            </Box>
+                        )}
+                        
                         <InputText 
                             inputProps={{
                                 type: "text",
@@ -59,7 +85,14 @@ const CreateEmail = () => {
                             fullWidth
                             sx={{ 
                                 minWidth: { xs: '100%', sm: 'auto' },
-                                padding: { xs: '10px 20px', sm: '8px 22px' }
+                                padding: { xs: '10px 20px', sm: '8px 22px' },
+                                '@media (min-width: 551px)': {
+                                    fontSize: '13px !important'
+                                },
+                                '@media (max-width: 550px)': {
+                                    fontSize: '14px !important',
+                                    padding: '8px 22px'
+                                }
                             }}
                         >
                             Next
@@ -67,7 +100,9 @@ const CreateEmail = () => {
                     </div>
 
                     <Box sx={{ mt: 3, textAlign: 'center' }}>
-                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ 
+                            fontSize: '12px'
+                        }}>
                             Already have an account?{' '}
                             <LoadingLink href="/SignIn" style={{ textDecoration: 'none' }}>
                                 <span style={{ color: 'var(--main-color)', cursor: 'pointer', fontWeight: 'medium' }}>

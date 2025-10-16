@@ -62,7 +62,7 @@ const SignIn = () => {
         <SignInContBox>
             <SignInCont 
                 title="Sign In"
-                image={<LockOpenOutlinedIcon sx={{ fontSize: { xs: "120px", sm: "150px", md: "180px" }, opacity: "0.2", color: "var(--main-color)" }} />}
+                image={<LockOpenOutlinedIcon sx={{ fontSize: "180px", opacity: "0.2", color: "var(--main-color)" }} />}
             >
                 <form onSubmit={handleSubmit(onSucceededSubmit)} className={signInContStyles.form}>
                     {error && (

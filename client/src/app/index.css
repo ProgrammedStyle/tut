@@ -8,14 +8,13 @@
 html {
     overflow-x: hidden;
     overflow-y: auto; /* Allow scrolling when needed */
-    font-size: 16px;
+    font-size: 16px; /* Standard base font */
     height: 100%;
 }
 
 body {
     overflow-x: hidden;
     width: 100%;
-    min-width: 240px;
     margin: 0;
     padding: 0;
     height: 100%;
@@ -39,25 +38,4 @@ input, textarea, select {
     overflow-wrap: break-word;
 }
 
-/* Responsive font sizing - keeping text readable on mobile */
-@media (max-width: 600px) {
-    html {
-        font-size: 15px;
-    }
-}
-
-@media (max-width: 400px) {
-    html {
-        font-size: 14px;
-    }
-}
-
-@media (max-width: 300px) {
-    html {
-        font-size: 13px;
-    }
-    
-    body {
-        min-width: 240px;
-    }
-}
+/* All screen sizes use desktop/wide screen text and icon sizes */

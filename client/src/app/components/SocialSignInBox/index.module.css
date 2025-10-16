@@ -54,10 +54,6 @@
         width: 100%;
         justify-content: center;
     }
-    
-    .socialButtonsHRBox {
-        margin: 15px 0px;
-    }
 }
 
 @media (max-width: 480px) {
@@ -74,10 +70,6 @@
     .socialButtonsHROr {
         padding: 0px 6px;
     }
-    
-    .socialButtonsHRBox {
-        margin: 12px 0px;
-    }
 }
 
 @media (max-width: 280px) {
@@ -87,10 +79,6 @@
     
     .socialButtonsHROr {
         padding: 0px 4px;
-    }
-    
-    .socialButtonsHRBox {
-        margin: 10px 0px;
     }
 }
 

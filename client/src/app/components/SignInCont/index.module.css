@@ -61,7 +61,7 @@
 @media (min-width: 900px) {
     .contLBox {
         min-width: 120px;
-        max-width: 180px;
+        max-width: 221px;
     }
 }
 
@@ -180,9 +180,8 @@
 }
 
 @media (max-width: 480px) {
-    .inputTextBox {
-        height: 48px !important;
-        min-width: 0;
+    .cont > div {
+        width: 100%
     }
     
     .cont {
@@ -214,12 +213,7 @@
     }
 }
 
-@media (max-width: 360px) {
-    .inputTextBox {
-        height: 46px !important;
-        min-width: 0;
-    }
-    
+@media (max-width: 360px) {    
     .cont {
         padding: 25px 10px;
         border-radius: 12px;
@@ -240,12 +234,7 @@
     }
 }
 
-@media (max-width: 320px) {
-    .inputTextBox {
-        height: 45px !important;
-        min-width: 0;
-    }
-    
+@media (max-width: 320px) {    
     .cont {
         padding: 22px 8px;
         border-radius: 10px;
@@ -265,20 +254,14 @@
     }
 }
 
-@media (max-width: 280px) {
-    .inputTextBox {
-        height: 43px !important;
-        min-width: 0;
-    }
-    
+@media (max-width: 280px) {    
     .cont {
-        padding: 20px 6px;
+        padding: 20px 8px;
         border-radius: 8px;
         gap: 14px;
     }
     
     .contTitle {
-        font-size: 18px !important;
         margin-bottom: 8px;
     }
     
@@ -293,19 +276,13 @@
 
 @media (max-width: 250px) {
     .inputTextBox {
-        height: 42px !important;
-        min-width: 0;
+        height: 48px !important
     }
     
     .cont {
-        padding: 18px 4px;
+        padding: 18px 8px;
         border-radius: 6px;
         gap: 12px;
-    }
-    
-    .contTitle {
-        font-size: 16px !important;
-        margin-bottom: 6px;
     }
     
     .contLBox > *:not(:first-child) {

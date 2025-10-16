@@ -75,7 +75,7 @@ const CreateAccount = () => {
 
     return (
         <SignInContBox>
-            <SignInCont title="Create Account" image={<PersonAddAltOutlinedIcon sx={{ fontSize: { xs: "120px", sm: "150px", md: "180px" }, opacity: "0.2", color: "var(--main-color)" }} />}>
+            <SignInCont title="Create Account" image={<PersonAddAltOutlinedIcon sx={{ fontSize: "180px", opacity: "0.2", color: "var(--main-color)" }} />}>
                 <form onSubmit={handleSubmit(onSucceededSubmit)} className={signInContStyles.form}>
                     <InputText 
                         inputProps={{

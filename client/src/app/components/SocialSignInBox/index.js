@@ -40,8 +40,8 @@ const SocialSignInBox = () => {
                 <Button 
                     onClick={onGoogleLogin}
                     sx={{
-                        fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.875rem' },
-                        padding: { xs: '6px 8px', sm: '8px 12px' },
+                        fontSize: '0.875rem',
+                        padding: '8px 12px',
                         minWidth: 0,
                         textTransform: 'none'
                     }}
@@ -54,8 +54,8 @@ const SocialSignInBox = () => {
                 <Button 
                     onClick={onFacebookLogin}
                     sx={{
-                        fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.875rem' },
-                        padding: { xs: '6px 8px', sm: '8px 12px' },
+                        fontSize: '0.875rem',
+                        padding: '8px 12px',
                         minWidth: 0,
                         textTransform: 'none'
                     }}
