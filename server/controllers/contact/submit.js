@@ -32,65 +32,14 @@ const submitContactForm = async (req, res) => {
             messageLength: message.length
         });
 
-        // Set up email transporter with multiple fallback options
-        let transporter;
-        
-        // Try SendGrid first (cloud-friendly)
-        if (process.env.SENDGRID_API_KEY) {
-            console.log('📧 Using SendGrid for email delivery');
-            transporter = createTransport({
-                service: 'SendGrid',
-                auth: {
-                    user: 'apikey',
-                    pass: process.env.SENDGRID_API_KEY
-                },
-                connectionTimeout: 30000,
-                greetingTimeout: 10000,
-                socketTimeout: 30000
-            });
-        }
-        // Fallback to Gmail with different settings
-        else if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-            console.log('📧 Using Gmail SMTP for email delivery');
-            transporter = createTransport({
-                service: 'gmail',
-                host: 'smtp.gmail.com',
-                port: 465, // Use SSL port instead of STARTTLS
-                secure: true, // Use SSL
-                auth: {
-                    user: process.env.SMTP_USER,
-                    pass: process.env.SMTP_PASS
-                },
-                connectionTimeout: 30000, // Reduced timeout
-                greetingTimeout: 10000,
-                socketTimeout: 30000,
-                pool: false,
-                maxConnections: 1,
-                rateLimit: 1,
-                tls: {
-                    rejectUnauthorized: false
-                },
-                debug: false, // Disable debug to reduce logs
-                logger: false
-            });
-        }
-        // Fallback to Mailgun if available
-        else if (process.env.MAILGUN_API_KEY) {
-            console.log('📧 Using Mailgun for email delivery');
-            transporter = createTransport({
-                service: 'Mailgun',
-                auth: {
-                    user: process.env.MAILGUN_API_KEY,
-                    pass: process.env.MAILGUN_DOMAIN
-                },
-                connectionTimeout: 30000,
-                greetingTimeout: 10000,
-                socketTimeout: 30000
-            });
-        }
-        else {
-            throw new Error('No email service configured. Please set SENDGRID_API_KEY, SMTP_USER/SMTP_PASS, or MAILGUN_API_KEY');
-        }
+        // Set up email transporter - using same simple config as other email functions
+        const transporter = createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
 
         // Email to admin/support
         const adminMailOptions = {
@@ -162,34 +111,25 @@ const submitContactForm = async (req, res) => {
             `
         };
 
-        // Send emails with timeout
+        // Send emails - using same simple approach as other email functions
         let emailSent = false;
         try {
             console.log('📧 Attempting to send emails...');
-            console.log('📧 Email service configured:', transporter.options.service || 'Custom');
             console.log('📧 SMTP_USER:', process.env.SMTP_USER ? 'Set' : 'Not set');
             console.log('📧 SMTP_PASS:', process.env.SMTP_PASS ? 'Set' : 'Not set');
-            console.log('📧 SENDGRID_API_KEY:', process.env.SENDGRID_API_KEY ? 'Set' : 'Not set');
             
-            // Verify SMTP connection first
+            // Verify transporter connection first (same as other functions)
             console.log('📧 Verifying SMTP connection...');
             await transporter.verify();
             console.log('✅ SMTP connection verified');
             
-            const emailPromise = Promise.all([
-                transporter.sendMail(adminMailOptions),
-                transporter.sendMail(userMailOptions)
-            ]);
-            
-            // Add timeout to email sending
-            const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Email sending timeout after 30 seconds')), 30000); // 30 seconds timeout
-            });
-            
-            await Promise.race([emailPromise, timeoutPromise]);
-            
+            // Send emails
+            await transporter.sendMail(adminMailOptions);
             console.log('✅ Admin notification email sent');
+            
+            await transporter.sendMail(userMailOptions);
             console.log('✅ User confirmation email sent to:', email);
+            
             emailSent = true;
         } catch (emailError) {
             console.error('❌ Failed to send email:', emailError);
