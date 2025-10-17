@@ -32,13 +32,16 @@ const submitContactForm = async (req, res) => {
             messageLength: message.length
         });
 
-        // Set up email transporter
+        // Set up email transporter with timeout settings
         const transporter = createTransport({
             service: 'gmail',
             auth: {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS
-            }
+            },
+            connectionTimeout: 10000, // 10 seconds
+            greetingTimeout: 5000,    // 5 seconds
+            socketTimeout: 10000       // 10 seconds
         });
 
         // Email to admin/support
@@ -111,12 +114,21 @@ const submitContactForm = async (req, res) => {
             `
         };
 
-        // Send emails
+        // Send emails with timeout
         try {
-            await transporter.sendMail(adminMailOptions);
-            console.log('✅ Admin notification email sent');
+            const emailPromise = Promise.all([
+                transporter.sendMail(adminMailOptions),
+                transporter.sendMail(userMailOptions)
+            ]);
             
-            await transporter.sendMail(userMailOptions);
+            // Add timeout to email sending
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Email sending timeout')), 15000); // 15 seconds timeout
+            });
+            
+            await Promise.race([emailPromise, timeoutPromise]);
+            
+            console.log('✅ Admin notification email sent');
             console.log('✅ User confirmation email sent to:', email);
         } catch (emailError) {
             console.error('❌ Failed to send email:', emailError);
