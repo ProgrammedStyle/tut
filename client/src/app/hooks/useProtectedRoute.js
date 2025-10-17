@@ -15,39 +15,49 @@ export const useProtectedRoute = () => {
 
     useEffect(() => {
         // Give useAuthPersistence time to load user data from cookie (e.g., after OAuth)
+        // Also give time for sign in to complete and save data
         const checkAuthWithDelay = setTimeout(() => {
             let isValid = false;
             
+            console.log('🔒 Protected route checking authentication...');
+            console.log('📦 Redux userData:', userData);
+            
             // Check if userData exists in Redux
             if (userData && userData.email) {
+                console.log('✅ Found userData in Redux');
                 isValid = true;
             } else {
                 // Check localStorage
                 const storedUserData = localStorage.getItem('userData');
+                console.log('💾 localStorage userData:', storedUserData);
                 
                 if (storedUserData) {
                     try {
                         const parsed = JSON.parse(storedUserData);
                         
                         if (parsed && parsed.email) {
+                            console.log('✅ Found valid userData in localStorage');
                             isValid = true;
                         }
                     } catch (error) {
+                        console.log('❌ Failed to parse localStorage userData');
                         localStorage.removeItem('userData');
                     }
                 }
             }
             
             if (!isValid) {
+                console.log('❌ Not authenticated - redirecting to Sign In');
                 setIsAuthenticated(false);
                 setIsChecking(false);
                 dispatch(showLoading());
                 router.replace('/SignIn');
             } else {
+                console.log('✅ Authenticated - allowing access');
                 setIsAuthenticated(true);
                 setIsChecking(false);
             }
-        }, 500); // Wait 500ms for auth persistence to load from cookie
+        }, 1000); // Increased to 1000ms to give more time for sign in completion
 
         return () => clearTimeout(checkAuthWithDelay);
     }, [userData, router, dispatch]);
