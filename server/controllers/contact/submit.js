@@ -32,29 +32,65 @@ const submitContactForm = async (req, res) => {
             messageLength: message.length
         });
 
-        // Set up email transporter with improved settings
-        const transporter = createTransport({
-            service: 'gmail',
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false, // Use STARTTLS
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS
-            },
-            connectionTimeout: 60000, // 60 seconds
-            greetingTimeout: 15000,    // 15 seconds
-            socketTimeout: 60000,      // 60 seconds
-            pool: false,               // Disable pooling for better reliability
-            maxConnections: 1,         // Limit connections
-            rateLimit: 1,              // Limit rate
-            tls: {
-                rejectUnauthorized: false, // Allow self-signed certificates
-                ciphers: 'SSLv3'
-            },
-            debug: true,               // Enable debug logging
-            logger: true               // Enable logger
-        });
+        // Set up email transporter with multiple fallback options
+        let transporter;
+        
+        // Try SendGrid first (cloud-friendly)
+        if (process.env.SENDGRID_API_KEY) {
+            console.log('📧 Using SendGrid for email delivery');
+            transporter = createTransport({
+                service: 'SendGrid',
+                auth: {
+                    user: 'apikey',
+                    pass: process.env.SENDGRID_API_KEY
+                },
+                connectionTimeout: 30000,
+                greetingTimeout: 10000,
+                socketTimeout: 30000
+            });
+        }
+        // Fallback to Gmail with different settings
+        else if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+            console.log('📧 Using Gmail SMTP for email delivery');
+            transporter = createTransport({
+                service: 'gmail',
+                host: 'smtp.gmail.com',
+                port: 465, // Use SSL port instead of STARTTLS
+                secure: true, // Use SSL
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS
+                },
+                connectionTimeout: 30000, // Reduced timeout
+                greetingTimeout: 10000,
+                socketTimeout: 30000,
+                pool: false,
+                maxConnections: 1,
+                rateLimit: 1,
+                tls: {
+                    rejectUnauthorized: false
+                },
+                debug: false, // Disable debug to reduce logs
+                logger: false
+            });
+        }
+        // Fallback to Mailgun if available
+        else if (process.env.MAILGUN_API_KEY) {
+            console.log('📧 Using Mailgun for email delivery');
+            transporter = createTransport({
+                service: 'Mailgun',
+                auth: {
+                    user: process.env.MAILGUN_API_KEY,
+                    pass: process.env.MAILGUN_DOMAIN
+                },
+                connectionTimeout: 30000,
+                greetingTimeout: 10000,
+                socketTimeout: 30000
+            });
+        }
+        else {
+            throw new Error('No email service configured. Please set SENDGRID_API_KEY, SMTP_USER/SMTP_PASS, or MAILGUN_API_KEY');
+        }
 
         // Email to admin/support
         const adminMailOptions = {
@@ -130,8 +166,10 @@ const submitContactForm = async (req, res) => {
         let emailSent = false;
         try {
             console.log('📧 Attempting to send emails...');
+            console.log('📧 Email service configured:', transporter.options.service || 'Custom');
             console.log('📧 SMTP_USER:', process.env.SMTP_USER ? 'Set' : 'Not set');
             console.log('📧 SMTP_PASS:', process.env.SMTP_PASS ? 'Set' : 'Not set');
+            console.log('📧 SENDGRID_API_KEY:', process.env.SENDGRID_API_KEY ? 'Set' : 'Not set');
             
             // Verify SMTP connection first
             console.log('📧 Verifying SMTP connection...');
