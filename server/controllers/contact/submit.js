@@ -3,6 +3,9 @@ const { createTransport } = pkg;
 
 const submitContactForm = async (req, res) => {
     try {
+        console.log('📧 Contact form API called');
+        console.log('📧 Request body:', req.body);
+        
         const { name, email, subject, message } = req.body;
 
         // Validate input
@@ -124,6 +127,8 @@ const submitContactForm = async (req, res) => {
             success: true,
             message: "Message sent successfully. We'll get back to you soon!"
         });
+        
+        console.log('✅ Contact form response sent successfully');
 
     } catch (error) {
         console.error('Contact form error:', error);
