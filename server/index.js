@@ -27,12 +27,25 @@ app.use(cookieParser());
 
 const corsOptions = {
     origin: (origin, callback) => {
+        console.log('🌐 CORS check - Origin:', origin);
+        console.log('🌐 CORS check - CLIENT_URL:', process.env.CLIENT_URL);
+        
         // Allow requests from localhost during development
         if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            console.log('✅ CORS: Allowing localhost');
             callback(null, true);
-        } else if (process.env.CLIENT_URL && origin === process.env.CLIENT_URL) {
+        } 
+        // Allow requests from your frontend domain
+        else if (origin === 'https://tut-2-64sz.onrender.com') {
+            console.log('✅ CORS: Allowing frontend domain');
+            callback(null, true);
+        }
+        // Allow requests from CLIENT_URL if set
+        else if (process.env.CLIENT_URL && origin === process.env.CLIENT_URL) {
+            console.log('✅ CORS: Allowing CLIENT_URL');
             callback(null, true);
         } else {
+            console.log('❌ CORS: Blocking origin:', origin);
             callback(new Error('Not allowed by CORS'));
         }
     },
