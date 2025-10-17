@@ -47,11 +47,11 @@ const signin = async (req, res) => {
             }
         );
 
-        // Set cookie
+        // Set cookie with production-ready settings
         res.cookie("token", token, {
             httpOnly: true,
-            secure: false, // Set to true in production with HTTPS
-            sameSite: "lax",
+            secure: process.env.NODE_ENV === 'production', // true in production (HTTPS required)
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' for cross-domain in production
             maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
         });
 

@@ -48,8 +48,8 @@ const create = async ( req, res ) => {
 
         res.cookie("token", token, {
             httpOnly: true,
-            secure: false,
-            sameSite: "lax",
+            secure: process.env.NODE_ENV === 'production', // true in production (HTTPS required)
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' for cross-domain in production
             maxAge: 1000 * 60 * 60 * 24
         });
 

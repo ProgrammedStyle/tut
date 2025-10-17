@@ -1,10 +1,10 @@
 const signout = async (req, res) => {
     try {
-        // Clear the auth cookie
+        // Clear the auth cookie with same settings used to set it
         res.clearCookie("token", {
             httpOnly: true,
-            secure: false,
-            sameSite: "lax"
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
         });
 
         res.status(200).json({
