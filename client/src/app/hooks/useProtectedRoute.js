@@ -57,7 +57,7 @@ export const useProtectedRoute = () => {
                 setIsAuthenticated(true);
                 setIsChecking(false);
             }
-        }, 1000); // Increased to 1000ms to give more time for sign in completion
+        }, 2000); // Increased to 2000ms to give more time for sign in completion and data persistence
 
         return () => clearTimeout(checkAuthWithDelay);
     }, [userData, router, dispatch]);

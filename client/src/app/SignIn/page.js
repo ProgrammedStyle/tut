@@ -68,10 +68,13 @@ const SignIn = () => {
                 // Save to localStorage for persistence across page reloads
                 localStorage.setItem('userData', JSON.stringify(data.user));
                 
-                shouldNavigate = true;
-                console.log('🔄 Redirecting to Dashboard...');
-                // Keep loading visible during navigation
-                router.push("/Dashboard");
+                // Wait a moment for Redux state to update before navigating
+                setTimeout(() => {
+                    shouldNavigate = true;
+                    console.log('🔄 Redirecting to Dashboard...');
+                    // Keep loading visible during navigation
+                    router.push("/Dashboard");
+                }, 100);
             } else {
                 console.error('⚠️ Sign in response missing user data:', data);
                 setError("Invalid response from server. Please try again.");
