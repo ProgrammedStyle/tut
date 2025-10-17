@@ -52,7 +52,7 @@ const signin = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production', // true in production (HTTPS required)
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' for cross-domain in production
-            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined, // Allow cookie to work across all onrender.com subdomains
+            // Don't set domain - let it default to the backend domain
             maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
         };
         
@@ -62,6 +62,14 @@ const signin = async (req, res) => {
         console.log("🍪 Cookie settings:", cookieSettings);
         console.log("🌍 NODE_ENV:", process.env.NODE_ENV);
         console.log("🔗 CLIENT_URL:", process.env.CLIENT_URL);
+        console.log("🔍 Cookie being set:", {
+            name: "token",
+            value: token.substring(0, 20) + "...",
+            domain: cookieSettings.domain || "default",
+            secure: cookieSettings.secure,
+            sameSite: cookieSettings.sameSite,
+            httpOnly: cookieSettings.httpOnly
+        });
 
         res.status(200).json({
             success: true,

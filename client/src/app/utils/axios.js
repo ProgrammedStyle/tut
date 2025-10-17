@@ -16,6 +16,24 @@ const axiosInstance = axios.create({
     }
 });
 
+// Add request interceptor to log outgoing requests
+axiosInstance.interceptors.request.use(
+    (config) => {
+        console.log('🚀 Axios request:', {
+            url: config.url,
+            baseURL: config.baseURL,
+            fullURL: config.baseURL + config.url,
+            withCredentials: config.withCredentials,
+            method: config.method?.toUpperCase()
+        });
+        return config;
+    },
+    (error) => {
+        console.error('❌ Axios request error:', error);
+        return Promise.reject(error);
+    }
+);
+
 // Track if we're already redirecting to avoid infinite loops
 let isRedirecting = false;
 
