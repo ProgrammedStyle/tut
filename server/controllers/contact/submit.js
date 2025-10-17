@@ -35,20 +35,25 @@ const submitContactForm = async (req, res) => {
         // Set up email transporter with improved settings
         const transporter = createTransport({
             service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false, // Use STARTTLS
             auth: {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS
             },
-            connectionTimeout: 30000, // 30 seconds
-            greetingTimeout: 10000,    // 10 seconds
-            socketTimeout: 30000,      // 30 seconds
-            pool: true,                // Use connection pooling
+            connectionTimeout: 60000, // 60 seconds
+            greetingTimeout: 15000,    // 15 seconds
+            socketTimeout: 60000,      // 60 seconds
+            pool: false,               // Disable pooling for better reliability
             maxConnections: 1,         // Limit connections
             rateLimit: 1,              // Limit rate
-            secure: true,              // Use SSL
             tls: {
-                rejectUnauthorized: false // Allow self-signed certificates
-            }
+                rejectUnauthorized: false, // Allow self-signed certificates
+                ciphers: 'SSLv3'
+            },
+            debug: true,               // Enable debug logging
+            logger: true               // Enable logger
         });
 
         // Email to admin/support
@@ -122,6 +127,7 @@ const submitContactForm = async (req, res) => {
         };
 
         // Send emails with timeout
+        let emailSent = false;
         try {
             console.log('📧 Attempting to send emails...');
             console.log('📧 SMTP_USER:', process.env.SMTP_USER ? 'Set' : 'Not set');
@@ -146,6 +152,7 @@ const submitContactForm = async (req, res) => {
             
             console.log('✅ Admin notification email sent');
             console.log('✅ User confirmation email sent to:', email);
+            emailSent = true;
         } catch (emailError) {
             console.error('❌ Failed to send email:', emailError);
             console.error('❌ Email error details:', {
@@ -153,15 +160,23 @@ const submitContactForm = async (req, res) => {
                 code: emailError.code,
                 command: emailError.command
             });
-            // Continue even if email fails - don't return error to user
+            emailSent = false;
         }
 
-        res.status(200).json({
-            success: true,
-            message: "Message sent successfully. We'll get back to you soon!"
-        });
-        
-        console.log('✅ Contact form response sent successfully');
+        // Only return success if email was actually sent
+        if (emailSent) {
+            res.status(200).json({
+                success: true,
+                message: "Message sent successfully. We'll get back to you soon!"
+            });
+            console.log('✅ Contact form response sent successfully');
+        } else {
+            res.status(500).json({
+                success: false,
+                message: "Failed to send message. Please try again later."
+            });
+            console.log('❌ Contact form response sent with error - email failed');
+        }
 
     } catch (error) {
         console.error('Contact form error:', error);
