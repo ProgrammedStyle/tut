@@ -32,12 +32,12 @@ const submitContactForm = async (req, res) => {
             messageLength: message.length
         });
 
-        // Set up email transporter - using same simple config as other email functions
+        // Set up email transporter - using same config as working Create Account email
         const transporter = createTransport({
             service: "gmail",
             auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS
+                user: process.env.SMTP_USER || "programmedstyle@gmail.com",
+                pass: process.env.SMTP_PASS || "brao ywhw gzux rhib"
             }
         });
 
