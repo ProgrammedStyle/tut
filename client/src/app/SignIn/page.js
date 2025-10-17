@@ -65,8 +65,12 @@ const SignIn = () => {
                 // Save to Redux
                 dispatch(setUserData(data.user));
                 
-                // Save to localStorage for persistence across page reloads
-                localStorage.setItem('userData', JSON.stringify(data.user));
+                // Save to localStorage with token for API authentication
+                const userDataWithToken = {
+                    ...data.user,
+                    token: data.token // Include the JWT token for API calls
+                };
+                localStorage.setItem('userData', JSON.stringify(userDataWithToken));
                 
                 // Wait a moment for Redux state to update before navigating
                 setTimeout(() => {

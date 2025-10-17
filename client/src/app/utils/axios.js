@@ -16,15 +16,32 @@ const axiosInstance = axios.create({
     }
 });
 
-// Add request interceptor to log outgoing requests
+// Add request interceptor to add auth token from localStorage
 axiosInstance.interceptors.request.use(
     (config) => {
+        // Add auth token from localStorage if available
+        if (typeof window !== 'undefined') {
+            const userData = localStorage.getItem('userData');
+            if (userData) {
+                try {
+                    const parsed = JSON.parse(userData);
+                    if (parsed && parsed.token) {
+                        config.headers.Authorization = `Bearer ${parsed.token}`;
+                        console.log('🔑 Added auth token to request');
+                    }
+                } catch (error) {
+                    console.error('❌ Failed to parse userData:', error);
+                }
+            }
+        }
+        
         console.log('🚀 Axios request:', {
             url: config.url,
             baseURL: config.baseURL,
             fullURL: config.baseURL + config.url,
             withCredentials: config.withCredentials,
-            method: config.method?.toUpperCase()
+            method: config.method?.toUpperCase(),
+            hasAuth: !!config.headers.Authorization
         });
         return config;
     },

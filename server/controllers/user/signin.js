@@ -79,6 +79,7 @@ const signin = async (req, res) => {
                 role: user.role,
                 hasPassword: !!user.password
             },
+            token: token, // Include token in response for frontend to store
             message: "Signed in successfully"
         });
 
