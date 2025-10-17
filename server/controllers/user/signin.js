@@ -48,14 +48,19 @@ const signin = async (req, res) => {
         );
 
         // Set cookie with production-ready settings
-        res.cookie("token", token, {
+        const cookieSettings = {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production', // true in production (HTTPS required)
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' for cross-domain in production
             maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
-        });
-
+        };
+        
+        res.cookie("token", token, cookieSettings);
+        
         console.log("Sign in successful for:", email);
+        console.log("🍪 Cookie settings:", cookieSettings);
+        console.log("🌍 NODE_ENV:", process.env.NODE_ENV);
+        console.log("🔗 CLIENT_URL:", process.env.CLIENT_URL);
 
         res.status(200).json({
             success: true,
