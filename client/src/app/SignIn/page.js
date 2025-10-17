@@ -58,6 +58,8 @@ const SignIn = () => {
             const { data } = await axios.post("/api/user/signin", submittedData);
 
             console.log('✅ Sign in successful:', data);
+            console.log('🔍 Response data keys:', Object.keys(data));
+            console.log('🔍 Token in response:', data.token ? 'YES' : 'NO');
             
             if (data && data.user) {
                 console.log('💾 Saving user data to Redux and localStorage');
@@ -70,7 +72,12 @@ const SignIn = () => {
                     ...data.user,
                     token: data.token // Include the JWT token for API calls
                 };
+                console.log('💾 Saving to localStorage:', userDataWithToken);
                 localStorage.setItem('userData', JSON.stringify(userDataWithToken));
+                
+                // Verify what was actually saved
+                const saved = localStorage.getItem('userData');
+                console.log('✅ Saved to localStorage:', saved);
                 
                 // Wait a moment for Redux state to update before navigating
                 setTimeout(() => {

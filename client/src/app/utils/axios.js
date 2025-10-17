@@ -25,13 +25,19 @@ axiosInstance.interceptors.request.use(
             if (userData) {
                 try {
                     const parsed = JSON.parse(userData);
+                    console.log('🔍 Parsed userData from localStorage:', parsed);
+                    console.log('🔍 Token in userData:', parsed.token ? 'YES' : 'NO');
                     if (parsed && parsed.token) {
                         config.headers.Authorization = `Bearer ${parsed.token}`;
                         console.log('🔑 Added auth token to request');
+                    } else {
+                        console.log('⚠️ No token found in userData');
                     }
                 } catch (error) {
                     console.error('❌ Failed to parse userData:', error);
                 }
+            } else {
+                console.log('⚠️ No userData found in localStorage');
             }
         }
         
