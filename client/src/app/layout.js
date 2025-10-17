@@ -15,6 +15,7 @@ import UniversalLoadingHandler from "./components/UniversalLoadingHandler";
 import { useAuthPersistence } from "./hooks/useAuthPersistence";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { Oswald } from "next/font/google";
+import { Suspense } from "react";
 
 const oswald = Oswald({ 
   subsets: ['latin'],
@@ -31,7 +32,9 @@ function LayoutContent({ children }) {
   
   return (
     <>
-      <UniversalLoadingHandler />
+      <Suspense fallback={null}>
+        <UniversalLoadingHandler />
+      </Suspense>
       <LoadingCont />
       <Header />
       {children}
