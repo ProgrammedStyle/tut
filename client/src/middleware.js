@@ -12,20 +12,11 @@ export function middleware(request) {
     );
     
     if (isProtectedRoute) {
-        // Check if user has authentication cookie
-        const token = request.cookies.get('token');
-        
-        console.log('Middleware checking route:', pathname);
-        console.log('Token present:', !!token);
-        
-        if (!token) {
-            console.log('No token found - redirecting to /SignIn');
-            // Redirect to sign in if not authenticated
-            const signInUrl = new URL('/SignIn', request.url);
-            return NextResponse.redirect(signInUrl);
-        }
-        
-        console.log('Token found - allowing access');
+        // Since we're using localStorage + Authorization headers (not cookies),
+        // let the client-side authentication handle the protection
+        // This middleware will allow the request through and let the Dashboard
+        // page's useProtectedRoute hook handle authentication
+        console.log('Middleware: Allowing protected route through for client-side auth check:', pathname);
     }
     
     return NextResponse.next();
