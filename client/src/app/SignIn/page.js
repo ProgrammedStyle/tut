@@ -10,12 +10,13 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setUserData } from "../slices/userSlice";
 import { showLoading, hideLoading } from "../slices/loadingSlice";
 import axios from "../utils/axios";
 import LoadingLink from "../components/LoadingLink";
+import { usePageReady } from "../hooks/usePageReady";
 
 // Validation schema
 const signInSchema = z.object({
@@ -27,14 +28,28 @@ const SignIn = () => {
     const router = useRouter();
     const dispatch = useDispatch();
     const [ error, setError ] = useState(null);
+    const [pageRendered, setPageRendered] = useState(false);
 
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: zodResolver(signInSchema)
     });
 
+    useEffect(() => {
+        // Wait for rendering to complete before marking as ready
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                setPageRendered(true);
+            }, 1000); // Wait 1000ms after render for page to be fully painted
+        });
+    }, []);
+
+    // Page is ready after rendering completes
+    usePageReady(pageRendered);
+
     const onSucceededSubmit = async (submittedData) => {
         dispatch(showLoading());
         setError(null);
+        let shouldNavigate = false;
         
         try {
             const { data } = await axios.post("/api/user/signin", submittedData);
@@ -48,13 +63,18 @@ const SignIn = () => {
                 // Save to localStorage for persistence across page reloads
                 localStorage.setItem('userData', JSON.stringify(data.user));
                 
+                shouldNavigate = true;
+                // Keep loading visible during navigation
                 router.push("/Dashboard");
             }
         } catch (err) {
             console.error('❌ Sign in error:', err);
             setError(err.response?.data?.message || "Failed to sign in. Please try again.");
         } finally {
-            dispatch(hideLoading());
+            // Only hide loading if we're not navigating
+            if (!shouldNavigate) {
+                dispatch(hideLoading());
+            }
         }
     };
 

@@ -5,12 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { clearUserData } from '../slices/userSlice';
 import { showLoading, hideLoading } from '../slices/loadingSlice';
-import axios from 'axios';
+import axios from '../utils/axios';
 import { Box, Container, CircularProgress, Typography } from '@mui/material';
+import { useState } from 'react';
+import { usePageReady } from '../hooks/usePageReady';
 
 const SignOut = () => {
     const router = useRouter();
     const dispatch = useDispatch();
+    const [pageRendered, setPageRendered] = useState(false);
 
     useEffect(() => {
         const performSignOut = async () => {
@@ -21,9 +24,7 @@ const SignOut = () => {
                 console.log('Current localStorage before clear:', localStorage.getItem('userData'));
 
                 // Call backend to clear cookie
-                await axios.post('http://localhost:5000/api/user/signout', {}, {
-                    withCredentials: true
-                });
+                await axios.post('/api/user/signout', {});
 
                 console.log('Backend signout successful');
 
@@ -38,8 +39,9 @@ const SignOut = () => {
                 // Verify it's cleared
                 console.log('localStorage after clear:', localStorage.getItem('userData'));
 
-                // Redirect to home
+                // Redirect to home - keep loading visible during navigation
                 console.log('Redirecting to home page...');
+                dispatch(showLoading());
                 router.push('/');
             } catch (error) {
                 console.error('Sign out error:', error);
@@ -47,14 +49,25 @@ const SignOut = () => {
                 dispatch(clearUserData());
                 localStorage.clear();
                 console.log('Emergency clear - localStorage and Redux cleared');
+                dispatch(showLoading());
                 router.push('/');
-            } finally {
-                dispatch(hideLoading());
             }
+            // Don't hide loading in finally - let the next page hide it
         };
 
         performSignOut();
     }, [dispatch, router]);
+
+    // This page shows briefly before redirect, mark as rendered
+    useEffect(() => {
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                setPageRendered(true);
+            }, 1000);
+        });
+    }, []);
+
+    usePageReady(pageRendered);
 
     return (
         <Box sx={{ 

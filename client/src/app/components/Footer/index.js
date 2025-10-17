@@ -3,7 +3,7 @@
 import React from 'react';
 import { Box, Container, Typography, Grid, IconButton, Divider } from '@mui/material';
 import { Facebook, Twitter, Instagram, LinkedIn, Email, Phone, LocationOn } from '@mui/icons-material';
-import Link from 'next/link';
+import LoadingLink from '../LoadingLink';
 import styles from './index.module.css';
 
 export default function Footer() {
@@ -90,13 +90,13 @@ export default function Footer() {
                         </Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                             {footerLinks.map((link, index) => (
-                                <Link
+                                <LoadingLink
                                     key={index}
                                     href={link.href}
                                     className={styles.footerLink}
                                 >
                                     {link.name}
-                                </Link>
+                                </LoadingLink>
                             ))}
                         </Box>
                     </Grid>

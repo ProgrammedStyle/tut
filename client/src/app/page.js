@@ -7,6 +7,7 @@ import { ArrowForward, LocationOn, Explore, History, Map } from '@mui/icons-mate
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { useLanguage } from './contexts/LanguageContext';
+import { usePageReady } from './hooks/usePageReady';
 
 const MapComponent = dynamic(() => import('./components/Map'), { ssr: false });
 
@@ -15,11 +16,22 @@ export default function Home() {
     const mapRef = useRef(null);
     const { t } = useLanguage();
     const [animationDistance, setAnimationDistance] = useState(-50); // Default for SSR
+    const [pageReady, setPageReady] = useState(false);
     
     useEffect(() => {
         // Set animation distance based on screen size after mount
         setAnimationDistance(window.innerWidth < 768 ? -50 : -300);
+        
+        // Wait for rendering to complete before marking as ready
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                setPageReady(true);
+            }, 1000); // Wait 1000ms after render for page to be fully painted
+        });
     }, []);
+
+    // Signal that the page is ready after rendering completes
+    usePageReady(pageReady);
 
     const routes = [
         { 

@@ -14,16 +14,17 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { setUserData } from "@/app/slices/userSlice";
 import { hideLoading, showLoading } from "../../slices/loadingSlice";
-import axios from "axios";
+import axios from "../../utils/axios";
+import { usePageReady } from "../../hooks/usePageReady";
 
 const CreateAccount = () => {
     const router = useRouter();
     const dispatch = useDispatch();
     const [ error, setError ] = useState(null);
+    const [pageRendered, setPageRendered] = useState(false);
     const { register, handleSubmit, formState: {errors} } = useForm( { resolver: zodResolver(passwordSchema) } );
 
     useEffect(() => {
-        dispatch(hideLoading());
         const emailToRegister = sessionStorage.getItem("emailToRegister");
         const emailVerified = sessionStorage.getItem("emailVerified");
         
@@ -32,13 +33,26 @@ const CreateAccount = () => {
             emailVerified
         });
         
-        if ( !emailToRegister || !emailVerified )
+        if ( !emailToRegister || !emailVerified ) {
+            dispatch(showLoading());
             router.push("/CreateAccount");
+        } else {
+            // Page is valid - wait for rendering to complete
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    setPageRendered(true);
+                }, 1000); // Wait 1000ms after render for page to be fully painted
+            });
+        }
     }, [router, dispatch]);
 
+    // Page is ready after validation check and rendering
+    usePageReady(pageRendered);
+
     const onSucceededSubmit = async ( data ) => {
+        dispatch(showLoading());
+        
         try {
-            dispatch(showLoading());
             data.email = sessionStorage.getItem("emailToRegister");
             
             console.log("Creating user with data:", {
@@ -47,9 +61,7 @@ const CreateAccount = () => {
                 confirmPassword: data.confirmPassword ? "***" : "missing"
             });
             
-            const res = await axios.post(`http://localhost:5000/api/user/create`, data, {
-                withCredentials: true
-            });
+            const res = await axios.post(`/api/user/create`, data);
             
             console.log("User created successfully:", res.data);
             
@@ -62,13 +74,14 @@ const CreateAccount = () => {
             localStorage.setItem('userData', JSON.stringify(userData));
             sessionStorage.removeItem("emailToRegister");
             sessionStorage.removeItem("emailVerified");
+            
+            // Keep loading visible during navigation
             router.push("/Dashboard");
         } catch ( error ) {
             console.error("User creation error:", error);
             console.error("Error response:", error.response);
             console.error("Error data:", error.response?.data);
             setError(error.response?.data?.message || error.message || "An error occurred");
-        } finally {
             dispatch(hideLoading());
         }
     };

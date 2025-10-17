@@ -3,11 +3,15 @@
 import Image from "next/image";
 import styles from "./index.module.css";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { showLoading } from "../../slices/loadingSlice";
 
 const Logo = ({ click = false }) => {
     const router = useRouter();
+    const dispatch = useDispatch();
 
         const handleClick = () => {
+            dispatch(showLoading()); // Show loading immediately
             router.push("/");
         };
 

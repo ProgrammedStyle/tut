@@ -2,13 +2,17 @@
 
 import { Box, Tooltip } from "@mui/material";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { showLoading } from "../../slices/loadingSlice";
 import WhiteIconButton from "../WhiteIconButton";
 
 const NavLink = ({ role = null, title = "", link = null }) => {
     const router = useRouter();
+    const dispatch = useDispatch();
     
         const handleClick = () => {
             if (link) {
+                dispatch(showLoading()); // Show loading immediately
                 router.push(link);
             }
         };

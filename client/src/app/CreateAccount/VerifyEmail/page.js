@@ -12,6 +12,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import axios from "../../utils/axios";
+import { usePageReady } from "../../hooks/usePageReady";
 
 // Animation for the email icon
 const bounceAnimation = keyframes`
@@ -40,13 +41,19 @@ const VerifyEmail_PendingContent = () => {
     const [resending, setResending] = useState(false);
     const [resendSuccess, setResendSuccess] = useState(false);
     const [resendError, setResendError] = useState(null);
+    const [pageRendered, setPageRendered] = useState(false);
 
     useEffect(() => {
-        dispatch(showLoading());
-        setTimeout(() => {
-            dispatch(hideLoading());
-        }, 300);
-    }, [dispatch]);
+        // Wait for rendering to complete before marking as ready
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                setPageRendered(true);
+            }, 1000); // Wait 1000ms after render for page to be fully painted
+        });
+    }, []);
+
+    // Page is ready after rendering completes
+    usePageReady(pageRendered);
 
     const handleResendEmail = async () => {
         if (!email) {
@@ -76,6 +83,7 @@ const VerifyEmail_PendingContent = () => {
     };
 
     const handleGoBack = () => {
+        dispatch(showLoading());
         router.push('/CreateAccount');
     };
 

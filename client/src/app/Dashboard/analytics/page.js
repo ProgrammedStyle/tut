@@ -3,10 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../../utils/axios';
 import { useDispatch } from 'react-redux';
+import { showLoading } from '../../slices/loadingSlice';
 import { useProtectedRoute } from '../../hooks/useProtectedRoute';
+import { usePageReady } from '../../hooks/usePageReady';
 import {
     Box, Container, Grid, Card, CardContent, Typography, LinearProgress,
-    Paper, useTheme, useMediaQuery, Fade, IconButton, Avatar
+    Paper, useTheme, useMediaQuery, Fade, IconButton, Avatar, CircularProgress
 } from '@mui/material';
 import {
     ArrowBack as ArrowBackIcon, TrendingUp as TrendingUpIcon,
@@ -25,6 +27,7 @@ const Analytics = () => {
     // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS!
     const [analyticsData, setAnalyticsData] = useState({ pageViews: 0, uniqueVisitors: 0, bounceRate: 0, avgSessionDuration: 0, topPages: [], trafficSources: [] });
     const [loading, setLoading] = useState(true);
+    const [pageRendered, setPageRendered] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -32,17 +35,65 @@ const Analytics = () => {
                 const res = await axios.get('/api/analytics/data');
                 if (res.data.success) setAnalyticsData(res.data.data);
             } catch (e) {}
-            finally { setLoading(false); }
+            finally { 
+                setLoading(false);
+                // Wait for data to render before marking as ready
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        setPageRendered(true);
+                    }, 1000); // Wait 1000ms after data loads for page to be fully painted
+                });
+            }
         };
         fetchData();
     }, [dispatch]);
+
+    // Signal when page data is loaded and rendered
+    usePageReady(pageRendered);
     
     if (isChecking || !isAuthenticated) {
-        return (<Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-            <Container maxWidth="sm" sx={{ textAlign: 'center' }}>
-                <Typography variant="h6" sx={{ color: 'white' }}>{isChecking ? 'Loading...' : 'Redirecting...'}</Typography>
-            </Container>
-        </Box>);
+        return (
+            <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+                <Fade in={true} timeout={800}>
+                    <Paper elevation={24} sx={{ 
+                        p: 6, 
+                        borderRadius: 4,
+                        background: 'rgba(255,255,255,0.98)',
+                        backdropFilter: 'blur(20px)',
+                        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+                        border: '1px solid rgba(255, 255, 255, 0.18)',
+                        textAlign: 'center',
+                        maxWidth: 400
+                    }}>
+                        <Box sx={{ mb: 3 }}>
+                            <CircularProgress 
+                                size={60} 
+                                thickness={4}
+                                sx={{ 
+                                    color: '#667eea',
+                                    '& .MuiCircularProgress-circle': {
+                                        strokeLinecap: 'round'
+                                    }
+                                }} 
+                            />
+                        </Box>
+                        <Typography variant="h5" sx={{ 
+                            fontWeight: 'bold',
+                            background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            mb: 1.5
+                        }}>
+                            {isChecking ? 'Loading Analytics' : 'Redirecting'}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            {isChecking ? 'Please wait while we load your analytics data...' : 'Taking you to the sign in page...'}
+                        </Typography>
+                    </Paper>
+                </Fade>
+            </Box>
+        );
     }
 
     const MetricCard = ({ title, value, subtitle, trend, icon: Icon, color }) => (
@@ -92,16 +143,56 @@ const Analytics = () => {
     </CardContent></Card></Fade>);
 
     if (loading) {
-        return (<Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Container maxWidth="xl"><Paper sx={{ p: 4, textAlign: 'center', background: 'rgba(255,255,255,0.95)' }}>
-                <Typography variant="h6">Loading analytics data...</Typography>
-            </Paper></Container>
-        </Box>);
+        return (
+            <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Fade in={true} timeout={800}>
+                    <Paper elevation={24} sx={{ 
+                        p: 6, 
+                        borderRadius: 4,
+                        background: 'rgba(255,255,255,0.98)',
+                        backdropFilter: 'blur(20px)',
+                        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+                        border: '1px solid rgba(255, 255, 255, 0.18)',
+                        textAlign: 'center',
+                        maxWidth: 400
+                    }}>
+                        <Box sx={{ mb: 3 }}>
+                            <CircularProgress 
+                                size={60} 
+                                thickness={4}
+                                sx={{ 
+                                    color: '#667eea',
+                                    '& .MuiCircularProgress-circle': {
+                                        strokeLinecap: 'round'
+                                    }
+                                }} 
+                            />
+                        </Box>
+                        <Typography variant="h5" sx={{ 
+                            fontWeight: 'bold',
+                            background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            mb: 1.5
+                        }}>
+                            Loading Analytics
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Fetching your analytics data...
+                        </Typography>
+                    </Paper>
+                </Fade>
+            </Box>
+        );
     }
 
     return (<Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', py: 4 }}><Container maxWidth="xl">
         <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton onClick={() => router.back()} sx={{ mr: 2, color: 'white', backgroundColor: 'rgba(255,255,255,0.1)', '&:hover': { backgroundColor: 'rgba(255,255,255,0.2)' } }}><ArrowBackIcon /></IconButton>
+            <IconButton onClick={() => {
+                dispatch(showLoading());
+                router.back();
+            }} sx={{ mr: 2, color: 'white', backgroundColor: 'rgba(255,255,255,0.1)', '&:hover': { backgroundColor: 'rgba(255,255,255,0.2)' } }}><ArrowBackIcon /></IconButton>
             <Box>
                 <Typography variant={isMobile ? "h4" : "h3"} sx={{ fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>Analytics</Typography>
                 <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.8)' }}>Detailed website performance metrics</Typography>

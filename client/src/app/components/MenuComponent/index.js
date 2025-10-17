@@ -3,12 +3,15 @@
 import { Divider, Menu, MenuItem } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { showLoading } from "../../slices/loadingSlice";
 import styles from "./index.module.css";
 
 const MenuComponent = ({ menuItemsStyle = ``, menuAnchor, menuItems }) => {
     const [ anchorEl, setAnchorEl ] = useState(null);
     const open = Boolean(anchorEl);
     const router = useRouter();
+    const dispatch = useDispatch();
     const myMenuItems = [ ...menuItems ];
 
     const handleClick = e => {
@@ -18,6 +21,7 @@ const MenuComponent = ({ menuItemsStyle = ``, menuAnchor, menuItems }) => {
         const handleClose = ( link = null ) => {
             setAnchorEl(null);
             if (link) {
+                dispatch(showLoading()); // Show loading immediately
                 router.push(link);
             }
         };

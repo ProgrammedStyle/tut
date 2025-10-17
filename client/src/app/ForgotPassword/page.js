@@ -10,11 +10,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { showLoading, hideLoading } from "../slices/loadingSlice";
-import axios from "axios";
+import axios from "../utils/axios";
 import LoadingLink from "../components/LoadingLink";
+// Manually controlling loading instead of usePageReady to avoid conflicts
 
 // Validation schema
 const forgotPasswordSchema = z.object({
@@ -27,6 +28,9 @@ const ForgotPassword = () => {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [pageRendered, setPageRendered] = useState(false);
+    const hasCalledPageReady = useRef(false);
+    const hasHandledSuccess = useRef(false);
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: zodResolver(forgotPasswordSchema)
     });
@@ -35,7 +39,39 @@ const ForgotPassword = () => {
     useEffect(() => {
         const userData = localStorage.getItem('userData');
         setIsLoggedIn(!!userData);
+        
+        // Wait for initial page rendering
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                setPageRendered(true);
+            }, 1000);
+        });
     }, []);
+
+    // Page ready - hides initial loading (ONLY ONCE)
+    useEffect(() => {
+        if (pageRendered && !hasCalledPageReady.current) {
+            hasCalledPageReady.current = true;
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    dispatch(hideLoading());
+                }, 1500);
+            });
+        }
+    }, [pageRendered, dispatch]);
+
+    // When success view mounts, wait before hiding loading
+    useEffect(() => {
+        if (success && !hasHandledSuccess.current) {
+            hasHandledSuccess.current = true;
+            // React has committed success view to DOM, wait for paint + stability
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    dispatch(hideLoading());
+                }, 3500); // Wait 3.5 seconds after paint for complete stability
+            });
+        }
+    }, [success, dispatch]);
 
     const onSucceededSubmit = async (data) => {
         try {
@@ -44,16 +80,16 @@ const ForgotPassword = () => {
 
             console.log("Requesting password reset for:", data.email);
 
-            const res = await axios.post(`http://localhost:5000/api/user/forgot-password`, data);
+            const res = await axios.post(`/api/user/forgot-password`, data);
 
             console.log("Password reset email sent:", res.data);
 
             setSuccess(true);
+            // useEffect will hide loading after success view is fully rendered
         } catch (error) {
             console.error("Forgot password error:", error.response?.data || error.message);
             setError(error.response?.data?.message || "Failed to send reset email. Please try again.");
-        } finally {
-            dispatch(hideLoading());
+            dispatch(hideLoading()); // Hide loading on error
         }
     };
 
@@ -100,7 +136,10 @@ const ForgotPassword = () => {
                         <Button 
                             variant="contained" 
                             color="primary" 
-                            onClick={() => router.push(isLoggedIn ? "/Dashboard" : "/SignIn")}
+                            onClick={() => {
+                                dispatch(showLoading());
+                                router.push(isLoggedIn ? "/Dashboard" : "/SignIn");
+                            }}
                             fullWidth
                             sx={{ 
                                 padding: '8px 22px',

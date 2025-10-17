@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
+import { showLoading } from '../slices/loadingSlice';
 import axios from '../utils/axios';
 
 export const usePasswordExpiry = () => {
     const router = useRouter();
+    const dispatch = useDispatch();
     const [checking, setChecking] = useState(true);
 
     useEffect(() => {
@@ -16,6 +19,7 @@ export const usePasswordExpiry = () => {
                 
                 if (response.data.passwordExpired) {
                     console.log('PASSWORD EXPIRED - redirecting to password-expired page');
+                    dispatch(showLoading());
                     router.push('/Dashboard/password-expired');
                 } else {
                     console.log('Password is still valid');
@@ -33,7 +37,7 @@ export const usePasswordExpiry = () => {
         const interval = setInterval(checkPasswordExpiry, 10000);
         
         return () => clearInterval(interval);
-    }, [router]);
+    }, [router, dispatch]);
 
     return { checking };
 };

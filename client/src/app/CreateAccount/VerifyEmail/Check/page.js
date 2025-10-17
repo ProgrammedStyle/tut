@@ -10,6 +10,7 @@ import { CircularProgress, Box, Typography, Paper, keyframes, Button } from "@mu
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
+import { usePageReady } from "../../../hooks/usePageReady";
 
 // Animations
 const spinAnimation = keyframes`
@@ -53,10 +54,10 @@ const VerifyEmail_CheckContent = () => {
     const dispatch = useDispatch();
     const [status, setStatus] = useState("verifying"); // "verifying", "success", "error"
     const [error, setError] = useState(null);
+    const [pageRendered, setPageRendered] = useState(false);
 
     useEffect(() => {
         const verifyEmail = async () => {
-            dispatch(showLoading());
             try {
                 const token = searchParams.get("token");
                 
@@ -81,6 +82,7 @@ const VerifyEmail_CheckContent = () => {
                 
                 // Redirect after showing success message
                 setTimeout(() => {
+                    dispatch(showLoading());
                     router.push("/CreateAccount/CreatePassword");
                 }, 2000);
             } catch (error) {
@@ -92,6 +94,18 @@ const VerifyEmail_CheckContent = () => {
         
         verifyEmail();
     }, [dispatch, searchParams, router]);
+
+    // Wait for page rendering
+    useEffect(() => {
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                setPageRendered(true);
+            }, 1000);
+        });
+    }, []);
+
+    // Page is ready after rendering
+    usePageReady(pageRendered);
 
     return (
         <SignInContBox>
@@ -319,7 +333,10 @@ const VerifyEmail_CheckContent = () => {
                             <Button
                                 variant="contained"
                                 color="primary"
-                                onClick={() => router.push("/CreateAccount")}
+                                onClick={() => {
+                                    dispatch(showLoading());
+                                    router.push("/CreateAccount");
+                                }}
                                 sx={{
                                     textTransform: "none",
                                     px: 4,

@@ -7,9 +7,24 @@ import PeopleIcon from '@mui/icons-material/People';
 import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
 import layoutStyles from "../layoutIndex.module.css";
 import { useLanguage } from '../contexts/LanguageContext';
+import { usePageReady } from '../hooks/usePageReady';
+import { useState, useEffect } from 'react';
 
 const About = () => {
     const { t } = useLanguage();
+    const [pageRendered, setPageRendered] = useState(false);
+
+    useEffect(() => {
+        // Wait for rendering to complete before marking as ready
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                setPageRendered(true);
+            }, 1000); // Wait 1000ms after render for page to be fully painted
+        });
+    }, []);
+    
+    // Page is ready after rendering completes
+    usePageReady(pageRendered);
     
     const values = [
         {

@@ -29,7 +29,8 @@ import {
     Tooltip,
     Badge,
     Alert,
-    Snackbar
+    Snackbar,
+    CircularProgress
 } from '@mui/material';
 import {
     Dashboard as DashboardIcon,
@@ -56,6 +57,7 @@ import { useRouter } from 'next/navigation';
 import axios from '../utils/axios';
 import { useProtectedRoute } from '../hooks/useProtectedRoute';
 import { usePasswordExpiry } from '../hooks/usePasswordExpiry';
+import { usePageReady } from '../hooks/usePageReady';
 
 // Validation schema - checks validation dynamically based on fields filled
 const profileSchema = z.object({
@@ -110,6 +112,7 @@ const Dashboard = () => {
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [pageRendered, setPageRendered] = useState(false);
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
     const [userHasPassword, setUserHasPassword] = useState(true); // Default to true until we check
     const hasCheckedPassword = useRef(false); // Track if we've already checked
@@ -127,6 +130,9 @@ const Dashboard = () => {
     });
     
     const watchedPassword = watch('password');
+
+    // Signal when page data is loaded and rendered
+    usePageReady(pageRendered);
 
     // Fetch user data to ensure we have hasPassword field
     useEffect(() => {
@@ -199,8 +205,13 @@ const Dashboard = () => {
                     pageViews: 0
                 });
             } finally {
-                // Don't hide loading here - UniversalLoadingHandler will handle it
                 setLoading(false);
+                // Wait for data to render before marking as ready
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        setPageRendered(true);
+                    }, 1000); // Wait 1000ms after data loads for page to be fully painted
+                });
             }
         };
 
@@ -218,11 +229,44 @@ const Dashboard = () => {
                 justifyContent: 'center',
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
             }}>
-                <Container maxWidth="sm" sx={{ textAlign: 'center' }}>
-                    <Typography variant="h6" sx={{ color: 'white' }}>
-                        {isChecking ? 'Loading...' : 'Redirecting...'}
-                    </Typography>
-                </Container>
+                <Fade in={true} timeout={800}>
+                    <Paper elevation={24} sx={{ 
+                        p: 6, 
+                        borderRadius: 4,
+                        background: 'rgba(255,255,255,0.98)',
+                        backdropFilter: 'blur(20px)',
+                        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+                        border: '1px solid rgba(255, 255, 255, 0.18)',
+                        textAlign: 'center',
+                        maxWidth: 400
+                    }}>
+                        <Box sx={{ mb: 3 }}>
+                            <CircularProgress 
+                                size={60} 
+                                thickness={4}
+                                sx={{ 
+                                    color: '#667eea',
+                                    '& .MuiCircularProgress-circle': {
+                                        strokeLinecap: 'round'
+                                    }
+                                }} 
+                            />
+                        </Box>
+                        <Typography variant="h5" sx={{ 
+                            fontWeight: 'bold',
+                            background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            mb: 1.5
+                        }}>
+                            {isChecking ? 'Loading Dashboard' : 'Redirecting'}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            {isChecking ? 'Please wait while we prepare your dashboard...' : 'Taking you to the sign in page...'}
+                        </Typography>
+                    </Paper>
+                </Fade>
             </Box>
         );
     }
@@ -301,6 +345,7 @@ const Dashboard = () => {
                 // If email was changed, redirect to verification page
                 if (response.data.user.pendingEmail) {
                     setPendingEmail(response.data.user.pendingEmail);
+                    dispatch(showLoading());
                     router.push('/Dashboard/email-verification-sent');
                 } else {
                     // Show success message for other changes (e.g., password)
@@ -308,6 +353,13 @@ const Dashboard = () => {
                         open: true,
                         message: response.data.message,
                         severity: 'success'
+                    });
+                    
+                    // Wait for success message to render before hiding loading
+                    requestAnimationFrame(() => {
+                        setTimeout(() => {
+                            dispatch(hideLoading());
+                        }, 3000);
                     });
                 }
             }
@@ -330,9 +382,13 @@ const Dashboard = () => {
                 message: errorMessage,
                 severity: 'error'
             });
-        })
-        .finally(() => {
-            dispatch(hideLoading());
+            
+            // Wait for error message to render before hiding loading
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    dispatch(hideLoading());
+                }, 3000);
+            });
         });
     };
 
@@ -461,11 +517,44 @@ const Dashboard = () => {
                 alignItems: 'center',
                 justifyContent: 'center'
             }}>
-                <Container maxWidth="xl">
-                    <Paper sx={{ p: 4, textAlign: 'center', background: 'rgba(255,255,255,0.95)' }}>
-                        <Typography variant="h6">Loading dashboard...</Typography>
+                <Fade in={true} timeout={800}>
+                    <Paper elevation={24} sx={{ 
+                        p: 6, 
+                        borderRadius: 4,
+                        background: 'rgba(255,255,255,0.98)',
+                        backdropFilter: 'blur(20px)',
+                        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+                        border: '1px solid rgba(255, 255, 255, 0.18)',
+                        textAlign: 'center',
+                        maxWidth: 400
+                    }}>
+                        <Box sx={{ mb: 3 }}>
+                            <CircularProgress 
+                                size={60} 
+                                thickness={4}
+                                sx={{ 
+                                    color: '#667eea',
+                                    '& .MuiCircularProgress-circle': {
+                                        strokeLinecap: 'round'
+                                    }
+                                }} 
+                            />
+                        </Box>
+                        <Typography variant="h5" sx={{ 
+                            fontWeight: 'bold',
+                            background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            mb: 1.5
+                        }}>
+                            Loading Dashboard
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Fetching your dashboard data...
+                        </Typography>
                     </Paper>
-                </Container>
+                </Fade>
             </Box>
         );
     }
@@ -594,6 +683,7 @@ const Dashboard = () => {
                                                     }
                                                 }}
                                                 onClick={() => {
+                                                    dispatch(showLoading());
                                                     router.push('/Dashboard/analytics');
                                                 }}
                                             >
@@ -618,6 +708,7 @@ const Dashboard = () => {
                                                     }
                                                 }}
                                                 onClick={() => {
+                                                    dispatch(showLoading());
                                                     router.push('/Dashboard/users');
                                                 }}
                                             >
@@ -642,6 +733,7 @@ const Dashboard = () => {
                                                     }
                                                 }}
                                                 onClick={() => {
+                                                    dispatch(showLoading());
                                                     router.push('/Dashboard/content-management');
                                                 }}
                                             >
@@ -730,6 +822,7 @@ const Dashboard = () => {
                                                 size="small"
                                                 onClick={() => {
                                                     setEditDialogOpen(false);
+                                                    dispatch(showLoading());
                                                     router.push('/ForgotPassword');
                                                 }}
                                                 sx={{

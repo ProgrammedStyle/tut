@@ -18,12 +18,13 @@ import SendIcon from '@mui/icons-material/Send';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { showLoading, hideLoading } from "../slices/loadingSlice";
 import axios from "../utils/axios";
 import layoutStyles from "../layoutIndex.module.css";
 import { useLanguage } from '../contexts/LanguageContext';
+// Manually controlling loading instead of usePageReady to avoid conflicts
 
 // Validation schema
 const contactSchema = z.object({
@@ -38,10 +39,47 @@ const Contact = () => {
     const dispatch = useDispatch();
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(null);
+    const [pageRendered, setPageRendered] = useState(false);
+    const hasCalledPageReady = useRef(false);
+    const hasHandledSuccess = useRef(false);
 
     const { register, handleSubmit, formState: { errors }, reset } = useForm({
         resolver: zodResolver(contactSchema)
     });
+
+    useEffect(() => {
+        // Wait for rendering to complete before marking as ready
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                setPageRendered(true);
+            }, 1000);
+        });
+    }, []);
+
+    // Page ready - hides initial loading (ONLY ONCE)
+    useEffect(() => {
+        if (pageRendered && !hasCalledPageReady.current) {
+            hasCalledPageReady.current = true;
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    dispatch(hideLoading());
+                }, 1500);
+            });
+        }
+    }, [pageRendered, dispatch]);
+
+    // When form submits successfully, wait for success alert to render before hiding loading
+    useEffect(() => {
+        if (success && !hasHandledSuccess.current) {
+            hasHandledSuccess.current = true;
+            // Wait for browser to paint the alert, then add buffer time
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    dispatch(hideLoading());
+                }, 3500); // Wait 3.5 seconds after paint for complete stability
+            });
+        }
+    }, [success, dispatch]);
 
     const onSubmit = async (data) => {
         try {
@@ -55,12 +93,12 @@ const Contact = () => {
                 setSuccess(true);
                 reset();
                 setTimeout(() => setSuccess(false), 5000);
+                // Loading will be hidden by useEffect after success alert renders
             }
         } catch (err) {
             console.error("Contact form error:", err);
             setError(err.response?.data?.message || "Failed to send message. Please try again.");
-        } finally {
-            dispatch(hideLoading());
+            dispatch(hideLoading()); // Hide loading on error
         }
     };
 

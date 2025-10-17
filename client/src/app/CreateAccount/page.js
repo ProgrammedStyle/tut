@@ -10,21 +10,35 @@ import userValidation_email from "../../../../modules/userValidation_email";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { showLoading } from "../slices/loadingSlice";
+import { showLoading, hideLoading } from "../slices/loadingSlice";
 import SocialSignInBox from "../components/SocialSignInBox";
 import axios from "../utils/axios";
 import LoadingLink from "../components/LoadingLink";
+import { usePageReady } from "../hooks/usePageReady";
 
 const CreateEmail = () => {
     const router = useRouter();
     const dispatch = useDispatch();
     const [ error, setError ] = useState(null);
+    const [pageRendered, setPageRendered] = useState(false);
 
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: zodResolver(userValidation_email)
     });
+
+    useEffect(() => {
+        // Wait for rendering to complete before marking as ready
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                setPageRendered(true);
+            }, 1000); // Wait 1000ms after render for page to be fully painted
+        });
+    }, []);
+
+    // Page is ready after rendering completes
+    usePageReady(pageRendered);
 
     const onSucceededSubmit = async (submittedData) => {
         try {
@@ -36,11 +50,12 @@ const CreateEmail = () => {
                 email: submittedData.email
             });
             
-            // If successful, navigate to verify email page
+            // If successful, navigate to verify email page (keep loading visible)
             router.push(`/CreateAccount/VerifyEmail?email=${encodeURIComponent(submittedData.email)}`);
         } catch (err) {
             console.error('Email verification send error:', err);
             setError(err.response?.data?.message || 'Failed to send verification email. Please try again.');
+            dispatch(hideLoading());
         }
     };
 

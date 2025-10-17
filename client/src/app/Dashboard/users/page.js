@@ -29,7 +29,8 @@ import {
     DialogContent,
     DialogActions,
     Snackbar,
-    Alert
+    Alert,
+    CircularProgress
 } from '@mui/material';
 import {
     ArrowBack as ArrowBackIcon,
@@ -46,6 +47,7 @@ import { useRouter } from 'next/navigation';
 import axios from '../../utils/axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { showLoading, hideLoading } from '../../slices/loadingSlice';
+import { usePageReady } from '../../hooks/usePageReady';
 import { clearUserData } from '../../slices/userSlice';
 import { useProtectedRoute } from '../../hooks/useProtectedRoute';
 
@@ -62,6 +64,7 @@ const Users = () => {
     // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS!
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [pageRendered, setPageRendered] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUser, setSelectedUser] = useState(null);
     const [actionDialogOpen, setActionDialogOpen] = useState(false);
@@ -87,14 +90,22 @@ const Users = () => {
             // Silently handle error and show empty state
             setUsers([]);
         } finally {
-            // Don't hide loading here - UniversalLoadingHandler will handle it
             setLoading(false);
+            // Wait for data to render before marking as ready
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    setPageRendered(true);
+                }, 1000); // Wait 1000ms after data loads for page to be fully painted
+            });
         }
     };
 
     useEffect(() => {
         fetchUsers();
     }, []);
+
+    // Signal when page data is loaded and rendered
+    usePageReady(pageRendered);
     
     // Don't render the page while checking authentication
     if (isChecking || !isAuthenticated) {
@@ -106,11 +117,44 @@ const Users = () => {
                 justifyContent: 'center',
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
             }}>
-                <Container maxWidth="sm" sx={{ textAlign: 'center' }}>
-                    <Typography variant="h6" sx={{ color: 'white' }}>
-                        {isChecking ? 'Loading...' : 'Redirecting...'}
-                    </Typography>
-                </Container>
+                <Fade in={true} timeout={800}>
+                    <Paper elevation={24} sx={{ 
+                        p: 6, 
+                        borderRadius: 4,
+                        background: 'rgba(255,255,255,0.98)',
+                        backdropFilter: 'blur(20px)',
+                        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+                        border: '1px solid rgba(255, 255, 255, 0.18)',
+                        textAlign: 'center',
+                        maxWidth: 400
+                    }}>
+                        <Box sx={{ mb: 3 }}>
+                            <CircularProgress 
+                                size={60} 
+                                thickness={4}
+                                sx={{ 
+                                    color: '#667eea',
+                                    '& .MuiCircularProgress-circle': {
+                                        strokeLinecap: 'round'
+                                    }
+                                }} 
+                            />
+                        </Box>
+                        <Typography variant="h5" sx={{ 
+                            fontWeight: 'bold',
+                            background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            mb: 1.5
+                        }}>
+                            {isChecking ? 'Loading Users' : 'Redirecting'}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            {isChecking ? 'Please wait while we load user data...' : 'Taking you to the sign in page...'}
+                        </Typography>
+                    </Paper>
+                </Fade>
             </Box>
         );
     }
@@ -169,14 +213,26 @@ const Users = () => {
                 message: 'Users exported successfully!',
                 severity: 'success'
             });
+            
+            // Wait for success message to render before hiding loading
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    dispatch(hideLoading());
+                }, 3000);
+            });
         } catch (error) {
             setSnackbar({
                 open: true,
                 message: 'Export feature coming soon!',
                 severity: 'info'
             });
-        } finally {
-            dispatch(hideLoading());
+            
+            // Wait for info message to render before hiding loading
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    dispatch(hideLoading());
+                }, 3000);
+            });
         }
     };
 
@@ -213,6 +269,13 @@ const Users = () => {
                 fetchUsers();
                 setActionDialogOpen(false);
                 setSelectedUser(null);
+                
+                // Wait for success message to render before hiding loading
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        dispatch(hideLoading());
+                    }, 3000);
+                });
             }
         } catch (error) {
             const errorMessage = error.response?.data?.message || 'Failed to delete user';
@@ -222,8 +285,13 @@ const Users = () => {
                 severity: 'error'
             });
             setActionDialogOpen(false);
-        } finally {
-            dispatch(hideLoading());
+            
+            // Wait for error message to render before hiding loading
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    dispatch(hideLoading());
+                }, 3000);
+            });
         }
     };
 
@@ -248,6 +316,13 @@ const Users = () => {
                 fetchUsers();
                 setActionDialogOpen(false);
                 setSelectedUser(null);
+                
+                // Wait for success message to render before hiding loading
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        dispatch(hideLoading());
+                    }, 3000);
+                });
             }
         } catch (error) {
             const errorMessage = error.response?.data?.message || 'Failed to update user status';
@@ -257,8 +332,13 @@ const Users = () => {
                 severity: 'error'
             });
             setActionDialogOpen(false);
-        } finally {
-            dispatch(hideLoading());
+            
+            // Wait for error message to render before hiding loading
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    dispatch(hideLoading());
+                }, 3000);
+            });
         }
     };
 
@@ -329,6 +409,7 @@ const Users = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <IconButton 
                             onClick={() => {
+                                dispatch(showLoading());
                                 router.back();
                             }}
                             sx={{ 

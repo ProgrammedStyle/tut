@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { showLoading } from '../slices/loadingSlice';
 
 export const useProtectedRoute = () => {
     const router = useRouter();
+    const dispatch = useDispatch();
     const { userData } = useSelector((state) => state.user);
     
     // ALWAYS start with true during SSR to prevent hydration mismatch
@@ -39,6 +41,7 @@ export const useProtectedRoute = () => {
             if (!isValid) {
                 setIsAuthenticated(false);
                 setIsChecking(false);
+                dispatch(showLoading());
                 router.replace('/SignIn');
             } else {
                 setIsAuthenticated(true);
@@ -47,7 +50,7 @@ export const useProtectedRoute = () => {
         }, 500); // Wait 500ms for auth persistence to load from cookie
 
         return () => clearTimeout(checkAuthWithDelay);
-    }, [userData, router]);
+    }, [userData, router, dispatch]);
 
     return { isChecking, isAuthenticated };
 };

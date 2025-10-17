@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Box,
     Container,
@@ -23,6 +23,7 @@ import { z } from 'zod';
 import axios from '../../utils/axios';
 import { useDispatch } from 'react-redux';
 import { showLoading, hideLoading } from '../../slices/loadingSlice';
+// Manually controlling loading instead of usePageReady to avoid conflicts
 
 const passwordSchema = z.object({
     currentPassword: z.string().min(1, 'Current password is required'),
@@ -39,10 +40,47 @@ const PasswordExpired = () => {
     const dispatch = useDispatch();
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(null);
+    const [pageRendered, setPageRendered] = useState(false);
+    const hasCalledPageReady = useRef(false);
+    const hasHandledSuccess = useRef(false);
     
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: zodResolver(passwordSchema)
     });
+
+    useEffect(() => {
+        // Wait for rendering to complete
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                setPageRendered(true);
+            }, 1000);
+        });
+    }, []);
+
+    // Page ready - hides initial loading (ONLY ONCE)
+    useEffect(() => {
+        if (pageRendered && !hasCalledPageReady.current) {
+            hasCalledPageReady.current = true;
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    dispatch(hideLoading());
+                }, 1500);
+            });
+        }
+    }, [pageRendered, dispatch]);
+
+    // When form submits successfully, wait for success view to render before hiding loading
+    useEffect(() => {
+        if (success && !hasHandledSuccess.current) {
+            hasHandledSuccess.current = true;
+            // Wait for browser to paint the success view, then add buffer time
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    dispatch(hideLoading());
+                }, 3500); // Wait 3.5 seconds after paint for complete stability
+            });
+        }
+    }, [success, dispatch]);
 
     const onSubmit = async (data) => {
         dispatch(showLoading());
@@ -57,14 +95,17 @@ const PasswordExpired = () => {
             
             if (response.data.success) {
                 setSuccess(true);
+                // Loading will be hidden by useEffect after success view renders
+                
+                // Then navigate after showing success for 2 seconds
                 setTimeout(() => {
+                    dispatch(showLoading());
                     router.push('/Dashboard');
                 }, 2000);
             }
         } catch (error) {
             setError(error.response?.data?.message || 'Failed to update password');
-        } finally {
-            dispatch(hideLoading());
+            dispatch(hideLoading()); // Hide loading on error
         }
     };
 

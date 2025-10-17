@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Container,
@@ -15,12 +15,28 @@ import {
     CheckCircle as CheckCircleIcon
 } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { showLoading } from '../../slices/loadingSlice';
+import { usePageReady } from '../../hooks/usePageReady';
 
 const EmailVerificationSent = () => {
     const router = useRouter();
+    const dispatch = useDispatch();
     const { userData } = useSelector((state) => state.user);
     const pendingEmail = userData?.pendingEmail;
+    const [pageRendered, setPageRendered] = useState(false);
+
+    useEffect(() => {
+        // Wait for rendering to complete before marking as ready
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                setPageRendered(true);
+            }, 1000); // Wait 1000ms after render for page to be fully painted
+        });
+    }, []);
+
+    // Page is ready after rendering completes
+    usePageReady(pageRendered);
 
     return (
         <Box sx={{ 
@@ -85,7 +101,10 @@ const EmailVerificationSent = () => {
                             variant="contained" 
                             size="large"
                             fullWidth
-                            onClick={() => router.push('/Dashboard')}
+                            onClick={() => {
+                                dispatch(showLoading());
+                                router.push('/Dashboard');
+                            }}
                             sx={{
                                 py: 1.5,
                                 background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',

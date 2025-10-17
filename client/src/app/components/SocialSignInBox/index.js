@@ -18,12 +18,14 @@ const SocialSignInBox = () => {
 
     var onGoogleLogin, onFacebookLogin;
 
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
             onGoogleLogin = () => {
-                window.location.href = "http://localhost:5000/api/user/google";
+                window.location.href = `${API_URL}/api/user/google`;
             };
 
             onFacebookLogin = () => {
-                window.location.href = "http://localhost:5000/api/user/facebook";
+                window.location.href = `${API_URL}/api/user/facebook`;
             };
 
 

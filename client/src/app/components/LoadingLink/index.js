@@ -1,10 +1,15 @@
 "use client";
 
 import Link from 'next/link';
+import { useDispatch } from 'react-redux';
+import { showLoading } from '../../slices/loadingSlice';
 
 const LoadingLink = ({ href, children, style, className, ...props }) => {
+    const dispatch = useDispatch();
+
     const handleClick = (e) => {
-        // Loading handled by UniversalLoadingHandler
+        // Show loading immediately on click
+        dispatch(showLoading());
     };
 
     return (

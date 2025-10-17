@@ -10,11 +10,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { showLoading, hideLoading } from "../slices/loadingSlice";
-import axios from "axios";
+import axios from "../utils/axios";
 import LoadingLink from "../components/LoadingLink";
+// Manually controlling loading instead of usePageReady to avoid conflicts
 
 // Validation schema
 const resetPasswordSchema = z.object({
@@ -33,6 +34,9 @@ const ResetPasswordContent = () => {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(null);
     const [token, setToken] = useState(null);
+    const [pageRendered, setPageRendered] = useState(false);
+    const hasCalledPageReady = useRef(false);
+    const hasHandledSuccess = useRef(false);
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: zodResolver(resetPasswordSchema)
     });
@@ -47,7 +51,39 @@ const ResetPasswordContent = () => {
         } else {
             setToken(tokenParam);
         }
+        
+        // Wait for rendering to complete
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                setPageRendered(true);
+            }, 1000);
+        });
     }, [searchParams]);
+
+    // Page ready - hides initial loading (ONLY ONCE)
+    useEffect(() => {
+        if (pageRendered && !hasCalledPageReady.current) {
+            hasCalledPageReady.current = true;
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    dispatch(hideLoading());
+                }, 1500);
+            });
+        }
+    }, [pageRendered, dispatch]);
+
+    // When form submits successfully, wait for success view to render before hiding loading
+    useEffect(() => {
+        if (success && !hasHandledSuccess.current) {
+            hasHandledSuccess.current = true;
+            // Wait for browser to paint the success view, then add buffer time
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    dispatch(hideLoading());
+                }, 3500); // Wait 3.5 seconds after paint for complete stability
+            });
+        }
+    }, [success, dispatch]);
 
     const onSucceededSubmit = async (data) => {
         try {
@@ -56,7 +92,7 @@ const ResetPasswordContent = () => {
 
             console.log("Resetting password with token");
 
-            const res = await axios.post(`http://localhost:5000/api/user/reset-password`, {
+            const res = await axios.post(`/api/user/reset-password`, {
                 token,
                 password: data.password,
                 confirmPassword: data.confirmPassword
@@ -65,11 +101,11 @@ const ResetPasswordContent = () => {
             console.log("Password reset successful:", res.data);
 
             setSuccess(true);
+            // Loading will be hidden by useEffect after success view renders
         } catch (error) {
             console.error("Reset password error:", error.response?.data || error.message);
             setError(error.response?.data?.message || "Failed to reset password. The link may have expired.");
-        } finally {
-            dispatch(hideLoading());
+            dispatch(hideLoading()); // Hide loading on error
         }
     };
 
@@ -93,7 +129,10 @@ const ResetPasswordContent = () => {
                         <Button 
                             variant="contained" 
                             color="primary" 
-                            onClick={() => router.push(isAuthenticated ? "/Dashboard" : "/SignIn")}
+                            onClick={() => {
+                                dispatch(showLoading());
+                                router.push(isAuthenticated ? "/Dashboard" : "/SignIn");
+                            }}
                             fullWidth
                             sx={{ 
                                 padding: { xs: '10px 20px', sm: '8px 22px' }
@@ -121,7 +160,10 @@ const ResetPasswordContent = () => {
                         <Button 
                             variant="contained" 
                             color="primary" 
-                            onClick={() => router.push("/ForgotPassword")}
+                            onClick={() => {
+                                dispatch(showLoading());
+                                router.push("/ForgotPassword");
+                            }}
                             fullWidth
                         >
                             Request New Link

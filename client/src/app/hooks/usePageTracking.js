@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import axios from 'axios';
+import axios from '../utils/axios';
 
 // Generate or get session ID
 const getSessionId = () => {
@@ -25,7 +25,7 @@ export const usePageTracking = () => {
                 const sessionId = getSessionId();
                 
                 if (sessionId) {
-                    await axios.post('http://localhost:5000/api/analytics/track', {
+                    await axios.post('/api/analytics/track', {
                         path: pathname,
                         sessionId
                     });

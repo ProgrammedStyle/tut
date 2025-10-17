@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { usePageReady } from '../../hooks/usePageReady';
+import axios from '../../utils/axios';
 import { 
   Box, 
   Container, 
@@ -631,6 +633,7 @@ const ContentManagement = () => {
   const [editingMode, setEditingMode] = useState(false);
   const [editedTexts, setEditedTexts] = useState({});
   const [currentPage, setCurrentPage] = useState('home');
+  const [pageRendered, setPageRendered] = useState(false);
 
   const languages = [
     { code: 'sa', name: 'العربية', flag: '🇸🇦', englishName: 'Arabic (Saudi Arabia)' },
@@ -674,30 +677,26 @@ const ContentManagement = () => {
       
       try {
         // Try to fetch from database
-        const response = await fetch(`http://localhost:5000/api/translations/${currentLanguage}`, {
-          credentials: 'include'
-        });
+        const response = await axios.get(`/api/translations/${currentLanguage}`);
         
         console.log('📡 Database response status:', response.status);
+        console.log('📡 Database response data:', response.data);
         
-        if (response.ok) {
-          const data = await response.json();
-          console.log('📡 Database response data:', data);
-        if (data.success && data.translations) {
-            // Merge defaults with DB so missing new keys still show up
-            const defaults = defaultTexts[currentLanguage] || defaultTexts['gb'];
-            const mergedFromDb = { ...defaults, ...data.translations };
-            console.log('✓ Loaded translations from database, merged keys:', Object.keys(mergedFromDb));
-            setEditableTexts(mergedFromDb);
-            setEditedTexts(mergedFromDb);
+        if (response.data.success && response.data.translations) {
+          // Merge defaults with DB so missing new keys still show up
+          const defaults = defaultTexts[currentLanguage] || defaultTexts['gb'];
+          const mergedFromDb = { ...defaults, ...response.data.translations };
+          console.log('✓ Loaded translations from database, merged keys:', Object.keys(mergedFromDb));
+          setEditableTexts(mergedFromDb);
+          setEditedTexts(mergedFromDb);
           return;
-          }
-        } else if (response.status === 404) {
+        }
+      } catch (error) {
+        if (error.response?.status === 404) {
           console.log('No translations in database, using defaults');
         } else {
           console.log('Database error, using defaults');
         }
-      } catch (error) {
         console.log('Could not load from database, using defaults:', error);
       }
       
@@ -725,10 +724,20 @@ const ContentManagement = () => {
       console.log('📝 Setting texts with keys:', Object.keys(texts));
       setEditableTexts(texts);
       setEditedTexts(texts);
+      
+      // Wait for rendering to complete after texts are set
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          setPageRendered(true);
+        }, 1000);
+      });
     };
     
     loadTexts();
   }, [currentLanguage, currentPage]);
+
+  // Page is ready after translations are loaded and rendered
+  usePageReady(pageRendered);
 
   const handleLanguageChange = (event) => {
     setCurrentLanguage(event.target.value);

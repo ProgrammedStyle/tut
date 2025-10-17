@@ -22,6 +22,7 @@ import axios from '../../utils/axios';
 import { useDispatch } from 'react-redux';
 import { showLoading, hideLoading } from '../../slices/loadingSlice';
 import { setUserData } from '../../slices/userSlice';
+import { usePageReady } from '../../hooks/usePageReady';
 
 const VerifyEmailContent = () => {
     const theme = useTheme();
@@ -30,6 +31,7 @@ const VerifyEmailContent = () => {
     const dispatch = useDispatch();
     const [status, setStatus] = useState('verifying'); // 'verifying', 'success', 'error'
     const [message, setMessage] = useState('');
+    const [pageRendered, setPageRendered] = useState(false);
 
     useEffect(() => {
         const verifyEmail = async () => {
@@ -65,12 +67,20 @@ const VerifyEmailContent = () => {
                 setStatus('error');
                 setMessage(error.response?.data?.message || 'Failed to verify email address');
             } finally {
-                dispatch(hideLoading());
+                // Wait for rendering to complete after verification
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        setPageRendered(true);
+                    }, 1000);
+                });
             }
         };
 
         verifyEmail();
     }, [searchParams, dispatch]);
+
+    // Page is ready after verification completes and rendering finishes
+    usePageReady(pageRendered);
 
     const getStatusIcon = () => {
         switch (status) {
@@ -152,8 +162,8 @@ const VerifyEmailContent = () => {
                                     variant="contained" 
                                     size="large"
                                     onClick={() => {
-                                        // Force a full page reload to refresh all data
-                                        window.location.href = '/Dashboard';
+                                        dispatch(showLoading());
+                                        router.push('/Dashboard');
                                     }}
                                     sx={{
                                         background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
@@ -176,7 +186,10 @@ const VerifyEmailContent = () => {
                                 <Button 
                                     variant="contained" 
                                     size="large"
-                                    onClick={() => router.push('/Dashboard')}
+                                    onClick={() => {
+                                        dispatch(showLoading());
+                                        router.push('/Dashboard');
+                                    }}
                                     sx={{
                                         background: 'linear-gradient(45deg, #f44336 30%, #ff7043 90%)',
                                         '&:hover': {
