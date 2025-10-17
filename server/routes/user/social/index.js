@@ -99,6 +99,7 @@ router.get('/google/callback',
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined, // Allow cookie to work across all onrender.com subdomains
       maxAge: 1000 * 60 * 60 * 24 * 7
     });
     
@@ -200,6 +201,7 @@ router.get('/facebook/callback',
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined, // Allow cookie to work across all onrender.com subdomains
       maxAge: 1000 * 60 * 60 * 24 * 7
     });
     

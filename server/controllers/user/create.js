@@ -50,6 +50,7 @@ const create = async ( req, res ) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production', // true in production (HTTPS required)
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' for cross-domain in production
+            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined, // Allow cookie to work across all onrender.com subdomains
             maxAge: 1000 * 60 * 60 * 24
         });
 
