@@ -45,6 +45,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
   const [isLoading, setIsLoading] = useState(true);
   const [accuracy, setAccuracy] = useState(null);
   const mapRef = useRef(null);
+  const hasGotAccuratePosition = useRef(false);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -58,32 +59,54 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       const lng = pos.coords.longitude;
       const acc = pos.coords.accuracy;
       
-      setPosition([lat, lng]);
-      setAccuracy(Math.round(acc));
-      setIsLoading(false);
+      console.log(`📍 Location received: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
       
-      console.log(`📍 Location updated: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+      // Only update if this is more accurate than what we have, or if we don't have a position yet
+      // Accept position if accuracy is better than 100 meters, or it's the first position
+      if (!hasGotAccuratePosition.current || acc < 100) {
+        setPosition([lat, lng]);
+        setAccuracy(Math.round(acc));
+        
+        // If we got good accuracy (< 50m), mark it and stop loading
+        if (acc < 50) {
+          hasGotAccuratePosition.current = true;
+          setIsLoading(false);
+          console.log(`✅ Accurate location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+        } else if (!hasGotAccuratePosition.current) {
+          // First position received, but not very accurate - show it but keep trying
+          setIsLoading(false);
+        }
+      }
     };
 
     const error = (err) => {
-      console.log("Location access denied - using default position");
+      console.log("Location error:", err.message);
+      console.log("Using default position");
       setIsLoading(false);
     };
 
-    // High accuracy tracking with continuous updates
+    // High accuracy tracking with longer timeout
     const options = { 
       enableHighAccuracy: true, 
-      maximumAge: 0, // Don't use cached position
-      timeout: 10000 
+      maximumAge: 0, // Don't use cached position - always get fresh location
+      timeout: 30000 // Increased to 30 seconds to give GPS time to get accurate fix
     };
 
-    // Get initial position immediately
+    // Get initial position
     navigator.geolocation.getCurrentPosition(success, error, options);
     
-    // Then watch for changes
+    // Watch for position updates to get better accuracy over time
     const watchId = navigator.geolocation.watchPosition(success, error, options);
 
-    return () => navigator.geolocation.clearWatch(watchId);
+    // Safety timeout - stop loading after 15 seconds even if we don't have great accuracy
+    const safetyTimeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 15000);
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+      clearTimeout(safetyTimeout);
+    };
   }, []);
 
   return (
