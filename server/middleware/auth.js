@@ -9,8 +9,11 @@ const authenticateUser = async (req, res, next) => {
         // If no cookie token, try Authorization header
         if (!token && req.headers.authorization) {
             const authHeader = req.headers.authorization;
+            console.log('🔍 Authorization header received:', authHeader ? 'YES' : 'NO');
+            console.log('🔍 Auth header value:', authHeader ? authHeader.substring(0, 20) + '...' : 'none');
             if (authHeader.startsWith('Bearer ')) {
                 token = authHeader.substring(7); // Remove 'Bearer ' prefix
+                console.log('🔑 Using token from Authorization header');
             }
         }
         

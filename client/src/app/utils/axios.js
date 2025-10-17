@@ -30,6 +30,7 @@ axiosInstance.interceptors.request.use(
                     if (parsed && parsed.token) {
                         config.headers.Authorization = `Bearer ${parsed.token}`;
                         console.log('🔑 Added auth token to request');
+                        console.log('🔍 Authorization header:', `Bearer ${parsed.token.substring(0, 20)}...`);
                     } else {
                         console.log('⚠️ No token found in userData');
                     }
