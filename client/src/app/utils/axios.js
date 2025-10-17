@@ -1,9 +1,19 @@
 import axios from 'axios';
 
+// Get the API URL from environment variable
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
+// Log the API URL being used (helps debug deployment issues)
+console.log('🔗 Axios configured with baseURL:', API_URL);
+console.log('🌍 Environment:', process.env.NODE_ENV);
+
 // Create axios instance with default config
 const axiosInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
-    withCredentials: true
+    baseURL: API_URL,
+    withCredentials: true,
+    headers: {
+        'Content-Type': 'application/json'
+    }
 });
 
 // Track if we're already redirecting to avoid infinite loops

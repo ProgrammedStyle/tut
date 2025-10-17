@@ -52,11 +52,16 @@ const SignIn = () => {
         let shouldNavigate = false;
         
         try {
+            console.log('🔐 Attempting sign in...');
+            console.log('📡 API URL:', axios.defaults.baseURL || 'not set');
+            
             const { data } = await axios.post("/api/user/signin", submittedData);
 
             console.log('✅ Sign in successful:', data);
             
             if (data && data.user) {
+                console.log('💾 Saving user data to Redux and localStorage');
+                
                 // Save to Redux
                 dispatch(setUserData(data.user));
                 
@@ -64,12 +69,30 @@ const SignIn = () => {
                 localStorage.setItem('userData', JSON.stringify(data.user));
                 
                 shouldNavigate = true;
+                console.log('🔄 Redirecting to Dashboard...');
                 // Keep loading visible during navigation
                 router.push("/Dashboard");
+            } else {
+                console.error('⚠️ Sign in response missing user data:', data);
+                setError("Invalid response from server. Please try again.");
             }
         } catch (err) {
             console.error('❌ Sign in error:', err);
-            setError(err.response?.data?.message || "Failed to sign in. Please try again.");
+            console.error('❌ Error details:', {
+                message: err.message,
+                response: err.response?.data,
+                status: err.response?.status,
+                url: err.config?.url,
+                baseURL: err.config?.baseURL
+            });
+            
+            if (err.response?.status === 404) {
+                setError("Server not reachable. Please check your connection.");
+            } else if (err.response?.status === 0 || !err.response) {
+                setError("Cannot connect to server. Please check if the backend is running.");
+            } else {
+                setError(err.response?.data?.message || "Failed to sign in. Please try again.");
+            }
         } finally {
             // Only hide loading if we're not navigating
             if (!shouldNavigate) {
