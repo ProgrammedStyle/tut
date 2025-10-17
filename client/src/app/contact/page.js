@@ -87,6 +87,7 @@ const Contact = () => {
             dispatch(showLoading());
             setError(null);
             setSuccess(false);
+            hasHandledSuccess.current = false; // Reset the success handler
 
             const response = await axios.post("/api/contact", data);
             console.log('📧 Contact form response:', response.data);
