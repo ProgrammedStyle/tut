@@ -46,7 +46,7 @@ export default function RootLayout({ children }) {
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
       </head>
-      <body className={`${styles.body} ${oswald.className}`}>
+      <body className={`${styles.body}`}>
         <Provider store={ store }>
           <LanguageProvider>
             <ThemeProvider theme={theme}>

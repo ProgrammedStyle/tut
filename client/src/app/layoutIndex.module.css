@@ -1,7 +1,7 @@
 .html {
     --app-padding-x: 100px; /* Moved to html for global access */
     height: 100%;
-    font-family: Arial, Helvetica, sans-serif
+    font-family: Arial
 }
 
 .body {

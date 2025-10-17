@@ -37,8 +37,8 @@ const MenuComponent = ({ menuItemsStyle = ``, menuAnchor, menuItems }) => {
                         sx: {
                             '& .MuiMenuItem-root': {
                                 padding: '6px 16px',
-                                minHeight: '48px',
-                                fontSize: '1rem'
+                                minHeight: '37px',
+                                minWidth: '139px'
                             },
                             '& .MuiList-root': {
                                 padding: '8px 0'
