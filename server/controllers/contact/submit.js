@@ -32,16 +32,23 @@ const submitContactForm = async (req, res) => {
             messageLength: message.length
         });
 
-        // Set up email transporter with timeout settings
+        // Set up email transporter with improved settings
         const transporter = createTransport({
             service: 'gmail',
             auth: {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS
             },
-            connectionTimeout: 10000, // 10 seconds
-            greetingTimeout: 5000,    // 5 seconds
-            socketTimeout: 10000       // 10 seconds
+            connectionTimeout: 30000, // 30 seconds
+            greetingTimeout: 10000,    // 10 seconds
+            socketTimeout: 30000,      // 30 seconds
+            pool: true,                // Use connection pooling
+            maxConnections: 1,         // Limit connections
+            rateLimit: 1,              // Limit rate
+            secure: true,              // Use SSL
+            tls: {
+                rejectUnauthorized: false // Allow self-signed certificates
+            }
         });
 
         // Email to admin/support
@@ -116,6 +123,15 @@ const submitContactForm = async (req, res) => {
 
         // Send emails with timeout
         try {
+            console.log('📧 Attempting to send emails...');
+            console.log('📧 SMTP_USER:', process.env.SMTP_USER ? 'Set' : 'Not set');
+            console.log('📧 SMTP_PASS:', process.env.SMTP_PASS ? 'Set' : 'Not set');
+            
+            // Verify SMTP connection first
+            console.log('📧 Verifying SMTP connection...');
+            await transporter.verify();
+            console.log('✅ SMTP connection verified');
+            
             const emailPromise = Promise.all([
                 transporter.sendMail(adminMailOptions),
                 transporter.sendMail(userMailOptions)
@@ -123,7 +139,7 @@ const submitContactForm = async (req, res) => {
             
             // Add timeout to email sending
             const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Email sending timeout')), 15000); // 15 seconds timeout
+                setTimeout(() => reject(new Error('Email sending timeout after 30 seconds')), 30000); // 30 seconds timeout
             });
             
             await Promise.race([emailPromise, timeoutPromise]);
@@ -132,6 +148,11 @@ const submitContactForm = async (req, res) => {
             console.log('✅ User confirmation email sent to:', email);
         } catch (emailError) {
             console.error('❌ Failed to send email:', emailError);
+            console.error('❌ Email error details:', {
+                message: emailError.message,
+                code: emailError.code,
+                command: emailError.command
+            });
             // Continue even if email fails - don't return error to user
         }
 
