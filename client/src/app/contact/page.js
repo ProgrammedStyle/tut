@@ -83,20 +83,28 @@ const Contact = () => {
 
     const onSubmit = async (data) => {
         try {
+            console.log('📧 Submitting contact form...', data);
             dispatch(showLoading());
             setError(null);
             setSuccess(false);
 
             const response = await axios.post("/api/contact", data);
+            console.log('📧 Contact form response:', response.data);
 
             if (response.data.success) {
+                console.log('✅ Contact form submitted successfully');
                 setSuccess(true);
                 reset();
                 setTimeout(() => setSuccess(false), 5000);
                 // Loading will be hidden by useEffect after success alert renders
+            } else {
+                console.log('❌ Contact form failed:', response.data.message);
+                setError(response.data.message || "Failed to send message. Please try again.");
+                dispatch(hideLoading());
             }
         } catch (err) {
-            console.error("Contact form error:", err);
+            console.error("❌ Contact form error:", err);
+            console.error("❌ Error response:", err.response?.data);
             setError(err.response?.data?.message || "Failed to send message. Please try again.");
             dispatch(hideLoading()); // Hide loading on error
         }
