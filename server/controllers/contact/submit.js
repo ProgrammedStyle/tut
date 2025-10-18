@@ -48,7 +48,7 @@ const submitContactForm = async (req, res) => {
                     to: [{ email: process.env.SMTP_USER || 'programmedstyle@gmail.com' }],
                     subject: `[Contact Form] ${subject}`
                 }],
-                from: { email: 'noreply@tut-2-64sz.onrender.com', name: 'Contact Form' },
+                from: { email: process.env.SMTP_USER || 'programmedstyle@gmail.com', name: 'Contact Form' },
                 content: [{
                     type: 'text/html',
                     value: `
@@ -85,7 +85,7 @@ const submitContactForm = async (req, res) => {
                     to: [{ email: email }],
                     subject: `We received your message: ${subject}`
                 }],
-                from: { email: 'noreply@tut-2-64sz.onrender.com', name: 'Contact Form' },
+                from: { email: process.env.SMTP_USER || 'programmedstyle@gmail.com', name: 'Contact Form' },
                 content: [{
                     type: 'text/html',
                     value: `
