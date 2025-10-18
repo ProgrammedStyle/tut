@@ -4,6 +4,9 @@ const submitContactForm = async (req, res) => {
     try {
         console.log('📧 Contact form API called');
         console.log('📧 Request body:', req.body);
+        console.log('📧 Request method:', req.method);
+        console.log('📧 Request URL:', req.url);
+        console.log('📧 Request headers:', req.headers);
         
         const { name, email, subject, message } = req.body;
 
@@ -163,7 +166,10 @@ const submitContactForm = async (req, res) => {
         }
 
     } catch (error) {
-        console.error('Contact form error:', error);
+        console.error('❌ Contact form error:', error);
+        console.error('❌ Error stack:', error.stack);
+        console.error('❌ Error message:', error.message);
+        console.error('❌ Error name:', error.name);
         res.status(500).json({
             success: false,
             message: "Failed to send message. Please try again later."
