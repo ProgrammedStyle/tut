@@ -1,7 +1,7 @@
 import User from "../../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { sendProfileEmailVerification } from "../../../services/emailService.js";
+import { sendProfileEmailVerification } from "../../services/emailService.js";
 
 const updateProfile = async (req, res) => {
     try {
