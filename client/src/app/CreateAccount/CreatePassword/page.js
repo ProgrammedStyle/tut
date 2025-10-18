@@ -65,13 +65,19 @@ const CreateAccount = () => {
             
             console.log("User created successfully:", res.data);
             
-            // Store only necessary user data (not password)
-            const userData = {
-                email: data.email,
-                id: res.data.user?.id
+            // Store user data with JWT token for authentication
+            const userDataWithToken = {
+                email: res.data.user.email,
+                id: res.data.user.id,
+                role: res.data.user.role,
+                hasPassword: res.data.user.hasPassword,
+                token: res.data.token // Include the JWT token for API calls
             };
-            dispatch(setUserData(userData));
-            localStorage.setItem('userData', JSON.stringify(userData));
+            
+            console.log("Storing user data with token:", userDataWithToken);
+            dispatch(setUserData(userDataWithToken));
+            localStorage.setItem('userData', JSON.stringify(userDataWithToken));
+            
             sessionStorage.removeItem("emailToRegister");
             sessionStorage.removeItem("emailVerified");
             

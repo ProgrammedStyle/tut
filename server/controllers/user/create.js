@@ -54,15 +54,17 @@ const create = async ( req, res ) => {
             maxAge: 1000 * 60 * 60 * 24
         });
 
-        res.status(201).json(
-            {
-                user: {
-                    id: newUser._id,
-                    email
-                },
-                message: "account created successfuly"
-            }
-        );
+        res.status(201).json({
+            success: true,
+            user: {
+                id: newUser._id,
+                email: newUser.email,
+                role: newUser.role,
+                hasPassword: !!newUser.password
+            },
+            token: token, // Include token in response for frontend to store
+            message: "Account created successfully"
+        });
     } catch ( error ) {
         console.error("User creation error:", error);
         res.status(500).json({ 
