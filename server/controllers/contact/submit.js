@@ -32,19 +32,19 @@ const submitContactForm = async (req, res) => {
             messageLength: message.length
         });
 
-        // Set up email transporter - using same config as working Create Account email
+        // Set up email transporter - using SendGrid for cloud-friendly email delivery
         const transporter = createTransport({
-            service: "gmail",
+            service: 'SendGrid',
             auth: {
-                user: process.env.SMTP_USER || "programmedstyle@gmail.com",
-                pass: process.env.SMTP_PASS || "brao ywhw gzux rhib"
+                user: 'apikey',
+                pass: process.env.SENDGRID_API_KEY
             }
         });
 
         // Email to admin/support
         const adminMailOptions = {
-            from: process.env.SMTP_USER,
-            to: process.env.SMTP_USER, // Send to yourself
+            from: 'noreply@tut-2-64sz.onrender.com', // Use your domain for SendGrid
+            to: process.env.SMTP_USER || 'programmedstyle@gmail.com', // Send to yourself
             subject: `[Contact Form] ${subject}`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -75,7 +75,7 @@ const submitContactForm = async (req, res) => {
 
         // Confirmation email to user
         const userMailOptions = {
-            from: process.env.SMTP_USER,
+            from: 'noreply@tut-2-64sz.onrender.com', // Use your domain for SendGrid
             to: email,
             subject: `We received your message: ${subject}`,
             html: `
