@@ -137,11 +137,15 @@ const submitContactForm = async (req, res) => {
                 return response;
             };
 
-            await sendEmail(adminEmailData);
+            const adminResponse = await sendEmail(adminEmailData);
             console.log('✅ Admin notification email sent via SendGrid');
+            console.log('📧 Admin response status:', adminResponse.status);
+            console.log('📧 Admin response headers:', adminResponse.headers);
             
-            await sendEmail(userEmailData);
+            const userResponse = await sendEmail(userEmailData);
             console.log('✅ User confirmation email sent via SendGrid to:', email);
+            console.log('📧 User response status:', userResponse.status);
+            console.log('📧 User response headers:', userResponse.headers);
             
             emailSent = true;
             emailMethod = 'SendGrid';
