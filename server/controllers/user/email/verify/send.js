@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { sendEmailVerification } from "../../../services/emailService.js";
+import { sendEmailVerification } from "../../../../services/emailService.js";
 
 const send = async (req, res) => {
     try {
