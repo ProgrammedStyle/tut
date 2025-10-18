@@ -36,6 +36,8 @@ const submitContactForm = async (req, res) => {
         try {
             console.log('📧 Attempting to send emails using SendGrid HTTP API...');
             console.log('📧 SENDGRID_API_KEY:', process.env.SENDGRID_API_KEY ? 'Set' : 'Not set');
+            console.log('📧 SENDGRID_API_KEY length:', process.env.SENDGRID_API_KEY ? process.env.SENDGRID_API_KEY.length : 0);
+            console.log('📧 SENDGRID_API_KEY starts with:', process.env.SENDGRID_API_KEY ? process.env.SENDGRID_API_KEY.substring(0, 10) + '...' : 'N/A');
             
             // Send admin notification email
             const adminEmailData = {
