@@ -1,8 +1,7 @@
 import User from "../../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import pkg from 'nodemailer';
-const { createTransport } = pkg;
+import { sendProfileEmailVerification } from "../../services/emailService.js";
 
 const updateProfile = async (req, res) => {
     try {
@@ -44,37 +43,12 @@ const updateProfile = async (req, res) => {
 
             // Send verification email to NEW email address
             try {
-                const transporter = createTransport({
-                    service: "gmail",
-                    auth: {
-                        user: process.env.SMTP_USER,
-                        pass: process.env.SMTP_PASS
-                    }
-                });
-
-                const verifyURL = `${process.env.CLIENT_URL}/Dashboard/verify-email?token=${emailVerifyToken}`;
+                console.log('📧 Sending profile email verification to:', email);
+                const result = await sendProfileEmailVerification(email, emailVerifyToken);
+                console.log('✅ Profile email verification sent via:', result.method);
                 
-                await transporter.sendMail({
-                    from: process.env.SMTP_USER,
-                    to: email,
-                    subject: "Verify your new email address",
-                    html: `
-                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                            <h2 style="color: #2196F3;">Email Address Verification</h2>
-                            <p>You have requested to change your email address to <strong>${email}</strong>.</p>
-                            <p>Please click the link below to verify your new email address:</p>
-                            <a href="${verifyURL}" style="display: inline-block; padding: 12px 24px; background-color: #2196F3; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0;">
-                                Verify New Email Address
-                            </a>
-                            <p>This link will expire in 15 minutes.</p>
-                            <p>If you did not request this change, please ignore this email.</p>
-                        </div>
-                    `
-                });
-                
-                console.log('✅ Verification email sent to:', email);
             } catch (err) {
-                console.error('❌ Failed to send verification email:', err.message);
+                console.error('❌ Failed to send profile email verification:', err.message);
                 return res.status(500).json({
                     success: false,
                     message: "Failed to send verification email. Please try again."

@@ -1,5 +1,5 @@
-import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
+import { sendEmailVerification } from "../../../services/emailService.js";
 
 const send = async (req, res) => {
     try {
@@ -18,44 +18,18 @@ const send = async (req, res) => {
             CLIENT_URL: process.env.CLIENT_URL || "Not set"
         });
 
-        // Create transporter
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: process.env.SMTP_USER || "programmedstyle@gmail.com",
-                pass: process.env.SMTP_PASS || "brao ywhw gzux rhib"
-            }
-        });
-
-        // Verify transporter connection
-        console.log("Verifying transporter connection...");
-        await transporter.verify();
-        console.log("Transporter verified successfully");
-
         // Generate JWT token
         const token = jwt.sign({
             email: req.body.email
         }, process.env.EMAIL_VERIFY_JWT_SECRET, { expiresIn: "15m" });
 
-        const verifyURL = `${process.env.CLIENT_URL}/CreateAccount/VerifyEmail/Check/?token=${token}`;
-        console.log("Generated verify URL:", verifyURL);
+        console.log("Generated verify token:", token.substring(0, 20) + "...");
 
-        // Send email
-        console.log("Sending email...");
-        const info = await transporter.sendMail({
-            from: process.env.SMTP_USER || "programmedstyle@gmail.com",
-            to: req.body.email,
-            subject: "Please verify your email",
-            html: `
-                <div>
-                    <h2>Email Verification</h2>
-                    <p>Click <a href="${verifyURL}">here</a> to verify your email</p>
-                    <p>This link will expire in 15 minutes.</p>
-                </div>
-            `
-        });
-
-        console.log("Email sent successfully:", info.messageId);
+        // Send email using the new email service
+        console.log("Sending email verification...");
+        const result = await sendEmailVerification(req.body.email, token);
+        
+        console.log("Email sent successfully via:", result.method);
 
         res.status(201).json({
             message: "Check your email and click the link to verify"
