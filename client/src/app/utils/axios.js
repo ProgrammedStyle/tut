@@ -77,6 +77,8 @@ axiosInstance.interceptors.response.use(
                                    currentPath.includes('/CreateAccount') ||
                                    currentPath.includes('/ForgotPassword') ||
                                    currentPath.includes('/ResetPassword') ||
+                                   currentPath.includes('/contact') ||
+                                   currentPath.includes('/about') ||
                                    currentPath === '/' ||
                                    currentPath.match(/^\/[a-z]{2}$/) || // Matches any 2-letter language code like /en, /ar, /de, etc.
                                    currentPath.startsWith('/en/') ||
