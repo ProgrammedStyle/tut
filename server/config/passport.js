@@ -16,7 +16,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://localhost:5000/api/user/google/callback"
+    callbackURL: `${process.env.SERVER_URL}/api/user/google/callback`
   }, async (accessToken, refreshToken, profile, done) => {
     console.log('Google OAuth callback triggered');
     try {
@@ -66,7 +66,7 @@ if (process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET) {
   passport.use(new FacebookStrategy({
     clientID: process.env.FACEBOOK_CLIENT_ID,
     clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-    callbackURL: "http://localhost:5000/api/user/facebook/callback",
+    callbackURL: `${process.env.SERVER_URL}/api/user/facebook/callback`,
     profileFields: ['id', 'emails', 'name']
   }, async (accessToken, refreshToken, profile, done) => {
     console.log('Facebook OAuth callback triggered');
