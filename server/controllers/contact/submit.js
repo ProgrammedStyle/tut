@@ -32,9 +32,11 @@ const submitContactForm = async (req, res) => {
             messageLength: message.length
         });
 
-        // Set up email transporter - using SendGrid for cloud-friendly email delivery
+        // Set up email transporter - using SendGrid SMTP with proper configuration
         const transporter = createTransport({
-            service: 'SendGrid',
+            host: 'smtp.sendgrid.net',
+            port: 587,
+            secure: false, // Use STARTTLS
             auth: {
                 user: 'apikey',
                 pass: process.env.SENDGRID_API_KEY
