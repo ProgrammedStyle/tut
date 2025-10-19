@@ -35,7 +35,7 @@ const sendEmail = async (emailData) => {
                 subject: subject
             }],
             from: { 
-                email: process.env.SMTP_USER || 'programmedstyle@gmail.com', 
+                email: process.env.SMTP_USER || 'printedstyle24@gmail.com', 
                 name: fromName 
             },
             content: [{
@@ -67,13 +67,13 @@ const sendEmail = async (emailData) => {
             const transporter = createTransport({
                 service: "gmail",
                 auth: {
-                    user: process.env.SMTP_USER || "programmedstyle@gmail.com",
+                    user: process.env.SMTP_USER || "printedstyle24@gmail.com",
                     pass: process.env.SMTP_PASS || "brao ywhw gzux rhib"
                 }
             });
             
             const mailOptions = {
-                from: `${fromName} <${process.env.SMTP_USER || "programmedstyle@gmail.com"}>`,
+                from: `${fromName} <${process.env.SMTP_USER || "printedstyle24@gmail.com"}>`,
                 to: to,
                 subject: subject,
                 html: html
