@@ -151,7 +151,7 @@ export default function Home() {
                     }}
                 />
 
-                <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 3, px: { xs: 3, md: 3 } }}>
+                <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 3, px: { xs: 3, md: 3 }, py: { xs: 8, md: 8 } }}>
                     <Grid container spacing={6} alignItems="center">
                         <Grid item xs={12} md={6}>
                             <motion.div
@@ -162,7 +162,7 @@ export default function Home() {
                                 <Typography
                                     variant="h1"
                                     sx={{
-                                        fontSize: '5.5rem',
+                                        fontSize: '4.5rem',
                                         fontWeight: 800,
                                         color: 'white',
                                         mb: 3,
@@ -566,8 +566,10 @@ export default function Home() {
 
                     <Grid container spacing={{ xs: 3, md: 4 }} sx={{ justifyContent: 'center' }}>
                         {routes.map((route, index) => (
-                            <Grid item xs={12} sm={6} md={4} lg={3} key={route.id}
+                            <Grid item xs={12} sm={6} md={4} key={route.id}
                                 sx={{
+                                    maxWidth: { xs: '100%', sm: '50%', md: '33.333333%' },
+                                    flexBasis: { xs: '100%', sm: '50%', md: '33.333333%' },
                                     '@media (max-width: 550px)': {
                                         maxWidth: '96%',
                                         flexBasis: '96%',
@@ -584,7 +586,7 @@ export default function Home() {
                                 >
                                     <Card
                                         sx={{
-                                            height: { xs: '420px', md: '400px' },
+                                            height: '450px',
                                             borderRadius: { xs: 4, md: 3 },
                                             overflow: 'hidden',
                                             boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
@@ -601,7 +603,7 @@ export default function Home() {
                                         <Box sx={{ 
                                             position: 'relative', 
                                             width: '100%', 
-                                            height: { xs: '280px', md: '250px' },
+                                            height: '280px',
                                             overflow: 'hidden' 
                                         }}>
                                             <Image
