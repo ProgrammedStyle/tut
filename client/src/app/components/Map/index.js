@@ -73,15 +73,16 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       setPosition([lat, lng]);
       setAccuracy(Math.round(acc));
       
-      // Stop loading if we get reasonably accurate location
-      if (acc < 100) {
+      // Stop loading if we get reasonably accurate location OR if we've tried enough
+      if (acc < 100 || !hasGotAccuratePosition.current) {
         hasGotAccuratePosition.current = true;
         setIsLoading(false);
-        console.log(`✅ Good location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
-      } else if (!hasGotAccuratePosition.current) {
-        // First position received, show it but keep trying for better accuracy
-        setIsLoading(false);
-        console.log(`⚠️ Location received but not very accurate (±${Math.round(acc)}m), will keep trying...`);
+        
+        if (acc < 100) {
+          console.log(`✅ Good location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+        } else {
+          console.log(`⚠️ Location acquired with limited accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+        }
       }
     };
 
@@ -128,8 +129,8 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
         const acc = pos.coords.accuracy;
         console.log(`🚀 Quick position: ±${Math.round(acc)}m`);
         
-        if (acc < 200) {
-          // Quick position is good enough, use it
+        if (acc < 500) {
+          // Quick position is acceptable, use it
           success(pos);
         } else {
           // Quick position not accurate enough, try high accuracy
@@ -148,10 +149,13 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
     // Watch for position updates to get better accuracy over time
     const watchId = navigator.geolocation.watchPosition(success, error, accurateOptions);
 
-    // Safety timeout - stop loading after 10 seconds
+    // Safety timeout - stop loading after 8 seconds
     const safetyTimeout = setTimeout(() => {
-      setIsLoading(false);
-    }, 10000);
+      if (!hasGotAccuratePosition.current) {
+        console.log("⏰ Location timeout - using best available location");
+        setIsLoading(false);
+      }
+    }, 8000);
 
     return () => {
       navigator.geolocation.clearWatch(watchId);
