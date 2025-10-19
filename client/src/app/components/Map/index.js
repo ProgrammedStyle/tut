@@ -76,19 +76,22 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       setAccuracy(Math.round(acc));
       
       // Stop loading if we get reasonably accurate location OR if we've tried enough
-      if (acc < 100 || !hasGotAccuratePosition.current) {
+      if (acc < 2000 || !hasGotAccuratePosition.current) { // Accept up to 2km accuracy
         hasGotAccuratePosition.current = true;
         setIsLoading(false);
         
         if (acc < 100) {
-          console.log(`✅ Good location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+          console.log(`✅ Excellent location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
           setLocationError(null);
         } else if (acc < 500) {
+          console.log(`✅ Good location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+          setLocationError(null);
+        } else if (acc < 1000) {
           console.log(`⚠️ Location acquired with moderate accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
-          setLocationError(`Location accuracy is moderate (±${Math.round(acc)}m). For better accuracy, try moving to an open area or use the refresh button.`);
+          setLocationError(`Location accuracy is moderate (±${Math.round(acc)}m). For better accuracy, try moving to an open area.`);
         } else {
-          console.log(`⚠️ Location acquired with poor accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
-          setLocationError(`Location accuracy is poor (±${Math.round(acc)}m). Your actual location could be up to ${Math.round(acc/1000)}km away. Try moving to an open area with clear sky view or use the refresh button.`);
+          console.log(`⚠️ Location acquired with limited accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+          setLocationError(`Location accuracy is limited (±${Math.round(acc)}m). Your actual location could be up to ${Math.round(acc/1000)}km away. For better accuracy, try moving to an open area or use manual correction.`);
           setAllowManualCorrection(true);
           setShowApproximateOption(true);
         }
@@ -132,28 +135,35 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       timeout: 15000 // Reasonable timeout for high accuracy
     };
 
-    // Try quick position first
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const acc = pos.coords.accuracy;
-        console.log(`🚀 Quick position: ±${Math.round(acc)}m`);
-        
-        if (acc < 500) {
-          // Quick position is acceptable, use it
-          success(pos);
-        } else {
-          // Quick position not accurate enough, try high accuracy
-          console.log("Quick position not accurate enough, trying high accuracy...");
+    // Try multiple location strategies for better accuracy
+    const tryLocationStrategies = () => {
+      console.log("🔍 Starting multi-strategy location detection...");
+      
+      // Strategy 1: Quick cached position
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const acc = pos.coords.accuracy;
+          console.log(`🚀 Quick position: ±${Math.round(acc)}m`);
+          
+          if (acc < 1000) { // Accept up to 1km accuracy for quick position
+            success(pos);
+          } else {
+            // Try high accuracy GPS
+            console.log("Quick position not accurate enough, trying high accuracy GPS...");
+            navigator.geolocation.getCurrentPosition(success, error, accurateOptions);
+          }
+        },
+        () => {
+          // Quick position failed, try high accuracy GPS
+          console.log("Quick position failed, trying high accuracy GPS...");
           navigator.geolocation.getCurrentPosition(success, error, accurateOptions);
-        }
-      },
-      () => {
-        // Quick position failed, try high accuracy
-        console.log("Quick position failed, trying high accuracy...");
-        navigator.geolocation.getCurrentPosition(success, error, accurateOptions);
-      },
-      quickOptions
-    );
+        },
+        quickOptions
+      );
+    };
+
+    // Start the multi-strategy approach
+    tryLocationStrategies();
     
     // Watch for position updates to get better accuracy over time
     const watchId = navigator.geolocation.watchPosition(success, error, accurateOptions);
@@ -213,13 +223,62 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       }
     };
 
-    const options = { 
-      enableHighAccuracy: true, 
-      maximumAge: 0, // Always get fresh location
-      timeout: 15000 // Give more time for refresh
+    // Try multiple refresh strategies
+    const refreshStrategies = [
+      { 
+        enableHighAccuracy: true, 
+        maximumAge: 0, // Always get fresh location
+        timeout: 15000 // High accuracy GPS
+      },
+      { 
+        enableHighAccuracy: false, 
+        maximumAge: 0, // Always get fresh location
+        timeout: 10000 // Network-based location
+      }
+    ];
+
+    const tryRefreshStrategy = (index) => {
+      if (index >= refreshStrategies.length) {
+        console.log("All refresh strategies failed");
+        setIsRefreshing(false);
+        setLocationError("Failed to refresh location. Please try manual correction.");
+        return;
+      }
+
+      const options = refreshStrategies[index];
+      console.log(`🔄 Trying refresh strategy ${index + 1}...`);
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const acc = pos.coords.accuracy;
+          
+          console.log(`🔄 Refreshed location: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+          
+          setPosition([lat, lng]);
+          setAccuracy(Math.round(acc));
+          setIsRefreshing(false);
+          
+          // Show results based on accuracy
+          if (acc < 100) {
+            setLocationError(null);
+          } else if (acc < 500) {
+            setLocationError(`Refreshed location accuracy: ±${Math.round(acc)}m. For better accuracy, try moving to an open area.`);
+          } else {
+            setLocationError(`Refreshed location accuracy: ±${Math.round(acc)}m. Your actual location could be up to ${Math.round(acc/1000)}km away. Try moving to an open area with clear sky view.`);
+          }
+        },
+        (err) => {
+          console.log(`Refresh strategy ${index + 1} failed:`, err.message);
+          // Try next strategy
+          tryRefreshStrategy(index + 1);
+        },
+        options
+      );
     };
 
-    navigator.geolocation.getCurrentPosition(success, error, options);
+    tryRefreshStrategy(0);
   };
 
   const useApproximateLocation = () => {
