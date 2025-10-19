@@ -49,6 +49,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
   const [locationError, setLocationError] = useState(null);
   const [usingDefaultLocation, setUsingDefaultLocation] = useState(false);
   const [allowManualCorrection, setAllowManualCorrection] = useState(false);
+  const [showApproximateOption, setShowApproximateOption] = useState(false);
   const mapRef = useRef(null);
   const hasGotAccuratePosition = useRef(false);
 
@@ -89,6 +90,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
           console.log(`⚠️ Location acquired with poor accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
           setLocationError(`Location accuracy is poor (±${Math.round(acc)}m). Your actual location could be up to ${Math.round(acc/1000)}km away. Try moving to an open area with clear sky view or use the refresh button.`);
           setAllowManualCorrection(true);
+          setShowApproximateOption(true);
         }
       }
     };
@@ -201,7 +203,14 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
     const error = (err) => {
       console.log("Location refresh error:", err.message);
       setIsRefreshing(false);
-      setLocationError("Failed to refresh location. Please check your GPS/network connection.");
+      
+      if (err.code === 3) {
+        setLocationError("Location request timed out. Try moving to an open area with clear sky view or check your GPS settings.");
+      } else if (err.code === 1) {
+        setLocationError("Location access denied. Please enable location permissions in your browser settings.");
+      } else {
+        setLocationError("Failed to refresh location. Please check your GPS/network connection and try again.");
+      }
     };
 
     const options = { 
@@ -211,6 +220,42 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
     };
 
     navigator.geolocation.getCurrentPosition(success, error, options);
+  };
+
+  const useApproximateLocation = () => {
+    // Use a broader search to find a more accurate location
+    console.log("🔍 Using approximate location method...");
+    
+    const approximateOptions = { 
+      enableHighAccuracy: false, // Use network-based location
+      maximumAge: 300000, // Accept cached location up to 5 minutes old
+      timeout: 10000 // Shorter timeout for network-based location
+    };
+
+    const success = (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const acc = pos.coords.accuracy;
+      
+      console.log(`🌐 Approximate location: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+      
+      setPosition([lat, lng]);
+      setAccuracy(Math.round(acc));
+      setShowApproximateOption(false);
+      
+      if (acc < 500) {
+        setLocationError(null);
+      } else {
+        setLocationError(`Using approximate location (±${Math.round(acc)}m). For better accuracy, try moving to an open area.`);
+      }
+    };
+
+    const error = (err) => {
+      console.log("Approximate location failed:", err.message);
+      setLocationError("Unable to get approximate location. Please try manual correction by dragging the marker.");
+    };
+
+    navigator.geolocation.getCurrentPosition(success, error, approximateOptions);
   };
 
   return (
@@ -266,8 +311,8 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
         </Tooltip>
       )}
 
-      {/* Manual Correction Button */}
-      {!isLoading && allowManualCorrection && (
+      {/* Manual Correction and Approximate Location Options */}
+      {!isLoading && (allowManualCorrection || showApproximateOption) && (
         <Box
           sx={{
             position: "absolute",
@@ -278,12 +323,39 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
             boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
             borderRadius: 1,
             p: 1,
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
           }}
         >
-          <Typography variant="caption" sx={{ fontSize: "0.75rem", color: "#666" }}>
-            Location not accurate?<br />
-            Drag the marker to correct it
-          </Typography>
+          {allowManualCorrection && (
+            <Typography variant="caption" sx={{ fontSize: "0.75rem", color: "#666" }}>
+              Location not accurate?<br />
+              Drag the marker to correct it
+            </Typography>
+          )}
+          
+          {showApproximateOption && (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+              <Typography variant="caption" sx={{ fontSize: "0.75rem", color: "#666" }}>
+                GPS accuracy is poor. Try:
+              </Typography>
+              <button
+                onClick={useApproximateLocation}
+                style={{
+                  fontSize: "0.75rem",
+                  padding: "4px 8px",
+                  backgroundColor: "#4285f4",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Use Network Location
+              </button>
+            </Box>
+          )}
         </Box>
       )}
       
