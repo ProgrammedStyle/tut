@@ -50,6 +50,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
   const [usingDefaultLocation, setUsingDefaultLocation] = useState(false);
   const [allowManualCorrection, setAllowManualCorrection] = useState(false);
   const [showApproximateOption, setShowApproximateOption] = useState(false);
+  const [deviceType, setDeviceType] = useState(null);
   const mapRef = useRef(null);
   const hasGotAccuratePosition = useRef(false);
 
@@ -59,6 +60,26 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       setIsLoading(false);
       return;
     }
+
+    // Detect device type for adaptive location strategies
+    const detectDevice = () => {
+      const userAgent = navigator.userAgent.toLowerCase();
+      if (/mobile|android|iphone|ipad|tablet/.test(userAgent)) {
+        console.log("📱 Mobile device detected - using mobile-optimized location strategy");
+        setDeviceType('mobile');
+        return 'mobile';
+      } else if (/chrome/.test(userAgent)) {
+        console.log("💻 Desktop Chrome detected - using desktop location strategy");
+        setDeviceType('desktop');
+        return 'desktop';
+      } else {
+        console.log("🖥️ Desktop device detected - using desktop location strategy");
+        setDeviceType('desktop');
+        return 'desktop';
+      }
+    };
+
+    const device = detectDevice();
 
     const success = (pos) => {
       const lat = pos.coords.latitude;
@@ -135,34 +156,86 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       timeout: 15000 // Reasonable timeout for high accuracy
     };
 
-    // Try multiple location strategies for better accuracy
+    // Device-specific location strategies
     const tryLocationStrategies = () => {
-      console.log("🔍 Starting multi-strategy location detection...");
+      console.log("🔍 Starting device-specific location detection...");
       
-      // Strategy 1: Quick cached position
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const acc = pos.coords.accuracy;
-          console.log(`🚀 Quick position: ±${Math.round(acc)}m`);
-          
-          if (acc < 1000) { // Accept up to 1km accuracy for quick position
-            success(pos);
-          } else {
-            // Try high accuracy GPS
-            console.log("Quick position not accurate enough, trying high accuracy GPS...");
-            navigator.geolocation.getCurrentPosition(success, error, accurateOptions);
+      // Device-specific strategies
+      const strategies = {
+        mobile: [
+          { 
+            name: "Mobile Quick", 
+            options: { enableHighAccuracy: false, maximumAge: 30000, timeout: 5000 },
+            accuracyThreshold: 1000
+          },
+          { 
+            name: "Mobile GPS", 
+            options: { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 },
+            accuracyThreshold: 500
+          },
+          { 
+            name: "Mobile Network", 
+            options: { enableHighAccuracy: false, maximumAge: 300000, timeout: 8000 },
+            accuracyThreshold: 2000
           }
-        },
-        () => {
-          // Quick position failed, try high accuracy GPS
-          console.log("Quick position failed, trying high accuracy GPS...");
-          navigator.geolocation.getCurrentPosition(success, error, accurateOptions);
-        },
-        quickOptions
-      );
+        ],
+        desktop: [
+          { 
+            name: "Desktop Quick", 
+            options: { enableHighAccuracy: false, maximumAge: 60000, timeout: 3000 },
+            accuracyThreshold: 2000
+          },
+          { 
+            name: "Desktop GPS", 
+            options: { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 },
+            accuracyThreshold: 1000
+          },
+          { 
+            name: "Desktop Network", 
+            options: { enableHighAccuracy: false, maximumAge: 300000, timeout: 10000 },
+            accuracyThreshold: 3000
+          }
+        ]
+      };
+
+      const deviceStrategies = strategies[device] || strategies.desktop;
+      console.log(`🎯 Using ${device} strategies:`, deviceStrategies.map(s => s.name));
+
+      const tryStrategy = (index) => {
+        if (index >= deviceStrategies.length) {
+          console.log("❌ All strategies failed for this device");
+          error({ code: 2, message: "All location strategies failed" });
+          return;
+        }
+
+        const strategy = deviceStrategies[index];
+        console.log(`📍 Trying ${strategy.name}...`);
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const acc = pos.coords.accuracy;
+            console.log(`✅ ${strategy.name} succeeded: ±${Math.round(acc)}m`);
+            
+            if (acc < strategy.accuracyThreshold) {
+              console.log(`🎯 ${strategy.name} accuracy acceptable, using this location`);
+              success(pos);
+            } else {
+              console.log(`⚠️ ${strategy.name} accuracy not good enough, trying next strategy`);
+              tryStrategy(index + 1);
+            }
+          },
+          (err) => {
+            console.log(`❌ ${strategy.name} failed:`, err.message);
+            tryStrategy(index + 1);
+          },
+          strategy.options
+        );
+      };
+
+      tryStrategy(0);
     };
 
-    // Start the multi-strategy approach
+    // Start the comprehensive approach
     tryLocationStrategies();
     
     // Watch for position updates to get better accuracy over time
@@ -223,30 +296,50 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       }
     };
 
-    // Try multiple refresh strategies
-    const refreshStrategies = [
-      { 
-        enableHighAccuracy: true, 
-        maximumAge: 0, // Always get fresh location
-        timeout: 15000 // High accuracy GPS
-      },
-      { 
-        enableHighAccuracy: false, 
-        maximumAge: 0, // Always get fresh location
-        timeout: 10000 // Network-based location
-      }
-    ];
+    // Device-specific refresh strategies
+    const refreshStrategies = {
+      mobile: [
+        { 
+          name: "Mobile GPS Refresh",
+          enableHighAccuracy: true, 
+          maximumAge: 0,
+          timeout: 10000
+        },
+        { 
+          name: "Mobile Network Refresh",
+          enableHighAccuracy: false, 
+          maximumAge: 0,
+          timeout: 8000
+        }
+      ],
+      desktop: [
+        { 
+          name: "Desktop GPS Refresh",
+          enableHighAccuracy: true, 
+          maximumAge: 0,
+          timeout: 15000
+        },
+        { 
+          name: "Desktop Network Refresh",
+          enableHighAccuracy: false, 
+          maximumAge: 0,
+          timeout: 10000
+        }
+      ]
+    };
+
+    const strategies = refreshStrategies[deviceType] || refreshStrategies.desktop;
 
     const tryRefreshStrategy = (index) => {
-      if (index >= refreshStrategies.length) {
+      if (index >= strategies.length) {
         console.log("All refresh strategies failed");
         setIsRefreshing(false);
         setLocationError("Failed to refresh location. Please try manual correction.");
         return;
       }
 
-      const options = refreshStrategies[index];
-      console.log(`🔄 Trying refresh strategy ${index + 1}...`);
+      const strategy = strategies[index];
+      console.log(`🔄 Trying ${strategy.name}...`);
 
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -254,7 +347,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
           const lng = pos.coords.longitude;
           const acc = pos.coords.accuracy;
           
-          console.log(`🔄 Refreshed location: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+          console.log(`🔄 ${strategy.name} succeeded: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
           
           setPosition([lat, lng]);
           setAccuracy(Math.round(acc));
@@ -270,11 +363,11 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
           }
         },
         (err) => {
-          console.log(`Refresh strategy ${index + 1} failed:`, err.message);
+          console.log(`${strategy.name} failed:`, err.message);
           // Try next strategy
           tryRefreshStrategy(index + 1);
         },
-        options
+        strategy
       );
     };
 
