@@ -48,6 +48,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [locationError, setLocationError] = useState(null);
   const [usingDefaultLocation, setUsingDefaultLocation] = useState(false);
+  const [allowManualCorrection, setAllowManualCorrection] = useState(false);
   const mapRef = useRef(null);
   const hasGotAccuratePosition = useRef(false);
 
@@ -87,6 +88,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
         } else {
           console.log(`⚠️ Location acquired with poor accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
           setLocationError(`Location accuracy is poor (±${Math.round(acc)}m). Your actual location could be up to ${Math.round(acc/1000)}km away. Try moving to an open area with clear sky view or use the refresh button.`);
+          setAllowManualCorrection(true);
         }
       }
     };
@@ -263,6 +265,27 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
           </IconButton>
         </Tooltip>
       )}
+
+      {/* Manual Correction Button */}
+      {!isLoading && allowManualCorrection && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 60,
+            right: 10,
+            zIndex: 1000,
+            backgroundColor: "white",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+            borderRadius: 1,
+            p: 1,
+          }}
+        >
+          <Typography variant="caption" sx={{ fontSize: "0.75rem", color: "#666" }}>
+            Location not accurate?<br />
+            Drag the marker to correct it
+          </Typography>
+        </Box>
+      )}
       
       {/* Location Error/Warning Messages */}
       {(locationError || usingDefaultLocation) && (
@@ -299,7 +322,18 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <Recenter position={position} />
-        <Marker position={position} icon={createUserIcon()}>
+        <Marker 
+          position={position} 
+          icon={createUserIcon()}
+          draggable={allowManualCorrection}
+          eventHandlers={allowManualCorrection ? {
+            dragend: (e) => {
+              const newPos = e.target.getLatLng();
+              setPosition([newPos.lat, newPos.lng]);
+              console.log(`🎯 Manually corrected location: ${newPos.lat.toFixed(6)}, ${newPos.lng.toFixed(6)}`);
+            }
+          } : {}}
+        >
           <Popup>
             <div style={{ textAlign: "center" }}>
               <strong>📍 Your Location</strong>
@@ -311,6 +345,14 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
                   <>
                     <br />
                     Accuracy: ±{accuracy}m
+                  </>
+                )}
+                {allowManualCorrection && (
+                  <>
+                    <br />
+                    <span style={{ color: "#ff6b35" }}>
+                      ✋ Draggable - location accuracy is poor
+                    </span>
                   </>
                 )}
               </small>
