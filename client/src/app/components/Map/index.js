@@ -27,10 +27,71 @@ const Map = () => {
   const lastPositionRef = useRef(null);
   const updateIntervalRef = useRef(null);
 
+  // Calculate distance between two coordinates (in km)
+  const calculateDistance = useCallback((pos1, pos2) => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (pos2[0] - pos1[0]) * Math.PI / 180;
+    const dLon = (pos2[1] - pos1[1]) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(pos1[0] * Math.PI / 180) * Math.cos(pos2[0] * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }, []);
+
+  // Try GPS location as fallback
+  const tryGPSLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      console.log("🌍 GPS not available");
+      return;
+    }
+
+    console.log("🌍 Trying GPS location as fallback...");
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const newPosition = [position.coords.latitude, position.coords.longitude];
+        const newAccuracy = position.coords.accuracy;
+        
+        console.log(`📍 GPS Fallback: ${newPosition[0].toFixed(6)}, ${newPosition[1].toFixed(6)} (±${Math.round(newAccuracy)}m)`);
+        
+        setPosition(newPosition);
+        setAccuracy(newAccuracy);
+        lastPositionRef.current = newPosition;
+        
+        setLocationInfo({
+          latitude: newPosition[0],
+          longitude: newPosition[1],
+          city: 'GPS Location',
+          country: 'Your Device',
+          accuracy: newAccuracy,
+          method: `GPS Fallback (±${Math.round(newAccuracy)}m accuracy)`,
+          note: 'Using GPS as fallback when IP detection failed'
+        });
+        
+        setLastUpdateTime(new Date().toLocaleTimeString());
+        setLoading(false);
+        setError(null);
+        
+        console.log(`✅ GPS fallback successful!`);
+      },
+      (error) => {
+        console.error(`❌ GPS fallback also failed: ${error.message}`);
+        setError(`Both IP and GPS location failed: ${error.message}`);
+        setLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 30000
+      }
+    );
+  }, []);
+
   // Get visitor's location from backend IP service
   const getVisitorLocation = useCallback(async () => {
     try {
-      console.log("🌍 Getting VISITOR's location from backend...");
+      console.log("🌍 Getting VISITOR&apos;s location from backend...");
       
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       const endpoint = `${API_URL}/api/location/ip`;
@@ -85,68 +146,7 @@ const Map = () => {
       console.log("🔄 Trying GPS as fallback...");
       tryGPSLocation();
     }
-  }, []);
-
-  // Try GPS location as fallback
-  const tryGPSLocation = useCallback(() => {
-    if (!navigator.geolocation) {
-      console.log("🌍 GPS not available");
-      return;
-    }
-
-    console.log("🌍 Trying GPS location as fallback...");
-    
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const newPosition = [position.coords.latitude, position.coords.longitude];
-        const newAccuracy = position.coords.accuracy;
-        
-        console.log(`📍 GPS Fallback: ${newPosition[0].toFixed(6)}, ${newPosition[1].toFixed(6)} (±${Math.round(newAccuracy)}m)`);
-        
-        setPosition(newPosition);
-        setAccuracy(newAccuracy);
-        lastPositionRef.current = newPosition;
-        
-        setLocationInfo({
-          latitude: newPosition[0],
-          longitude: newPosition[1],
-          city: 'GPS Location',
-          country: 'Your Device',
-          accuracy: newAccuracy,
-          method: `GPS Fallback (±${Math.round(newAccuracy)}m accuracy)`,
-          note: 'Using GPS as fallback when IP detection failed'
-        });
-        
-        setLastUpdateTime(new Date().toLocaleTimeString());
-        setLoading(false);
-        setError(null);
-        
-        console.log(`✅ GPS fallback successful!`);
-      },
-      (error) => {
-        console.error(`❌ GPS fallback also failed: ${error.message}`);
-        setError(`Both IP and GPS location failed: ${error.message}`);
-        setLoading(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 30000
-      }
-    );
-  }, []);
-
-  // Calculate distance between two coordinates (in km)
-  const calculateDistance = (pos1, pos2) => {
-    const R = 6371; // Earth's radius in km
-    const dLat = (pos2[0] - pos1[0]) * Math.PI / 180;
-    const dLon = (pos2[1] - pos1[1]) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(pos1[0] * Math.PI / 180) * Math.cos(pos2[0] * Math.PI / 180) *
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
+  }, [tryGPSLocation, calculateDistance]);
 
   // Start continuous location tracking
   const startLocationTracking = useCallback(() => {
@@ -269,7 +269,7 @@ const Map = () => {
         <Box textAlign="center">
           <CircularProgress size={60} />
           <Typography variant="h6" style={{ marginTop: 16, color: "#666" }}>
-            Detecting visitor's current location...
+            Detecting visitor&apos;s current location...
           </Typography>
           <Typography variant="body2" style={{ marginTop: 8, color: "#999" }}>
             This will update automatically when the visitor moves
@@ -350,7 +350,7 @@ const Map = () => {
             <Popup>
               <div style={{ textAlign: "center", padding: "8px", minWidth: "200px" }}>
                 <Typography variant="h6" style={{ margin: "0 0 8px 0", color: "#333" }}>
-                  📍 Visitor's Current Location
+                  📍 Visitor&apos;s Current Location
                 </Typography>
                 {locationInfo && (
                   <>
@@ -393,7 +393,7 @@ const Map = () => {
           }}
         >
           <Typography variant="h6" style={{ fontWeight: "bold", color: "#333", margin: "0 0 4px 0" }}>
-            📍 Visitor's Current Location
+            📍 Visitor&apos;s Current Location
           </Typography>
           <Typography variant="body2" style={{ color: "#666", margin: "0 0 4px 0" }}>
             🏙️ {locationInfo.city}, {locationInfo.country}
