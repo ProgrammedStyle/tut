@@ -14,11 +14,13 @@ const UniversalLoadingHandler = () => {
     const { show } = useSelector((state) => state.loading);
     const timeoutRef = useRef(null);
     const isInitialMount = useRef(true);
+    const previousPathRef = useRef(null);
 
     useEffect(() => {
         // Skip on initial mount
         if (isInitialMount.current) {
             isInitialMount.current = false;
+            previousPathRef.current = pathname;
             return;
         }
 
@@ -26,12 +28,22 @@ const UniversalLoadingHandler = () => {
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
         }
+
+        // If navigating to the same page, hide loading immediately
+        if (previousPathRef.current === pathname) {
+            console.log('🔄 Same page navigation detected - hiding loading immediately');
+            dispatch(hideLoading());
+            previousPathRef.current = pathname;
+            return;
+        }
         
         // Fallback: Auto-hide after pages have had time to render and load
         // This prevents loading from getting stuck on pages that don't use the hook
         timeoutRef.current = setTimeout(() => {
             dispatch(hideLoading());
         }, 2000); // Reduced to 2 seconds for faster response
+        
+        previousPathRef.current = pathname;
         
         return () => {
             if (timeoutRef.current) {
