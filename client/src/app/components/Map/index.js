@@ -126,15 +126,15 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       
       if (err.code === 1) {
         console.error("❌ Permission denied - user blocked location access");
-        setLocationError("Location access denied. Please enable location permissions.");
+        setLocationError("Location access denied. Please enable location permissions in your browser settings for this website.");
       } else if (err.code === 2) {
         console.error("❌ Position unavailable - location could not be determined");
-        setLocationError("Unable to determine your location. Please check your GPS/network connection.");
+        setLocationError("Unable to determine your location. This device may have limited location services. Try: 1) Moving to an open area with clear sky view, 2) Connecting to Wi-Fi, 3) Checking location permissions, or 4) Using manual correction by dragging the marker.");
       } else if (err.code === 3) {
         console.error("❌ Timeout - location request took too long");
-        setLocationError("Location request timed out. Please try refreshing your location.");
+        setLocationError("Location request timed out. This device may have limited location services. Try: 1) Moving to an open area with clear sky view, 2) Connecting to Wi-Fi, 3) Checking location permissions, or 4) Using manual correction by dragging the marker.");
       } else {
-        setLocationError("Failed to get your location. Please try again.");
+        setLocationError("Failed to get your location. This device may have limited location services. Try: 1) Moving to an open area with clear sky view, 2) Connecting to Wi-Fi, 3) Checking location permissions, or 4) Using manual correction by dragging the marker.");
       }
       
       console.log("Using default position");
@@ -202,11 +202,12 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       console.log(`🎯 Using ${device} strategies:`, deviceStrategies.map(s => s.name));
 
       const tryStrategy = (index) => {
-        if (index >= deviceStrategies.length) {
-          console.log("❌ All strategies failed for this device");
-          error({ code: 2, message: "All location strategies failed" });
-          return;
-        }
+      if (index >= deviceStrategies.length) {
+        console.log("❌ All location strategies failed for this device - location services may be limited");
+        console.log("💡 Suggestions: 1) Check location permissions, 2) Move to open area, 3) Connect to Wi-Fi, 4) Try manual correction");
+        error({ code: 2, message: "All location strategies failed - device location services may be limited" });
+        return;
+      }
 
         const strategy = deviceStrategies[index];
         console.log(`📍 Trying ${strategy.name}...`);
@@ -332,9 +333,9 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
 
     const tryRefreshStrategy = (index) => {
       if (index >= strategies.length) {
-        console.log("All refresh strategies failed");
+        console.log("❌ All refresh strategies failed - device location services may be limited");
         setIsRefreshing(false);
-        setLocationError("Failed to refresh location. Please try manual correction.");
+        setLocationError("All location methods failed. This device may have limited location services. Try: 1) Moving to an open area with clear sky view, 2) Connecting to Wi-Fi, 3) Checking location permissions, or 4) Using manual correction by dragging the marker.");
         return;
       }
 
