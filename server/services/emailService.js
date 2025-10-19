@@ -247,6 +247,20 @@ export const sendProfileEmailVerification = async (email, token) => {
 export const sendContactFormEmails = async (formData) => {
     const { name, email, subject, message } = formData;
     
+    // Escape HTML characters to prevent XSS and display issues
+    const escapeHtml = (text) => {
+        return text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    };
+    
+    const escapedMessage = escapeHtml(message);
+    const escapedName = escapeHtml(name);
+    const escapedSubject = escapeHtml(subject);
+    
     // Admin notification email
     const adminHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -257,13 +271,13 @@ export const sendContactFormEmails = async (formData) => {
                 <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                     <h2 style="color: #333; margin-top: 0;">Contact Details</h2>
                     <div style="margin: 20px 0;">
-                        <p style="margin: 10px 0;"><strong>Name:</strong> ${name}</p>
+                        <p style="margin: 10px 0;"><strong>Name:</strong> ${escapedName}</p>
                         <p style="margin: 10px 0;"><strong>Email:</strong> <a href="mailto:${email}" style="color: #667eea;">${email}</a></p>
-                        <p style="margin: 10px 0;"><strong>Subject:</strong> ${subject}</p>
+                        <p style="margin: 10px 0;"><strong>Subject:</strong> ${escapedSubject}</p>
                     </div>
                     <div style="margin: 20px 0; padding: 20px; background-color: #f5f5f5; border-left: 4px solid #667eea; border-radius: 5px;">
                         <h3 style="margin: 0 0 10px 0; color: #333;">Message:</h3>
-                        <p style="margin: 0; line-height: 1.6; white-space: pre-wrap;">${message}</p>
+                        <p style="margin: 0; line-height: 1.6; white-space: pre-wrap;">${escapedMessage}</p>
                     </div>
                 </div>
             </div>
@@ -282,15 +296,15 @@ export const sendContactFormEmails = async (formData) => {
             </div>
             <div style="padding: 30px; background-color: #f9f9f9;">
                 <div style="background-color: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                    <p style="font-size: 16px; color: #333; line-height: 1.6;">Hi <strong>${name}</strong>,</p>
+                    <p style="font-size: 16px; color: #333; line-height: 1.6;">Hi <strong>${escapedName}</strong>,</p>
                     <p style="font-size: 16px; color: #333; line-height: 1.6;">
                         We've received your message and appreciate you taking the time to reach out to us. 
                         Our team will review your inquiry and get back to you as soon as possible.
                     </p>
                     <div style="margin: 20px 0; padding: 20px; background-color: #f5f5f5; border-left: 4px solid #667eea; border-radius: 5px;">
                         <h3 style="margin: 0 0 10px 0; color: #333;">Your Message:</h3>
-                        <p style="margin: 0; color: #666;"><strong>Subject:</strong> ${subject}</p>
-                        <p style="margin: 10px 0 0 0; line-height: 1.6; white-space: pre-wrap; color: #666;">${message}</p>
+                        <p style="margin: 0; color: #666;"><strong>Subject:</strong> ${escapedSubject}</p>
+                        <p style="margin: 10px 0 0 0; line-height: 1.6; white-space: pre-wrap; color: #666;">${escapedMessage}</p>
                     </div>
                     <p style="font-size: 16px; color: #333; line-height: 1.6;">
                         If you have any urgent concerns, please feel free to call us directly.
@@ -310,14 +324,14 @@ export const sendContactFormEmails = async (formData) => {
     // Send both emails
     const adminResult = await sendEmail({
         to: process.env.SMTP_USER || 'programmedstyle@gmail.com',
-        subject: `[Contact Form] ${subject}`,
+        subject: `[Contact Form] ${escapedSubject}`,
         html: adminHtml,
         fromName: 'Contact Form'
     });
     
     const userResult = await sendEmail({
         to: email,
-        subject: `We received your message: ${subject}`,
+        subject: `We received your message: ${escapedSubject}`,
         html: userHtml,
         fromName: 'Contact Form'
     });
