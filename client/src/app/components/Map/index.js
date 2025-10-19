@@ -20,9 +20,41 @@ const Map = () => {
   const [locationInfo, setLocationInfo] = useState(null);
   const [lastUpdateTime, setLastUpdateTime] = useState(null);
   const [isTracking, setIsTracking] = useState(true);
+  const [isForcingLocation, setIsForcingLocation] = useState(false);
   
   // Refs for tracking
   const updateIntervalRef = useRef(null);
+  const bestAccuracyRef = useRef(Infinity); // Track the best accuracy we've achieved
+  const hasGoodLocationRef = useRef(false); // Track if we have a good location
+
+  // Check GPS permission status
+  const checkGPSPermission = useCallback(async () => {
+    if (!navigator.permissions) {
+      console.log("⚠️ Permissions API not supported, will request GPS directly");
+      return "unknown";
+    }
+    
+    try {
+      const permission = await navigator.permissions.query({ name: 'geolocation' });
+      console.log("🔐 GPS Permission Status:", permission.state);
+      
+      if (permission.state === "denied") {
+        console.log("🚨 GPS permission is DENIED by user!");
+        setError("🚨 GPS permission is DENIED. Please allow location access in your browser settings!");
+        setLoading(false);
+        return "denied";
+      } else if (permission.state === "granted") {
+        console.log("✅ GPS permission is GRANTED!");
+        return "granted";
+      } else {
+        console.log("⚠️ GPS permission is PROMPT (will ask user)");
+        return "prompt";
+      }
+    } catch (error) {
+      console.log("⚠️ Could not check GPS permission:", error);
+      return "unknown";
+    }
+  }, []);
 
   // Get visitor's REAL physical location using browser GPS
   const getVisitorLocation = useCallback(async () => {
@@ -34,6 +66,12 @@ const Map = () => {
       setError("Geolocation is not supported by your browser");
       setLoading(false);
       return;
+    }
+
+    // Check GPS permission first
+    const permissionStatus = await checkGPSPermission();
+    if (permissionStatus === "denied") {
+      return; // Error already set in checkGPSPermission
     }
     
     // Force GPS permission request
@@ -47,6 +85,13 @@ const Map = () => {
         
         console.log(`🎯 GPS SUCCESS! Real coordinates: ${newPosition[0].toFixed(6)}, ${newPosition[1].toFixed(6)} (±${Math.round(accuracy)}m)`);
         console.log(`📍 This is YOUR REAL physical location!`);
+        
+        // Track this as a good location if accuracy is reasonable
+        if (accuracy < 1000) {
+          hasGoodLocationRef.current = true;
+          bestAccuracyRef.current = Math.min(bestAccuracyRef.current, accuracy);
+          console.log(`🔒 LOCKED to good location (best accuracy: ±${Math.round(bestAccuracyRef.current)}m)`);
+        }
         
         setPosition(newPosition);
         
@@ -67,34 +112,57 @@ const Map = () => {
         console.log(`✅ REAL GPS location updated at ${new Date().toLocaleTimeString()}`);
       },
       (error) => {
-        console.error("❌ GPS FAILED:", error);
-        console.error("❌ GPS Error Code:", error.code);
-        console.error("❌ GPS Error Message:", error.message);
-        
-        let errorMessage = "GPS location failed. ";
-        
-        switch(error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage += "Please ALLOW location access in your browser!";
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage += "GPS signal not available. Try going outside.";
-            break;
-          case error.TIMEOUT:
-            errorMessage += "GPS timeout. Try again.";
-            break;
-          default:
-            errorMessage += "GPS error occurred.";
+        // Handle empty error objects gracefully
+        if (!error || Object.keys(error).length === 0) {
+          console.log("⚠️ GPS getCurrentPosition received empty error object - ignoring");
+          console.log("🚨 NO FALLBACK - We keep your real GPS location!");
+          return; // Exit early, don't log empty errors
         }
         
-        setError(errorMessage);
+        console.error("❌ GPS FAILED:", error);
+        console.error("❌ GPS Error Code:", error?.code || "Unknown");
+        console.error("❌ GPS Error Message:", error?.message || "Unknown error");
+        
+        // Handle empty error objects or missing error properties
+        const errorCode = error?.code || 0;
+        const errorMessage = error?.message || "Unknown GPS error";
+        
+        let userErrorMessage = "GPS location failed. ";
+        
+        switch(errorCode) {
+          case 1: // PERMISSION_DENIED
+            userErrorMessage += "🚨 Please ALLOW location access in your browser! Click the location icon in the address bar.";
+            break;
+          case 2: // POSITION_UNAVAILABLE
+            userErrorMessage += "GPS signal not available. Try going outside or near a window.";
+            break;
+          case 3: // TIMEOUT
+            userErrorMessage += "GPS timeout. Try again or go outside for better signal.";
+            break;
+          default:
+            if (errorMessage.includes("timeout") || errorMessage.includes("Timeout")) {
+              userErrorMessage += "GPS timeout. Try going outside or wait longer.";
+            } else if (errorMessage.includes("denied") || errorMessage.includes("Denied")) {
+              userErrorMessage += "🚨 Please ALLOW location access in your browser!";
+            } else {
+              userErrorMessage += `GPS error: ${errorMessage}`;
+            }
+        }
+        
+        console.log("🚨 GPS Error Details:", {
+          code: errorCode,
+          message: errorMessage,
+          fullError: error
+        });
+        
+        setError(userErrorMessage);
         setLoading(false);
         console.log("🚨 NO GPS = NO LOCATION! We need GPS to work!");
       },
       {
-        enableHighAccuracy: true,
-        timeout: 20000,
-        maximumAge: 0  // Force fresh GPS reading
+        enableHighAccuracy: true,  // Force high accuracy GPS for real location
+        timeout: 30000,            // 30 second timeout
+        maximumAge: 0              // Force fresh GPS reading - no cache
       }
     );
     
@@ -104,64 +172,174 @@ const Map = () => {
         const newPosition = [position.coords.latitude, position.coords.longitude];
         const accuracy = position.coords.accuracy;
         
-        console.log(`📍 GPS Location: ${newPosition[0].toFixed(6)}, ${newPosition[1].toFixed(6)} (±${Math.round(accuracy)}m)`);
+        console.log(`📍 GPS UPDATE: ${newPosition[0].toFixed(6)}, ${newPosition[1].toFixed(6)} (±${Math.round(accuracy)}m)`);
+        console.log(`🎯 This is YOUR REAL GPS location update!`);
         
-        setPosition(newPosition);
+        // ANTI-OVERWRITE PROTECTION: Only accept this position if it's better or we don't have a good one yet
+        if (hasGoodLocationRef.current && accuracy > bestAccuracyRef.current * 2) {
+          console.log(`🛡️ REJECTING poor GPS update (${Math.round(accuracy)}m) - keeping better location (${Math.round(bestAccuracyRef.current)}m)`);
+          console.log(`🔒 STAYING LOCKED to your accurate location!`);
+          return; // Don't update with worse location
+        }
         
-        setLocationInfo({
-          latitude: newPosition[0],
-          longitude: newPosition[1],
-          city: 'GPS Location',
-          country: 'Current Device Location',
-          accuracy: accuracy,
-          method: `GPS/Device Location (±${Math.round(accuracy)}m accuracy)`,
-          note: 'Real-time GPS tracking - updates automatically when you move'
-        });
-        
-        setLastUpdateTime(new Date().toLocaleTimeString());
-        setLoading(false);
-        setError(null);
-        
-        console.log(`✅ REAL location updated at ${new Date().toLocaleTimeString()}`);
+        // Accept GPS location even with poor accuracy (up to 2000m) to prevent timeouts
+        if (accuracy < 2000) {
+          // Track if this is a good location
+          if (accuracy < 1000) {
+            hasGoodLocationRef.current = true;
+            bestAccuracyRef.current = Math.min(bestAccuracyRef.current, accuracy);
+            console.log(`🔒 UPDATED lock to better location (best accuracy: ±${Math.round(bestAccuracyRef.current)}m)`);
+          }
+          
+          setPosition(newPosition);
+          
+          setLocationInfo({
+            latitude: newPosition[0],
+            longitude: newPosition[1],
+            city: 'Your Real GPS Location',
+            country: 'Current Device Location',
+            accuracy: accuracy,
+            method: `REAL GPS Location (±${Math.round(accuracy)}m accuracy)`,
+            note: 'Real-time GPS tracking - updates automatically when you move'
+          });
+          
+          setLastUpdateTime(new Date().toLocaleTimeString());
+          setLoading(false);
+          setError(null);
+          
+          console.log(`✅ GPS location updated at ${new Date().toLocaleTimeString()}`);
+        } else {
+          console.log(`⚠️ GPS accuracy very poor (${Math.round(accuracy)}m), but accepting anyway to prevent timeout`);
+          // Only accept poor accuracy if we don't have a good location yet
+          if (!hasGoodLocationRef.current) {
+            setPosition(newPosition);
+            setLocationInfo({
+              latitude: newPosition[0],
+              longitude: newPosition[1],
+              city: 'GPS Location (Low Accuracy)',
+              country: 'Current Device Location',
+              accuracy: accuracy,
+              method: `GPS Location (±${Math.round(accuracy)}m accuracy)`,
+              note: 'GPS signal weak - location may not be precise'
+            });
+            setLastUpdateTime(new Date().toLocaleTimeString());
+            setLoading(false);
+            setError(null);
+          } else {
+            console.log(`🛡️ REJECTING very poor GPS update - keeping your good location!`);
+          }
+        }
       },
       (error) => {
-        console.error("❌ GPS Error:", error);
-        console.error("❌ GPS Error Code:", error.code);
-        console.error("❌ GPS Error Message:", error.message);
-        
-        let errorMessage = "Could not get your location. ";
-        
-        switch(error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage += "Please allow location access in your browser settings.";
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage += "Location information is unavailable.";
-            break;
-          case error.TIMEOUT:
-            errorMessage += "Location request timed out. Try going outside or improving GPS signal.";
-            break;
-          default:
-            errorMessage += "An unknown error occurred.";
+        // Handle empty error objects gracefully
+        if (!error || Object.keys(error).length === 0) {
+          console.log("⚠️ GPS WatchPosition received empty error object - ignoring");
+          console.log("🚨 NO FALLBACK - We keep your real GPS location!");
+          return; // Exit early, don't log empty errors
         }
         
-        // Don't set error if we already have a position (timeout on subsequent updates)
-        if (!position) {
-          setError(errorMessage);
-          setLoading(false);
-        } else {
-          console.log("⚠️ GPS timeout on update, but keeping current position");
-        }
+        console.error("❌ GPS WatchPosition Error:", error);
+        console.error("❌ GPS Error Code:", error?.code || "Unknown");
+        console.error("❌ GPS Error Message:", error?.message || "Unknown error");
+        
+        // Handle empty error objects or missing error properties
+        const errorCode = error?.code || 0;
+        const errorMessage = error?.message || "Unknown GPS error";
+        
+        console.log("🚨 GPS WatchPosition Error Details:", {
+          code: errorCode,
+          message: errorMessage,
+          fullError: error
+        });
+        
+        // IMPORTANT: Don't change position or show error if we already have a good location
+        console.log("⚠️ GPS watchPosition failed, but keeping current GPS location");
+        console.log("🚨 NO FALLBACK - We keep your real GPS location!");
+        
+        // Don't set error or change position - keep what we have
+        // This prevents the map from switching to wrong locations
       },
       {
-        enableHighAccuracy: true,  // Use GPS for highest accuracy
-        timeout: 30000,            // 30 second timeout (increased)
-        maximumAge: 60000          // Allow 1 minute cached position to prevent timeouts
+        enableHighAccuracy: true,  // Force high accuracy GPS for real location
+        timeout: 30000,            // 30 second timeout
+        maximumAge: 0              // Force fresh GPS reading - no cache
       }
     );
     
     // Return the watchId so we can clear it later
     return watchId;
+  }, [checkGPSPermission]);
+
+  // Force fresh location detection
+  const forceFreshLocation = useCallback(async () => {
+    console.log("🔄 FORCING FRESH GPS LOCATION - No cache, high accuracy!");
+    setIsForcingLocation(true);
+    setLoading(true);
+    setError(null);
+    
+    // Reset the location lock to allow fresh detection
+    hasGoodLocationRef.current = false;
+    bestAccuracyRef.current = Infinity;
+    console.log("🔓 UNLOCKED location for fresh GPS reading");
+    
+    // Clear any existing position to force fresh detection
+    setPosition(null);
+    setLocationInfo(null);
+    
+    // Force immediate fresh GPS reading
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const newPosition = [position.coords.latitude, position.coords.longitude];
+          const accuracy = position.coords.accuracy;
+          
+          console.log(`🎯 FRESH GPS SUCCESS! Real coordinates: ${newPosition[0].toFixed(6)}, ${newPosition[1].toFixed(6)} (±${Math.round(accuracy)}m)`);
+          console.log(`📍 This is YOUR REAL physical location - FRESH reading!`);
+          
+          // Lock to this fresh location if it's good
+          if (accuracy < 1000) {
+            hasGoodLocationRef.current = true;
+            bestAccuracyRef.current = accuracy;
+            console.log(`🔒 LOCKED to fresh location (best accuracy: ±${Math.round(accuracy)}m)`);
+          }
+          
+          setPosition(newPosition);
+          setLocationInfo({
+            latitude: newPosition[0],
+            longitude: newPosition[1],
+            city: 'Your Real GPS Location',
+            country: 'Current Device Location',
+            accuracy: accuracy,
+            method: `FRESH GPS Location (±${Math.round(accuracy)}m accuracy)`,
+            note: 'This is your actual physical location from fresh GPS reading'
+          });
+          setLastUpdateTime(new Date().toLocaleTimeString());
+          setLoading(false);
+          setError(null);
+          setIsForcingLocation(false);
+          
+          console.log(`✅ FRESH GPS location updated at ${new Date().toLocaleTimeString()}`);
+        },
+        (error) => {
+          // Handle empty error objects gracefully
+          if (!error || Object.keys(error).length === 0) {
+            console.log("⚠️ FRESH GPS received empty error object - ignoring");
+            setIsForcingLocation(false);
+            return; // Exit early, don't log empty errors
+          }
+          
+          console.error("❌ FRESH GPS FAILED:", error);
+          setError(`Fresh GPS failed: ${error.message || "Unknown error"}`);
+          setLoading(false);
+          setIsForcingLocation(false);
+        },
+        {
+      enableHighAccuracy: true, 
+          timeout: 30000,
+          maximumAge: 0  // Force fresh reading
+        }
+      );
+    }
   }, []);
 
   // Start continuous location tracking
@@ -204,8 +382,15 @@ const Map = () => {
   // Initial location detection
   useEffect(() => {
     console.log("🗺️ Initializing VISITOR location tracking...");
-    console.log("🔄 FORCE REFRESH - GPS Map v2.2 loaded!");
+    console.log("🔄 FORCE REFRESH - GPS Map v2.9 loaded!");
     console.log("🎯 GPS-ONLY MODE: Will show YOUR real location or nothing!");
+    console.log("🚨 ANTI-FALLBACK: Once GPS works, it stays locked to YOUR location!");
+    console.log("🔧 IMPROVED ERROR HANDLING: Better GPS permission and error detection!");
+    console.log("⚡ TIMEOUT FIX: More lenient GPS settings to prevent timeouts!");
+    console.log("🛡️ EMPTY ERROR FIX: Gracefully handle empty GPS error objects!");
+    console.log("🔄 FRESH LOCATION: Force fresh GPS readings with high accuracy!");
+    console.log("🛡️ FRESH GPS ERROR FIX: Handle empty error objects in Force Fresh Location!");
+    console.log("🔒 ANTI-OVERWRITE PROTECTION: Reject poor GPS updates that would overwrite good locations!");
     startLocationTracking();
     
     // Cleanup
@@ -269,14 +454,14 @@ const Map = () => {
   };
 
   if (loading && !position) {
-    return (
+  return (
       <Box 
         style={{ 
           height: "500px", 
           width: "100%", 
-          display: "flex", 
-          alignItems: "center", 
-          justifyContent: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           borderRadius: "16px",
           backgroundColor: "#f5f5f5"
         }}
@@ -284,10 +469,16 @@ const Map = () => {
         <Box textAlign="center">
           <CircularProgress size={60} />
           <Typography variant="h6" style={{ marginTop: 16, color: "#666" }}>
-            Getting YOUR real GPS location... (v2.2 - {new Date().toLocaleTimeString()})
+            Getting YOUR real GPS location... (v2.9 - {new Date().toLocaleTimeString()})
           </Typography>
           <Typography variant="body2" style={{ marginTop: 8, color: "#999" }}>
             🚨 IMPORTANT: Click "Allow" when browser asks for location permission!
+          </Typography>
+          <Typography variant="body2" style={{ marginTop: 8, color: "#999" }}>
+            If GPS fails, check browser location settings or try going outside
+          </Typography>
+          <Typography variant="body2" style={{ marginTop: 8, color: "#999" }}>
+            GPS may show approximate location (±1600m) - this is normal indoors
           </Typography>
           <Typography variant="body2" style={{ marginTop: 8, color: "#999" }}>
             This will show YOUR real physical location, not IP location
@@ -295,14 +486,31 @@ const Map = () => {
           <Typography variant="body2" style={{ marginTop: 8, color: "#999" }}>
             Your exact location will update automatically as you move
           </Typography>
-          <Button 
-            onClick={refreshLocation} 
-            variant="outlined" 
-            style={{ marginTop: 16 }}
-            disabled={loading}
-          >
-            Try Again
-          </Button>
+          <Box style={{ marginTop: 16, display: "flex", gap: 8, justifyContent: "center" }}>
+            <Button 
+              onClick={refreshLocation} 
+              variant="outlined" 
+              disabled={loading}
+            >
+              Try Again
+            </Button>
+            <Button 
+              onClick={forceFreshLocation} 
+              variant="contained" 
+              color="primary"
+              disabled={loading || isForcingLocation}
+            >
+              {isForcingLocation ? "Getting Fresh Location..." : "Force Fresh Location"}
+            </Button>
+            <Button 
+              onClick={checkGPSPermission} 
+              variant="outlined" 
+              color="secondary"
+              disabled={loading}
+            >
+              Check Permission
+            </Button>
+          </Box>
         </Box>
       </Box>
     );
@@ -311,21 +519,63 @@ const Map = () => {
   return (
     <Box style={{ height: "500px", width: "100%", position: "relative", borderRadius: "16px", overflow: "hidden" }}>
       {/* Status indicators */}
-      <Box style={{ position: "absolute", top: 10, left: 10, zIndex: 1000, display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <Chip 
-          label={isTracking ? "🔄 Live GPS Tracking" : "⏸️ GPS Paused"} 
-          color={isTracking ? "success" : "default"}
+             <Box style={{ position: "absolute", top: 10, left: 10, zIndex: 1000, display: "flex", gap: 8, flexWrap: "wrap" }}>
+               <Chip 
+                 label={isTracking ? "🔄 Live GPS Tracking" : "⏸️ GPS Paused"} 
+                 color={isTracking ? "success" : "default"}
+                 size="small"
+                 onClick={toggleTracking}
+                 style={{ cursor: "pointer" }}
+               />
+               {position && (
+                 <Chip 
+                   label="🎯 Locked to YOUR location" 
+                   color="primary"
+                   size="small"
+                 />
+               )}
+               {lastUpdateTime && (
+                 <Chip 
+                   label={`Updated: ${lastUpdateTime}`} 
+                   variant="outlined"
+                   size="small"
+                 />
+               )}
+             </Box>
+
+      {/* Control Panel */}
+      <Box 
+        style={{
+          position: "absolute",
+          top: 10,
+          left: 10,
+          zIndex: 1000,
+          display: "flex",
+          gap: 8,
+          backgroundColor: "rgba(255, 255, 255, 0.95)",
+          padding: "8px 12px",
+          borderRadius: "8px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          backdropFilter: "blur(10px)"
+        }}
+      >
+        <Button 
+          onClick={forceFreshLocation} 
+          variant="contained" 
+          color="primary"
           size="small"
-          onClick={toggleTracking}
-          style={{ cursor: "pointer" }}
-        />
-        {lastUpdateTime && (
-          <Chip 
-            label={`Updated: ${lastUpdateTime}`} 
-            variant="outlined"
-            size="small"
-          />
-        )}
+          disabled={loading || isForcingLocation}
+        >
+          {isForcingLocation ? "Getting Fresh..." : "🔄 Force Fresh Location"}
+        </Button>
+        <Button 
+          onClick={refreshLocation} 
+          variant="outlined" 
+          size="small"
+          disabled={loading}
+        >
+          Try Again
+        </Button>
       </Box>
 
       {error && (
@@ -342,7 +592,7 @@ const Map = () => {
         </Alert>
       )}
       
-      <MapContainer
+      <MapContainer 
         center={position || [0, 0]}
         zoom={position ? 13 : 2}
         style={{ height: "100%", width: "100%" }}
@@ -360,7 +610,7 @@ const Map = () => {
             position={position} 
             icon={createPulseIcon()}
           >
-            <Popup>
+          <Popup>
               <div style={{ textAlign: "center", padding: "8px", minWidth: "200px" }}>
                 <Typography variant="h6" style={{ margin: "0 0 8px 0", color: "#333" }}>
                   📍 Your Real GPS Location
@@ -384,9 +634,9 @@ const Map = () => {
                     </Typography>
                   </>
                 )}
-              </div>
-            </Popup>
-          </Marker>
+            </div>
+          </Popup>
+        </Marker>
         )}
       </MapContainer>
       
