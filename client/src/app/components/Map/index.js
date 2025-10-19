@@ -431,21 +431,30 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
   ];
 
   const tryIPBasedLocation = () => {
-    console.log("🌐 IMMEDIATE: Getting your REAL current location...");
+    console.log("🌐 IMMEDIATE: Getting VISITOR's REAL current location...");
+    console.log("📡 Fetching from backend: /api/location/ip");
     
     // Use your backend server to fetch IP location (avoids CORS issues)
     fetch('/api/location/ip')
       .then(response => {
+        console.log(`📡 Backend response status: ${response.status}`);
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         return response.json();
       })
       .then(data => {
+        console.log("📡 Backend response data:", data);
+        
         if (data.latitude && data.longitude) {
-          console.log(`🌐 SUCCESS: Your REAL location: ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)} (City: ${data.city || 'Unknown'}, Method: ${data.method || 'IP'})`);
+          console.log(`✅ SUCCESS: VISITOR's location detected!`);
+          console.log(`📍 Coordinates: ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)}`);
+          console.log(`🏙️ City: ${data.city || 'Unknown'}`);
+          console.log(`🌍 Country: ${data.country || 'Unknown'}`);
+          console.log(`🔧 Method: ${data.method || 'IP'}`);
+          console.log(`📝 Note: ${data.note || ''}`);
           
-          // IMMEDIATE location update - this is YOUR REAL location
+          // IMMEDIATE location update - this is the VISITOR's REAL location
           setPosition([data.latitude, data.longitude]);
           setAccuracy(data.accuracy || 1000);
           setIsLoading(false);
@@ -454,9 +463,10 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
           setAllowManualCorrection(false);
           setShowApproximateOption(false);
           
-          console.log(`🎯 SUCCESS: Map now shows YOUR REAL location: ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)}`);
+          console.log(`🎯 Map updated to show VISITOR's location!`);
         } else {
-          console.log("❌ IP-based location failed - no coordinates received");
+          console.log("⚠️ No coordinates in response - using emergency fallback");
+          console.log("Response data:", data);
           // Show emergency location immediately
           const emergencyLocation = {
             latitude: 31.7767, // Jerusalem Old City
@@ -471,7 +481,9 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
         }
       })
       .catch(error => {
-        console.log("❌ IP-based location failed:", error.message);
+        console.error("❌ IP-based location FAILED!");
+        console.error("Error details:", error);
+        console.error("Error message:", error.message);
         // Show emergency location immediately
         const emergencyLocation = {
           latitude: 31.7767, // Jerusalem Old City
