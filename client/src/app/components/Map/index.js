@@ -472,7 +472,7 @@ const Map = () => {
             Getting YOUR real GPS location... (v2.9 - {new Date().toLocaleTimeString()})
           </Typography>
           <Typography variant="body2" style={{ marginTop: 8, color: "#999" }}>
-            🚨 IMPORTANT: Click "Allow" when browser asks for location permission!
+            🚨 IMPORTANT: Click &quot;Allow&quot; when browser asks for location permission!
           </Typography>
           <Typography variant="body2" style={{ marginTop: 8, color: "#999" }}>
             If GPS fails, check browser location settings or try going outside
