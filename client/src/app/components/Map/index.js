@@ -1,7 +1,7 @@
 "use client";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { Box, CircularProgress, Typography, Alert, Chip } from '@mui/material';
+import { Box, CircularProgress, Typography, Alert, Chip, Button } from '@mui/material';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -14,159 +14,181 @@ L.Icon.Default.mergeOptions({
 });
 
 const Map = () => {
-  const [position, setPosition] = useState([31.7767, 35.2344]); // Default to Jerusalem
+  const [position, setPosition] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [locationInfo, setLocationInfo] = useState(null);
   const [lastUpdateTime, setLastUpdateTime] = useState(null);
-  const [isTracking, setIsTracking] = useState(true);
+  const [isTracking, setIsTracking] = useState(false);
+  const [accuracy, setAccuracy] = useState(null);
   
   // Refs for tracking
   const watchIdRef = useRef(null);
   const lastPositionRef = useRef(null);
-  const updateIntervalRef = useRef(null);
 
-  // Get visitor's current location from IP
-  const getVisitorLocation = useCallback(async () => {
-    try {
-      console.log("🌍 REAL-TIME MAP: Getting visitor's current location...");
-      
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const endpoint = `${API_URL}/api/location/ip`;
-      
-      const response = await fetch(endpoint);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  // Get current location using browser GPS only
+  const getCurrentLocation = useCallback((options = {}) => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation is not supported by this browser'));
+        return;
       }
-      
-      const data = await response.json();
-      console.log("🌍 REAL-TIME MAP: Location data:", data);
-      
-      if (data.success && data.latitude && data.longitude) {
-        const newPosition = [data.latitude, data.longitude];
-        
-        // Check if position has changed significantly (more than 1km)
-        if (lastPositionRef.current) {
-          const distance = calculateDistance(lastPositionRef.current, newPosition);
-          if (distance > 1) { // More than 1km change
-            console.log(`🔄 REAL-TIME MAP: Visitor moved ${distance.toFixed(2)}km - updating map!`);
+
+      const defaultOptions = {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 30000
+      };
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const coords = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy
+          };
+          console.log(`📍 GPS Location: ${coords.latitude}, ${coords.longitude} (±${Math.round(coords.accuracy)}m)`);
+          resolve(coords);
+        },
+        (error) => {
+          let errorMessage = 'Unknown error';
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = 'Location access denied by user';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = 'Location information unavailable';
+              break;
+            case error.TIMEOUT:
+              errorMessage = 'Location request timed out';
+              break;
           }
-        }
-        
-        setPosition(newPosition);
-        lastPositionRef.current = newPosition;
-        setLocationInfo({
-          city: data.city || 'Unknown',
-          country: data.country || 'Unknown',
-          method: data.method || 'IP Detection',
-          accuracy: data.accuracy || 1000
-        });
-        setLastUpdateTime(new Date().toLocaleTimeString());
-        setLoading(false);
-        setError(null);
-        
-        console.log(`✅ REAL-TIME MAP: Updated to ${data.city}, ${data.country} at ${new Date().toLocaleTimeString()}`);
-      } else {
-        throw new Error("No valid location data received");
-      }
-    } catch (error) {
-      console.error("❌ REAL-TIME MAP: Error getting location:", error);
-      setError(error.message);
-      setLoading(false);
-    }
+          console.error(`❌ GPS Error: ${errorMessage}`);
+          reject(new Error(errorMessage));
+        },
+        { ...defaultOptions, ...options }
+      );
+    });
   }, []);
 
-  // Calculate distance between two coordinates (in km)
-  const calculateDistance = (pos1, pos2) => {
-    const R = 6371; // Earth's radius in km
-    const dLat = (pos2[0] - pos1[0]) * Math.PI / 180;
-    const dLon = (pos2[1] - pos1[1]) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(pos1[0] * Math.PI / 180) * Math.cos(pos2[0] * Math.PI / 180) *
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
-
-  // Browser GPS location tracking
-  const startGPSLocationTracking = useCallback(() => {
+  // Start continuous location tracking
+  const startLocationTracking = useCallback(() => {
     if (!navigator.geolocation) {
-      console.log("🌍 REAL-TIME MAP: GPS not available, using IP tracking only");
+      setError('Geolocation is not supported by this browser');
+      setLoading(false);
       return;
     }
 
-    console.log("🌍 REAL-TIME MAP: Starting GPS location tracking...");
+    console.log("🌍 Starting GPS location tracking...");
+    setIsTracking(true);
     
     const options = {
       enableHighAccuracy: true,
       timeout: 10000,
-      maximumAge: 30000 // Accept cached position up to 30 seconds old
+      maximumAge: 10000 // Accept cached position up to 10 seconds old
     };
 
     // Watch position for continuous updates
     watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
         const newPosition = [position.coords.latitude, position.coords.longitude];
-        const accuracy = position.coords.accuracy;
+        const newAccuracy = position.coords.accuracy;
         
-        console.log(`📍 REAL-TIME MAP: GPS update - ${newPosition[0].toFixed(6)}, ${newPosition[1].toFixed(6)} (±${Math.round(accuracy)}m)`);
+        console.log(`📍 GPS Update: ${newPosition[0].toFixed(6)}, ${newPosition[1].toFixed(6)} (±${Math.round(newAccuracy)}m)`);
         
-        // Only update if GPS is more accurate than IP or if we don't have IP data
-        if (!locationInfo || accuracy < (locationInfo.accuracy || 1000)) {
-          setPosition(newPosition);
-          lastPositionRef.current = newPosition;
-          setLocationInfo({
-            city: 'GPS Location',
-            country: 'Your Device',
-            method: `GPS (${Math.round(accuracy)}m accuracy)`,
-            accuracy: accuracy
-          });
-          setLastUpdateTime(new Date().toLocaleTimeString());
-          setLoading(false);
-          setError(null);
-          
-          console.log(`🎯 REAL-TIME MAP: GPS location updated!`);
-        }
+        // Always update with GPS data - it's the most accurate we have
+        setPosition(newPosition);
+        setAccuracy(newAccuracy);
+        lastPositionRef.current = newPosition;
+        
+        setLocationInfo({
+          latitude: newPosition[0],
+          longitude: newPosition[1],
+          accuracy: newAccuracy,
+          method: `GPS (±${Math.round(newAccuracy)}m accuracy)`,
+          timestamp: new Date()
+        });
+        
+        setLastUpdateTime(new Date().toLocaleTimeString());
+        setLoading(false);
+        setError(null);
+        
+        console.log(`✅ Location updated successfully!`);
       },
       (error) => {
-        console.log("🌍 REAL-TIME MAP: GPS error:", error.message);
-        // GPS failed, continue with IP tracking
+        let errorMessage = 'Unknown error';
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Location access denied. Please allow location access and try again.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Location information unavailable. Please check your internet connection.';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'Location request timed out. Please try again.';
+            break;
+        }
+        console.error(`❌ GPS Tracking Error: ${errorMessage}`);
+        setError(errorMessage);
+        setLoading(false);
       },
       options
     );
-  }, [locationInfo]);
+  }, []);
 
-  // Stop GPS tracking
-  const stopGPSLocationTracking = useCallback(() => {
+  // Stop location tracking
+  const stopLocationTracking = useCallback(() => {
     if (watchIdRef.current) {
       navigator.geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
-      console.log("🌍 REAL-TIME MAP: GPS tracking stopped");
+      setIsTracking(false);
+      console.log("⏸️ Location tracking stopped");
     }
   }, []);
 
+  // Manual location refresh
+  const refreshLocation = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    console.log("🔄 Manual location refresh...");
+    
+    try {
+      const coords = await getCurrentLocation();
+      const newPosition = [coords.latitude, coords.longitude];
+      
+      setPosition(newPosition);
+      setAccuracy(coords.accuracy);
+      lastPositionRef.current = newPosition;
+      
+      setLocationInfo({
+        latitude: newPosition[0],
+        longitude: newPosition[1],
+        accuracy: coords.accuracy,
+        method: `GPS (±${Math.round(coords.accuracy)}m accuracy)`,
+        timestamp: new Date()
+      });
+      
+      setLastUpdateTime(new Date().toLocaleTimeString());
+      setLoading(false);
+      
+      console.log(`✅ Manual refresh successful!`);
+    } catch (error) {
+      console.error(`❌ Manual refresh failed: ${error.message}`);
+      setError(error.message);
+      setLoading(false);
+    }
+  }, [getCurrentLocation]);
+
   // Initial location detection
   useEffect(() => {
-    console.log("🗺️ REAL-TIME MAP: Initializing real-time location tracking...");
-    getVisitorLocation();
-    startGPSLocationTracking();
+    console.log("🗺️ Initializing GPS-only location detection...");
+    startLocationTracking();
     
-    // Set up periodic IP location updates (every 30 seconds)
-    updateIntervalRef.current = setInterval(() => {
-      if (isTracking) {
-        console.log("🔄 REAL-TIME MAP: Periodic location check...");
-        getVisitorLocation();
-      }
-    }, 30000); // Check every 30 seconds
-
     // Cleanup
     return () => {
-      stopGPSLocationTracking();
-      if (updateIntervalRef.current) {
-        clearInterval(updateIntervalRef.current);
-      }
+      stopLocationTracking();
     };
-  }, [getVisitorLocation, startGPSLocationTracking, stopGPSLocationTracking, isTracking]);
+  }, [startLocationTracking, stopLocationTracking]);
 
   // Component to center map on position
   const MapCenter = ({ position }) => {
@@ -174,8 +196,8 @@ const Map = () => {
     
     useEffect(() => {
       if (position && position[0] && position[1]) {
-        console.log("🎯 REAL-TIME MAP: Centering map on:", position);
-        map.setView(position, 13);
+        console.log("🎯 Centering map on:", position);
+        map.setView(position, 15); // Zoom level 15 for better detail
       }
     }, [position, map]);
     
@@ -183,16 +205,16 @@ const Map = () => {
   };
 
   // Custom marker icon with pulse animation
-  const createPulseIcon = (color = 'red') => {
+  const createPulseIcon = () => {
     return L.divIcon({
       className: 'pulse-marker',
       html: `<div style="
-        background-color: ${color};
+        background-color: #ff4444;
         width: 30px;
         height: 30px;
         border-radius: 50%;
         border: 3px solid white;
-        box-shadow: 0 0 0 4px rgba(255,0,0,0.3);
+        box-shadow: 0 0 0 4px rgba(255,68,68,0.3);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -203,9 +225,9 @@ const Map = () => {
       ">📍</div>
       <style>
         @keyframes pulse {
-          0% { box-shadow: 0 0 0 0 rgba(255,0,0,0.7); }
-          70% { box-shadow: 0 0 0 10px rgba(255,0,0,0); }
-          100% { box-shadow: 0 0 0 0 rgba(255,0,0,0); }
+          0% { box-shadow: 0 0 0 0 rgba(255,68,68,0.7); }
+          70% { box-shadow: 0 0 0 10px rgba(255,68,68,0); }
+          100% { box-shadow: 0 0 0 0 rgba(255,68,68,0); }
         }
       </style>`,
       iconSize: [30, 30],
@@ -215,23 +237,14 @@ const Map = () => {
 
   // Toggle tracking
   const toggleTracking = () => {
-    setIsTracking(!isTracking);
     if (isTracking) {
-      stopGPSLocationTracking();
-      if (updateIntervalRef.current) {
-        clearInterval(updateIntervalRef.current);
-      }
-      console.log("⏸️ REAL-TIME MAP: Tracking paused");
+      stopLocationTracking();
     } else {
-      startGPSLocationTracking();
-      updateIntervalRef.current = setInterval(() => {
-        getVisitorLocation();
-      }, 30000);
-      console.log("▶️ REAL-TIME MAP: Tracking resumed");
+      startLocationTracking();
     }
   };
 
-  if (loading) {
+  if (loading && !position) {
     return (
       <Box 
         style={{ 
@@ -247,11 +260,19 @@ const Map = () => {
         <Box textAlign="center">
           <CircularProgress size={60} />
           <Typography variant="h6" style={{ marginTop: 16, color: "#666" }}>
-            Detecting your current location...
+            Getting your current location...
           </Typography>
           <Typography variant="body2" style={{ marginTop: 8, color: "#999" }}>
-            This will update automatically when you move
+            Please allow location access in your browser
           </Typography>
+          <Button 
+            onClick={refreshLocation} 
+            variant="outlined" 
+            style={{ marginTop: 16 }}
+            disabled={loading}
+          >
+            Try Again
+          </Button>
         </Box>
       </Box>
     );
@@ -260,9 +281,9 @@ const Map = () => {
   return (
     <Box style={{ height: "500px", width: "100%", position: "relative", borderRadius: "16px", overflow: "hidden" }}>
       {/* Status indicators */}
-      <Box style={{ position: "absolute", top: 10, left: 10, zIndex: 1000, display: "flex", gap: 8 }}>
+      <Box style={{ position: "absolute", top: 10, left: 10, zIndex: 1000, display: "flex", gap: 8, flexWrap: "wrap" }}>
         <Chip 
-          label={isTracking ? "🔄 Live Tracking" : "⏸️ Tracking Paused"} 
+          label={isTracking ? "🔄 Live GPS Tracking" : "⏸️ GPS Tracking Paused"} 
           color={isTracking ? "success" : "default"}
           size="small"
           onClick={toggleTracking}
@@ -275,55 +296,73 @@ const Map = () => {
             size="small"
           />
         )}
+        {accuracy && (
+          <Chip 
+            label={`±${Math.round(accuracy)}m accuracy`} 
+            variant="outlined"
+            size="small"
+            color={accuracy < 100 ? "success" : accuracy < 500 ? "warning" : "error"}
+          />
+        )}
       </Box>
 
       {error && (
-        <Alert severity="warning" style={{ position: "absolute", top: 10, right: 10, zIndex: 1000, maxWidth: "300px" }}>
+        <Alert 
+          severity="warning" 
+          style={{ position: "absolute", top: 10, right: 10, zIndex: 1000, maxWidth: "300px" }}
+          action={
+            <Button color="inherit" size="small" onClick={refreshLocation}>
+              Retry
+            </Button>
+          }
+        >
           {error}
         </Alert>
       )}
       
       <MapContainer
-        center={position}
-        zoom={13}
+        center={position || [0, 0]}
+        zoom={position ? 15 : 2}
         style={{ height: "100%", width: "100%" }}
         zoomControl={true}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</aStyled contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        <MapCenter position={position} />
+        {position && <MapCenter position={position} />}
         
-        <Marker 
-          position={position} 
-          icon={createPulseIcon('red')}
-        >
-          <Popup>
-            <div style={{ textAlign: "center", padding: "8px", minWidth: "200px" }}>
-              <Typography variant="h6" style={{ margin: "0 0 8px 0", color: "#333" }}>
-                📍 Your Current Location
-              </Typography>
-              {locationInfo && (
-                <>
-                  <Typography variant="body2" style={{ margin: "4px 0", color: "#666" }}>
-                    🏙️ {locationInfo.city}, {locationInfo.country}
-                  </Typography>
-                  <Typography variant="caption" style={{ color: "#888", display: "block" }}>
-                    📡 {locationInfo.method}
-                  </Typography>
-                  <Typography variant="caption" style={{ color: "#888", display: "block" }}>
-                    🕒 Last updated: {lastUpdateTime}
-                  </Typography>
-                  <Typography variant="caption" style={{ color: "#888", display: "block", marginTop: "4px" }}>
-                    💡 This location updates automatically when you move
-                  </Typography>
-                </>
-              )}
-            </div>
-          </Popup>
-        </Marker>
+        {position && (
+          <Marker 
+            position={position} 
+            icon={createPulseIcon()}
+          >
+            <Popup>
+              <div style={{ textAlign: "center", padding: "8px", minWidth: "200px" }}>
+                <Typography variant="h6" style={{ margin: "0 0 8px 0", color: "#333" }}>
+                  📍 Your Current Location
+                </Typography>
+                {locationInfo && (
+                  <>
+                    <Typography variant="body2" style={{ margin: "4px 0", color: "#666" }}>
+                      📍 {locationInfo.latitude.toFixed(6)}, {locationInfo.longitude.toFixed(6)}
+                    </Typography>
+                    <Typography variant="caption" style={{ color: "#888", display: "block" }}>
+                      📡 {locationInfo.method}
+                    </Typography>
+                    <Typography variant="caption" style={{ color: "#888", display: "block" }}>
+                      🕒 Last updated: {lastUpdateTime}
+                    </Typography>
+                    <Typography variant="caption" style={{ color: "#888", display: "block", marginTop: "4px" }}>
+                      💡 This location updates automatically when you move
+                    </Typography>
+                  </>
+                )}
+              </div>
+            </Popup>
+          </Marker>
+        )}
       </MapContainer>
       
       {/* Location info overlay */}
@@ -342,7 +381,10 @@ const Map = () => {
           }}
         >
           <Typography variant="h6" style={{ fontWeight: "bold", color: "#333", margin: "0 0 4px 0" }}>
-            📍 {locationInfo.city}, {locationInfo.country}
+            📍 Your Current Location
+          </Typography>
+          <Typography variant="body2" style={{ color: "#666", margin: "0 0 4px 0" }}>
+            📍 {locationInfo.latitude.toFixed(6)}, {locationInfo.longitude.toFixed(6)}
           </Typography>
           <Typography variant="body2" style={{ color: "#666", margin: "0 0 4px 0" }}>
             📡 {locationInfo.method}
