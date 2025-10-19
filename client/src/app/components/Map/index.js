@@ -181,7 +181,8 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
     hasGotAccuratePosition.current = false; // Don't mark as accurate yet
     setLocationError("Getting your precise location...");
     
-    // 1. Try IP-based location immediately (fastest) - but don't wait for it
+    // 1. Try IP-based location FIRST (most reliable) - prioritize this over GPS
+    console.log("🌐 PRIORITY: Trying IP-based location first (most reliable)");
     tryIPBasedLocation();
     
     // 2. Try cached location immediately (very fast)
@@ -509,7 +510,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
   ];
 
   const tryIPBasedLocation = () => {
-    console.log("🌐 IMMEDIATE: Attempting IP-based location as instant fallback...");
+    console.log("🌐 PRIORITY: Attempting IP-based location (most reliable method)...");
     
     // Use your backend server to fetch IP location (avoids CORS issues)
     fetch('/api/location/ip')
@@ -521,19 +522,21 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       })
       .then(data => {
         if (data.latitude && data.longitude) {
-          console.log(`🌐 IMMEDIATE: IP-based location: ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)} (City: ${data.city || 'Unknown'})`);
+          console.log(`🌐 SUCCESS: IP-based location: ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)} (City: ${data.city || 'Unknown'}, Method: ${data.method || 'IP'})`);
           
-          // IP-based location typically has accuracy of 1-10km
-          const ipAccuracy = data.accuracy || 5000; // Use server-provided accuracy or default to 5km
+          // IP-based location accuracy from server
+          const ipAccuracy = data.accuracy || 1000; // Use server-provided accuracy
           
-          // IMMEDIATE location update
+          // IMMEDIATE location update - this is the most reliable method
           setPosition([data.latitude, data.longitude]);
           setAccuracy(ipAccuracy);
           setIsLoading(false);
           hasGotAccuratePosition.current = true;
-          setLocationError(`Using IP-based location (±${ipAccuracy}m). This should be close to your region.`);
-          setAllowManualCorrection(true);
+          setLocationError(`Using ${data.method || 'IP'}-based location (±${ipAccuracy}m). This should be your correct region.`);
+          setAllowManualCorrection(false); // IP location is usually accurate enough
           setShowApproximateOption(false);
+          
+          console.log(`🎯 IMMEDIATE: Displaying RELIABLE IP location: ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)} (±${ipAccuracy}m)`);
         } else {
           console.log("❌ IP-based location failed - no coordinates received, keeping current location");
           // Don't show error, just keep current location
