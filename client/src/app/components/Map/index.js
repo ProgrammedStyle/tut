@@ -46,6 +46,8 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
   const [isLoading, setIsLoading] = useState(true);
   const [accuracy, setAccuracy] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [locationError, setLocationError] = useState(null);
+  const [usingDefaultLocation, setUsingDefaultLocation] = useState(false);
   const mapRef = useRef(null);
   const hasGotAccuratePosition = useRef(false);
 
@@ -62,6 +64,10 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       const acc = pos.coords.accuracy;
       
       console.log(`📍 Location received: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+      
+      // Clear any previous errors
+      setLocationError(null);
+      setUsingDefaultLocation(false);
       
       // Always update position, but prioritize more accurate ones
       setPosition([lat, lng]);
@@ -80,8 +86,25 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
     };
 
     const error = (err) => {
-      console.log("Location error:", err.message);
+      console.error("Location error:", err);
+      console.error("Error code:", err.code);
+      console.error("Error message:", err.message);
+      
+      if (err.code === 1) {
+        console.error("❌ Permission denied - user blocked location access");
+        setLocationError("Location access denied. Please enable location permissions.");
+      } else if (err.code === 2) {
+        console.error("❌ Position unavailable - location could not be determined");
+        setLocationError("Unable to determine your location. Please check your GPS/network connection.");
+      } else if (err.code === 3) {
+        console.error("❌ Timeout - location request took too long");
+        setLocationError("Location request timed out. Please try refreshing your location.");
+      } else {
+        setLocationError("Failed to get your location. Please try again.");
+      }
+      
       console.log("Using default position");
+      setUsingDefaultLocation(true);
       setIsLoading(false);
     };
 
@@ -219,6 +242,28 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
             )}
           </IconButton>
         </Tooltip>
+      )}
+      
+      {/* Location Error/Warning Messages */}
+      {(locationError || usingDefaultLocation) && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 10,
+            left: 10,
+            right: 60, // Leave space for refresh button
+            zIndex: 1000,
+            backgroundColor: usingDefaultLocation ? "#fff3cd" : "#f8d7da",
+            border: `1px solid ${usingDefaultLocation ? "#ffeaa7" : "#f5c6cb"}`,
+            borderRadius: 1,
+            p: 1,
+            fontSize: "0.875rem",
+          }}
+        >
+          <Typography variant="body2" sx={{ color: usingDefaultLocation ? "#856404" : "#721c24" }}>
+            {locationError || "📍 Showing default location - click refresh to get your actual location"}
+          </Typography>
+        </Box>
       )}
       
       <MapContainer 
