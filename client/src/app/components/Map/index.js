@@ -153,39 +153,14 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       }
     };
 
-    // IMMEDIATE location display - show ANY location instantly
-    console.log("🚀 IMMEDIATE: Starting ALL location methods simultaneously for instant results");
+    // IMMEDIATE location display - show CORRECT location instantly
+    console.log("🚀 IMMEDIATE: Starting IP-based location detection (most reliable)");
     
-    // IMMEDIATE: Show emergency location first while we try to get better location
-    const emergencyLocation = {
-      latitude: 31.7767, // Jerusalem Old City
-      longitude: 35.2344,
-      accuracy: 100
-    };
-    console.log("🚀 IMMEDIATE: Showing emergency location while getting better location");
-    setPosition([emergencyLocation.latitude, emergencyLocation.longitude]);
-    setAccuracy(emergencyLocation.accuracy);
-    setIsLoading(false);
-    hasGotAccuratePosition.current = false; // Don't mark as accurate yet
-    setLocationError("Getting your precise location...");
-    
-    // 1. Try IP-based location FIRST (most reliable) - prioritize this over GPS
-    console.log("🌐 PRIORITY: Trying IP-based location first (most reliable)");
+    // IMMEDIATE: Try IP location first and show it immediately
+    console.log("🌐 PRIORITY: Getting IP-based location (most reliable method)");
     tryIPBasedLocation();
     
-    // 2. Try ONLY high-accuracy GPS (don't interfere with IP location)
-    setTimeout(() => {
-      console.log("🛰️ Trying high-accuracy GPS (won't interfere with IP location)");
-      navigator.geolocation.getCurrentPosition(
-        success,
-        error,
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-      );
-    }, 2000); // Wait 2 seconds for IP location to work first
-
-    // NO continuous monitoring - IP location is reliable enough
-
-    // Safety timeout - stop loading after 10 seconds maximum
+    // Safety timeout - stop loading after 3 seconds maximum
     const safetyTimeout = setTimeout(() => {
       if (!hasGotAccuratePosition.current) {
         console.log("⏰ IMMEDIATE: Location timeout - using emergency fallback");
@@ -199,9 +174,9 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
         setUsingDefaultLocation(true);
         setIsLoading(false);
         hasGotAccuratePosition.current = true;
-        setLocationError("Location timeout - showing approximate location");
+        setLocationError(null);
       }
-    }, 10000); // Increased timeout for better accuracy
+    }, 3000); // Fast timeout - IP location should work quickly
 
     return () => {
       if (locationWatchId.current) {
@@ -478,19 +453,39 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
           setAccuracy(ipAccuracy);
           setIsLoading(false);
           hasGotAccuratePosition.current = true;
-          setLocationError(`Using ${data.method || 'IP'}-based location (±${ipAccuracy}m). This should be your correct region.`);
+          setLocationError(null); // No error message - IP location is reliable
           setAllowManualCorrection(false); // IP location is usually accurate enough
           setShowApproximateOption(false);
           
-          console.log(`🎯 IMMEDIATE: Displaying RELIABLE IP location: ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)} (±${ipAccuracy}m)`);
+          console.log(`🎯 SUCCESS: Displaying RELIABLE IP location: ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)} (±${ipAccuracy}m)`);
         } else {
-          console.log("❌ IP-based location failed - no coordinates received, keeping current location");
-          // Don't show error, just keep current location
+          console.log("❌ IP-based location failed - no coordinates received");
+          // Show emergency location immediately
+          const emergencyLocation = {
+            latitude: 31.7767, // Jerusalem Old City
+            longitude: 35.2344,
+            accuracy: 100
+          };
+          setPosition([emergencyLocation.latitude, emergencyLocation.longitude]);
+          setAccuracy(emergencyLocation.accuracy);
+          setIsLoading(false);
+          hasGotAccuratePosition.current = true;
+          setLocationError(null);
         }
       })
       .catch(error => {
-        console.log("❌ IP-based location failed:", error.message, "- keeping current location");
-        // Don't show error, just keep current location
+        console.log("❌ IP-based location failed:", error.message);
+        // Show emergency location immediately
+        const emergencyLocation = {
+          latitude: 31.7767, // Jerusalem Old City
+          longitude: 35.2344,
+          accuracy: 100
+        };
+        setPosition([emergencyLocation.latitude, emergencyLocation.longitude]);
+        setAccuracy(emergencyLocation.accuracy);
+        setIsLoading(false);
+        hasGotAccuratePosition.current = true;
+        setLocationError(null);
       });
   };
 
