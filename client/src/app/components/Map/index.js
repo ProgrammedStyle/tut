@@ -103,16 +103,42 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       
       console.log(`📍 Location received: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
       
-      // IMMEDIATE location display - show ANY location immediately, regardless of accuracy
-      console.log("🚀 IMMEDIATE: Displaying location instantly - ACCEPTING ANY ACCURACY");
-      setPosition([lat, lng]);
-      setAccuracy(Math.round(acc));
-      setUsingDefaultLocation(false);
-      setIsLoading(false);
-      hasGotAccuratePosition.current = true;
-      
-      // Clear any previous error messages
-      setLocationError(null);
+      // Collect location readings for better accuracy
+      const newReading = { lat, lng, acc, timestamp: Date.now() };
+      setLocationReadings(prev => {
+        const updated = [...prev, newReading].slice(-10); // Keep last 10 readings for better averaging
+        
+        // Calculate average position from recent readings
+        if (updated.length >= 3) {
+          const avgLat = updated.reduce((sum, r) => sum + r.lat, 0) / updated.length;
+          const avgLng = updated.reduce((sum, r) => sum + r.lng, 0) / updated.length;
+          const avgAcc = Math.max(...updated.map(r => r.acc)); // Use worst accuracy as safety margin
+          
+          console.log(`📊 Averaged location from ${updated.length} readings: ${avgLat.toFixed(6)}, ${avgLng.toFixed(6)} (±${Math.round(avgAcc)}m)`);
+          
+          // Only update position if we have better accuracy or this is our first good reading
+          if (avgAcc < 2000 || !hasGotAccuratePosition.current) {
+            console.log("🚀 IMMEDIATE: Displaying averaged location");
+            setPosition([avgLat, avgLng]);
+            setAccuracy(Math.round(avgAcc));
+            setUsingDefaultLocation(false);
+            setIsLoading(false);
+            hasGotAccuratePosition.current = true;
+            setLocationError(null);
+          }
+        } else {
+          // Use individual reading if we don't have enough for averaging
+          console.log("🚀 IMMEDIATE: Displaying individual location reading");
+          setPosition([lat, lng]);
+          setAccuracy(Math.round(acc));
+          setUsingDefaultLocation(false);
+          setIsLoading(false);
+          hasGotAccuratePosition.current = true;
+          setLocationError(null);
+        }
+        
+        return updated;
+      });
       
       // IMMEDIATE auto-correction for poor accuracy - try better methods instantly
       if (acc > 1000) {
@@ -154,9 +180,14 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       } else if (acc < 1000) {
         console.log(`✅ Location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m) - Auto-improving...`);
         setLocationError(`Location accuracy: ±${Math.round(acc)}m. Auto-improving for better accuracy...`);
-      } else {
-        console.log(`✅ Location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m) - Auto-improving...`);
+      } else if (acc < 2000) {
+        console.log(`⚠️ Location acquired with moderate accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m) - Auto-improving...`);
         setLocationError(`Location accuracy: ±${Math.round(acc)}m. Auto-improving for better accuracy...`);
+        setAllowManualCorrection(true);
+        setShowApproximateOption(true);
+      } else {
+        console.log(`⚠️ Location acquired with poor accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m) - Auto-improving...`);
+        setLocationError(`Location accuracy is poor: ±${Math.round(acc)}m. Auto-improving for better accuracy...`);
         setAllowManualCorrection(true);
         setShowApproximateOption(true);
       }
@@ -209,7 +240,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
     setPosition([emergencyLocation.latitude, emergencyLocation.longitude]);
     setAccuracy(emergencyLocation.accuracy);
     setIsLoading(false);
-    hasGotAccuratePosition.current = true;
+    hasGotAccuratePosition.current = false; // Don't mark as accurate yet
     setLocationError("Getting your precise location...");
     
     // 1. Try IP-based location immediately (fastest) - but don't wait for it
@@ -236,7 +267,33 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       { enableHighAccuracy: true, maximumAge: 0, timeout: 3000 }
     );
 
-    // Safety timeout - stop loading after 3 seconds maximum
+    // Continuous location monitoring for better accuracy
+    const startContinuousMonitoring = () => {
+      if (locationWatchId.current) {
+        navigator.geolocation.clearWatch(locationWatchId.current);
+      }
+      
+      console.log("🔄 Starting continuous location monitoring for improved accuracy...");
+      
+      locationWatchId.current = navigator.geolocation.watchPosition(
+        success, 
+        error, 
+        {
+          enableHighAccuracy: true,
+          maximumAge: 5000, // Accept cached position up to 5 seconds old
+          timeout: 15000 // Give more time for continuous monitoring
+        }
+      );
+    };
+
+    // Start continuous monitoring after initial location is found
+    const monitoringTimeout = setTimeout(() => {
+      if (hasGotAccuratePosition.current) {
+        startContinuousMonitoring();
+      }
+    }, 2000);
+
+    // Safety timeout - stop loading after 5 seconds maximum
     const safetyTimeout = setTimeout(() => {
       if (!hasGotAccuratePosition.current) {
         console.log("⏰ IMMEDIATE: Location timeout - using emergency fallback");
@@ -252,7 +309,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
         hasGotAccuratePosition.current = true;
         setLocationError("Location timeout - showing approximate location");
       }
-    }, 3000); // Much faster timeout for immediate results
+    }, 5000); // Increased timeout for better accuracy
 
     return () => {
       if (locationWatchId.current) {
@@ -262,6 +319,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
         clearTimeout(autoCorrectionTimeout.current);
       }
       clearTimeout(safetyTimeout);
+      clearTimeout(monitoringTimeout);
     };
   }, []);
 
