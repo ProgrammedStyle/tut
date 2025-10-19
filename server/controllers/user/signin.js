@@ -50,9 +50,8 @@ const signin = async (req, res) => {
         // Set cookie with production-ready settings
         const cookieSettings = {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // true in production (HTTPS required)
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' for cross-domain in production
-            // Don't set domain - let it default to the backend domain
+            secure: true, // Always secure for HTTPS
+            sameSite: 'none', // Allow cross-domain
             maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
         };
         
