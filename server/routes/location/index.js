@@ -61,6 +61,31 @@ router.get("/ip", async (req, res) => {
           country: data.country,
           accuracy: 1000
         })
+      },
+      {
+        name: 'ipinfo.io',
+        url: `https://ipinfo.io/${clientIP}/json`,
+        parser: (data) => {
+          const coords = data.loc ? data.loc.split(',') : [null, null];
+          return {
+            latitude: parseFloat(coords[0]),
+            longitude: parseFloat(coords[1]),
+            city: data.city,
+            country: data.country,
+            accuracy: 1000
+          };
+        }
+      },
+      {
+        name: 'ipgeolocation.io',
+        url: `https://api.ipgeolocation.io/ipgeo?apiKey=free&ip=${clientIP}`,
+        parser: (data) => ({
+          latitude: parseFloat(data.latitude),
+          longitude: parseFloat(data.longitude),
+          city: data.city,
+          country: data.country_name,
+          accuracy: 1000
+        })
       }
     ];
     
@@ -84,16 +109,23 @@ router.get("/ip", async (req, res) => {
             
             console.log(`✅ SUCCESS with ${service.name}: Found VISITOR's location: ${location.latitude}, ${location.longitude} (${location.city}, ${location.country})`);
             
-            return res.json({
-              success: true,
-              latitude: location.latitude,
-              longitude: location.longitude,
-              city: location.city || 'Unknown',
-              country: location.country || 'Unknown',
-              accuracy: location.accuracy,
-              method: `IP Geolocation (${service.name})`,
-              note: "This is the VISITOR's actual location based on their IP address"
-            });
+            // Additional validation: Check if coordinates are reasonable (not in the middle of ocean or obviously wrong)
+            if (location.latitude >= -90 && location.latitude <= 90 && 
+                location.longitude >= -180 && location.longitude <= 180) {
+              
+              return res.json({
+                success: true,
+                latitude: location.latitude,
+                longitude: location.longitude,
+                city: location.city || 'Unknown',
+                country: location.country || 'Unknown',
+                accuracy: location.accuracy,
+                method: `IP Geolocation (${service.name})`,
+                note: "This is the VISITOR's actual location based on their IP address"
+              });
+            } else {
+              console.log(`⚠️ ${service.name} returned invalid coordinates: ${location.latitude}, ${location.longitude}`);
+            }
           }
         }
       } catch (error) {
