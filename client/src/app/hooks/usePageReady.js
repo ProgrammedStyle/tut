@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { hideLoading } from '../slices/loadingSlice';
+import { usePathname } from 'next/navigation';
 
 /**
  * Hook to signal when a page has finished loading its data
@@ -13,6 +14,7 @@ import { hideLoading } from '../slices/loadingSlice';
  */
 export const usePageReady = (isReady = true, minDelay = 1500) => {
     const dispatch = useDispatch();
+    const pathname = usePathname();
 
     useEffect(() => {
         if (isReady) {
@@ -33,7 +35,7 @@ export const usePageReady = (isReady = true, minDelay = 1500) => {
                 }
             };
         }
-    }, [isReady, minDelay, dispatch]);
+    }, [isReady, minDelay, dispatch, pathname]); // Add pathname to dependencies to reset when route changes
 };
 
 export default usePageReady;
