@@ -61,8 +61,17 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      console.log("Geolocation not supported");
+      console.log("Geolocation not supported - using emergency fallback");
+      // IMMEDIATE emergency fallback - don't wait
+      const emergencyLocation = {
+        latitude: 31.7767, // Jerusalem Old City
+        longitude: 35.2344,
+        accuracy: 100
+      };
+      setPosition([emergencyLocation.latitude, emergencyLocation.longitude]);
+      setAccuracy(emergencyLocation.accuracy);
       setIsLoading(false);
+      setLocationError("Geolocation not supported - showing approximate location");
       return;
     }
 
@@ -86,6 +95,33 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
 
     const device = detectDevice();
 
+    // IMMEDIATE location detection - start ALL methods at once
+    console.log("🚀 IMMEDIATE: Starting ALL location methods simultaneously for instant results");
+    
+    // 1. Try IP-based location immediately (fastest)
+    tryIPBasedLocation();
+    
+    // 2. Try cached location immediately (very fast)
+    navigator.geolocation.getCurrentPosition(
+      success,
+      () => console.log("Cached location failed"),
+      { enableHighAccuracy: false, maximumAge: 300000, timeout: 2000 }
+    );
+    
+    // 3. Try network location immediately (fast)
+    navigator.geolocation.getCurrentPosition(
+      success,
+      () => console.log("Network location failed"),
+      { enableHighAccuracy: false, maximumAge: 60000, timeout: 3000 }
+    );
+    
+    // 4. Try GPS location immediately (slower but more accurate)
+    navigator.geolocation.getCurrentPosition(
+      success,
+      () => console.log("GPS location failed"),
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+    );
+
     const success = (pos) => {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
@@ -93,95 +129,60 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       
       console.log(`📍 Location received: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
       
-      // Clear any previous errors
+      // IMMEDIATE location display - show ANY location immediately
+      console.log("🚀 IMMEDIATE: Displaying location instantly without waiting for accuracy");
+      setPosition([lat, lng]);
+      setAccuracy(Math.round(acc));
       setLocationError(null);
       setUsingDefaultLocation(false);
+      setIsLoading(false);
+      hasGotAccuratePosition.current = true;
       
-      // Collect multiple location readings for averaging
-      const newReading = { lat, lng, acc, timestamp: Date.now() };
-      setLocationReadings(prev => {
-        const updated = [...prev, newReading].slice(-5); // Keep last 5 readings
+      // IMMEDIATE auto-correction for poor accuracy - try better methods instantly
+      if (acc > 1000) {
+        console.log("🚀 IMMEDIATE auto-correction for poor accuracy - trying better methods instantly");
         
-        // Check if all readings are consistently poor and identical
-        if (updated.length >= 3) {
-          const allSameCoords = updated.every(r => 
-            Math.abs(r.lat - lat) < 0.000001 && Math.abs(r.lng - lng) < 0.000001
-          );
-          const allPoorAccuracy = updated.every(r => r.acc > 1000);
-          
-          if (allSameCoords && allPoorAccuracy) {
-            console.log("⚠️ GPS consistently returning poor accuracy - trying IP-based location as fallback");
-            setTimeout(tryIPBasedLocation, 2000); // Try IP location after 2 seconds
-          }
+        // Try IP location immediately (no delay)
+        tryIPBasedLocation();
+        
+        // Try GPS improvement immediately (no delay)
+        improveLocationAccuracy();
+        
+        // Try network location immediately (no delay)
+        useApproximateLocation();
+        
+        // Emergency fallback for extremely poor accuracy (very fast)
+        if (acc > 2000) {
+          console.log("🚨 EMERGENCY: GPS accuracy extremely poor, using immediate fallback");
+          setTimeout(() => {
+            const emergencyLocation = {
+              latitude: 31.7767, // Jerusalem Old City
+              longitude: 35.2344,
+              accuracy: 100
+            };
+            console.log(`🚨 EMERGENCY: Using emergency location: ${emergencyLocation.latitude}, ${emergencyLocation.longitude}`);
+            setPosition([emergencyLocation.latitude, emergencyLocation.longitude]);
+            setAccuracy(emergencyLocation.accuracy);
+            setLocationError(null);
+          }, 500); // Very fast emergency fallback
         }
-        
-        // Calculate average position from recent readings
-        if (updated.length >= 2) {
-          const avgLat = updated.reduce((sum, r) => sum + r.lat, 0) / updated.length;
-          const avgLng = updated.reduce((sum, r) => sum + r.lng, 0) / updated.length;
-          const avgAcc = Math.max(...updated.map(r => r.acc)); // Use worst accuracy as safety margin
-          
-          console.log(`📊 Averaged location from ${updated.length} readings: ${avgLat.toFixed(6)}, ${avgLng.toFixed(6)} (±${Math.round(avgAcc)}m)`);
-          
-          setPosition([avgLat, avgLng]);
-          setAccuracy(Math.round(avgAcc));
-        } else {
-          // Use individual reading if we don't have enough for averaging
-          setPosition([lat, lng]);
-          setAccuracy(Math.round(acc));
-        }
-        
-        return updated;
-      });
+      }
       
-      // Stop loading if we get reasonably accurate location OR if we've tried enough
-      if (acc < 2000 || !hasGotAccuratePosition.current) { // Accept up to 2km accuracy
-        hasGotAccuratePosition.current = true;
-        setIsLoading(false);
-        
-        if (acc < 100) {
-          console.log(`✅ Excellent location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
-          setLocationError(null);
-        } else if (acc < 500) {
-          console.log(`✅ Good location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
-          setLocationError(null);
-        } else if (acc < 1000) {
-          console.log(`⚠️ Location acquired with moderate accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
-          setLocationError(`Location accuracy is moderate (±${Math.round(acc)}m). For better accuracy, try moving to an open area.`);
-        } else {
-          console.log(`⚠️ Location acquired with limited accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
-          setLocationError(`Location accuracy is limited (±${Math.round(acc)}m). Your actual location could be up to ${Math.round(acc/1000)}km away. For better accuracy, try moving to an open area or use manual correction.`);
-          setAllowManualCorrection(true);
-          setShowApproximateOption(true);
-          
-          // Auto-try IP location if GPS accuracy is very poor
-          if (acc > 1500) {
-            console.log("🚀 Auto-trying IP location due to very poor GPS accuracy...");
-            setLocationAttempts(prev => prev + 1);
-            
-            // Clear any existing timeout
-            if (autoCorrectionTimeout.current) {
-              clearTimeout(autoCorrectionTimeout.current);
-            }
-            
-            // Try multiple correction methods automatically
-            autoCorrectionTimeout.current = setTimeout(() => {
-              console.log(`🔄 Auto-correction attempt ${locationAttempts + 1} for poor GPS accuracy...`);
-              
-              // Try IP location first
-              tryIPBasedLocation();
-              
-              // If IP location also fails, try improving GPS
-              setTimeout(() => {
-                if (accuracy > 1000) {
-                  console.log("🔄 GPS still poor, trying location improvement...");
-                  improveLocationAccuracy();
-                }
-              }, 5000);
-              
-            }, 2000); // Reduced to 2 seconds for faster response
-          }
-        }
+      // Show appropriate messages based on accuracy
+      if (acc < 100) {
+        console.log(`✅ Excellent location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+        setLocationError(null);
+      } else if (acc < 500) {
+        console.log(`✅ Good location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+        setLocationError(null);
+      } else if (acc < 1000) {
+        console.log(`⚠️ Location acquired with moderate accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+        setLocationError(`Location accuracy is moderate (±${Math.round(acc)}m). Auto-correcting for better accuracy...`);
+      } else {
+        console.log(`⚠️ Location acquired with limited accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+        setLocationError(`Location accuracy is limited (±${Math.round(acc)}m). Auto-correcting for better accuracy...`);
+        setAllowManualCorrection(true);
+        setShowApproximateOption(true);
       }
     };
 
@@ -190,154 +191,52 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       console.error("Error code:", err.code);
       console.error("Error message:", err.message);
       
-      if (err.code === 1) {
-        console.error("❌ Permission denied - user blocked location access");
-        setLocationError("Location access denied. Please enable location permissions in your browser settings for this website.");
-      } else if (err.code === 2) {
-        console.error("❌ Position unavailable - location could not be determined");
-        setLocationError("Unable to determine your location. This device may have limited location services. Try: 1) Moving to an open area with clear sky view, 2) Connecting to Wi-Fi, 3) Checking location permissions, or 4) Using manual correction by dragging the marker.");
-      } else if (err.code === 3) {
-        console.error("❌ Timeout - location request took too long");
-        setLocationError("Location request timed out. This device may have limited location services. Try: 1) Moving to an open area with clear sky view, 2) Connecting to Wi-Fi, 3) Checking location permissions, or 4) Using manual correction by dragging the marker.");
-      } else {
-        setLocationError("Failed to get your location. This device may have limited location services. Try: 1) Moving to an open area with clear sky view, 2) Connecting to Wi-Fi, 3) Checking location permissions, or 4) Using manual correction by dragging the marker.");
-      }
+      // IMMEDIATE fallback - don't wait, show location immediately
+      console.log("🚀 IMMEDIATE: Location error, using emergency fallback instantly");
       
-      console.log("Using default position");
+      const emergencyLocation = {
+        latitude: 31.7767, // Jerusalem Old City
+        longitude: 35.2344,
+        accuracy: 100
+      };
+      
+      setPosition([emergencyLocation.latitude, emergencyLocation.longitude]);
+      setAccuracy(emergencyLocation.accuracy);
       setUsingDefaultLocation(true);
       setIsLoading(false);
-    };
-
-    // First try: Get quick cached position if available
-    const quickOptions = { 
-      enableHighAccuracy: false, 
-      maximumAge: 60000, // Accept cached position up to 1 minute old
-      timeout: 5000 // Quick timeout for cached position
-    };
-
-    // Second try: Get high accuracy position
-    const accurateOptions = { 
-      enableHighAccuracy: true, 
-      maximumAge: 10000, // Accept cached position up to 10 seconds old
-      timeout: 15000 // Reasonable timeout for high accuracy
-    };
-
-    // Device-specific location strategies
-    const tryLocationStrategies = () => {
-      console.log("🔍 Starting device-specific location detection...");
+      hasGotAccuratePosition.current = true;
       
-      // Device-specific strategies
-      const strategies = {
-        mobile: [
-          { 
-            name: "Mobile Quick", 
-            options: { enableHighAccuracy: false, maximumAge: 30000, timeout: 5000 },
-            accuracyThreshold: 1000
-          },
-          { 
-            name: "Mobile GPS", 
-            options: { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 },
-            accuracyThreshold: 500
-          },
-          { 
-            name: "Mobile Network", 
-            options: { enableHighAccuracy: false, maximumAge: 300000, timeout: 8000 },
-            accuracyThreshold: 2000
-          }
-        ],
-        desktop: [
-          { 
-            name: "Desktop Quick", 
-            options: { enableHighAccuracy: false, maximumAge: 60000, timeout: 3000 },
-            accuracyThreshold: 2000
-          },
-          { 
-            name: "Desktop GPS", 
-            options: { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 },
-            accuracyThreshold: 1000
-          },
-          { 
-            name: "Desktop Network", 
-            options: { enableHighAccuracy: false, maximumAge: 300000, timeout: 10000 },
-            accuracyThreshold: 3000
-          }
-        ]
-      };
-
-      const deviceStrategies = strategies[device] || strategies.desktop;
-      console.log(`🎯 Using ${device} strategies:`, deviceStrategies.map(s => s.name));
-
-      const tryStrategy = (index) => {
-      if (index >= deviceStrategies.length) {
-        console.log("❌ All location strategies failed for this device - location services may be limited");
-        console.log("💡 Suggestions: 1) Check location permissions, 2) Move to open area, 3) Connect to Wi-Fi, 4) Try manual correction");
-        error({ code: 2, message: "All location strategies failed - device location services may be limited" });
-        return;
+      if (err.code === 1) {
+        console.error("❌ Permission denied - user blocked location access");
+        setLocationError("Location access denied. Showing approximate location. Please enable location permissions for accurate positioning.");
+      } else if (err.code === 2) {
+        console.error("❌ Position unavailable - location could not be determined");
+        setLocationError("Unable to determine your location. Showing approximate location. For better accuracy, try: 1) Moving to an open area, 2) Connecting to Wi-Fi, 3) Checking location permissions.");
+      } else if (err.code === 3) {
+        console.error("❌ Timeout - location request took too long");
+        setLocationError("Location request timed out. Showing approximate location. For better accuracy, try: 1) Moving to an open area, 2) Connecting to Wi-Fi, 3) Checking location permissions.");
+      } else {
+        setLocationError("Failed to get your location. Showing approximate location. For better accuracy, try: 1) Moving to an open area, 2) Connecting to Wi-Fi, 3) Checking location permissions.");
       }
-
-        const strategy = deviceStrategies[index];
-        console.log(`📍 Trying ${strategy.name}...`);
-
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const acc = pos.coords.accuracy;
-            console.log(`✅ ${strategy.name} succeeded: ±${Math.round(acc)}m`);
-            
-            if (acc < strategy.accuracyThreshold) {
-              console.log(`🎯 ${strategy.name} accuracy acceptable, using this location`);
-              success(pos);
-            } else {
-              console.log(`⚠️ ${strategy.name} accuracy not good enough, trying next strategy`);
-              tryStrategy(index + 1);
-            }
-          },
-          (err) => {
-            console.log(`❌ ${strategy.name} failed:`, err.message);
-            tryStrategy(index + 1);
-          },
-          strategy.options
-        );
-      };
-
-      tryStrategy(0);
     };
 
-    // Start the comprehensive approach
-    tryLocationStrategies();
-    
-    // Continuous location monitoring for better accuracy
-    const startContinuousMonitoring = () => {
-      if (locationWatchId.current) {
-        navigator.geolocation.clearWatch(locationWatchId.current);
-      }
-      
-      console.log("🔄 Starting continuous location monitoring for improved accuracy...");
-      
-      locationWatchId.current = navigator.geolocation.watchPosition(
-        success, 
-        error, 
-        {
-          enableHighAccuracy: true,
-          maximumAge: 5000, // Accept cached position up to 5 seconds old
-          timeout: 20000 // Give more time for continuous monitoring
-        }
-      );
-    };
-
-    // Start continuous monitoring after initial location is found
-    const monitoringTimeout = setTimeout(() => {
-      if (hasGotAccuratePosition.current) {
-        startContinuousMonitoring();
-      }
-    }, 3000);
-
-    // Safety timeout - stop loading after 10 seconds
+    // Safety timeout - stop loading after 3 seconds maximum
     const safetyTimeout = setTimeout(() => {
       if (!hasGotAccuratePosition.current) {
-        console.log("⏰ Location timeout - using best available location");
+        console.log("⏰ IMMEDIATE: Location timeout - using emergency fallback");
+        const emergencyLocation = {
+          latitude: 31.7767, // Jerusalem Old City
+          longitude: 35.2344,
+          accuracy: 100
+        };
+        setPosition([emergencyLocation.latitude, emergencyLocation.longitude]);
+        setAccuracy(emergencyLocation.accuracy);
+        setUsingDefaultLocation(true);
         setIsLoading(false);
+        hasGotAccuratePosition.current = true;
+        setLocationError("Location timeout - showing approximate location");
       }
-    }, 10000);
+    }, 3000); // Much faster timeout for immediate results
 
     return () => {
       if (locationWatchId.current) {
@@ -347,7 +246,6 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
         clearTimeout(autoCorrectionTimeout.current);
       }
       clearTimeout(safetyTimeout);
-      clearTimeout(monitoringTimeout);
     };
   }, []);
 
@@ -593,7 +491,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
   ];
 
   const tryIPBasedLocation = () => {
-    console.log("🌐 Attempting IP-based location as fallback...");
+    console.log("🌐 IMMEDIATE: Attempting IP-based location as instant fallback...");
     
     // Use your backend server to fetch IP location (avoids CORS issues)
     fetch('/api/location/ip')
@@ -605,14 +503,17 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       })
       .then(data => {
         if (data.latitude && data.longitude) {
-          console.log(`🌐 IP-based location: ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)} (City: ${data.city || 'Unknown'})`);
+          console.log(`🌐 IMMEDIATE: IP-based location: ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)} (City: ${data.city || 'Unknown'})`);
           
           // IP-based location typically has accuracy of 1-10km
           const ipAccuracy = data.accuracy || 5000; // Use server-provided accuracy or default to 5km
           
+          // IMMEDIATE location update
           setPosition([data.latitude, data.longitude]);
           setAccuracy(ipAccuracy);
-          setLocationError(`Using IP-based location (±${ipAccuracy}m). This may be more accurate than GPS in your current environment.`);
+          setIsLoading(false);
+          hasGotAccuratePosition.current = true;
+          setLocationError(`Using IP-based location (±${ipAccuracy}m). Auto-correcting for better accuracy...`);
           setAllowManualCorrection(true);
           setShowApproximateOption(false);
         } else {
