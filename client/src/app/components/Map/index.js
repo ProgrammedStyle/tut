@@ -52,9 +52,12 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
   const [showApproximateOption, setShowApproximateOption] = useState(false);
   const [deviceType, setDeviceType] = useState(null);
   const [locationReadings, setLocationReadings] = useState([]);
+  const [locationAttempts, setLocationAttempts] = useState(0);
+  const [showLocationSelector, setShowLocationSelector] = useState(false);
   const mapRef = useRef(null);
   const hasGotAccuratePosition = useRef(false);
   const locationWatchId = useRef(null);
+  const autoCorrectionTimeout = useRef(null);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -154,11 +157,29 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
           // Auto-try IP location if GPS accuracy is very poor
           if (acc > 1500) {
             console.log("🚀 Auto-trying IP location due to very poor GPS accuracy...");
-            setTimeout(() => {
-              if (!hasGotAccuratePosition.current || accuracy > 1500) {
-                tryIPBasedLocation();
-              }
-            }, 3000);
+            setLocationAttempts(prev => prev + 1);
+            
+            // Clear any existing timeout
+            if (autoCorrectionTimeout.current) {
+              clearTimeout(autoCorrectionTimeout.current);
+            }
+            
+            // Try multiple correction methods automatically
+            autoCorrectionTimeout.current = setTimeout(() => {
+              console.log(`🔄 Auto-correction attempt ${locationAttempts + 1} for poor GPS accuracy...`);
+              
+              // Try IP location first
+              tryIPBasedLocation();
+              
+              // If IP location also fails, try improving GPS
+              setTimeout(() => {
+                if (accuracy > 1000) {
+                  console.log("🔄 GPS still poor, trying location improvement...");
+                  improveLocationAccuracy();
+                }
+              }, 5000);
+              
+            }, 2000); // Reduced to 2 seconds for faster response
           }
         }
       }
@@ -321,6 +342,9 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
     return () => {
       if (locationWatchId.current) {
         navigator.geolocation.clearWatch(locationWatchId.current);
+      }
+      if (autoCorrectionTimeout.current) {
+        clearTimeout(autoCorrectionTimeout.current);
       }
       clearTimeout(safetyTimeout);
       clearTimeout(monitoringTimeout);
@@ -547,6 +571,27 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
     collectQuickReading();
   };
 
+  const selectPredefinedLocation = (location) => {
+    console.log(`🎯 Selected predefined location: ${location.name} - ${location.latitude}, ${location.longitude}`);
+    setPosition([location.latitude, location.longitude]);
+    setAccuracy(location.accuracy);
+    setLocationError(null);
+    setShowLocationSelector(false);
+    setAllowManualCorrection(false);
+    setShowApproximateOption(false);
+  };
+
+  const predefinedLocations = [
+    { name: "Jerusalem Old City", latitude: 31.7767, longitude: 35.2344, accuracy: 100 },
+    { name: "Jerusalem Center", latitude: 31.7683, longitude: 35.2137, accuracy: 200 },
+    { name: "Ramallah", latitude: 31.9522, longitude: 35.2332, accuracy: 500 },
+    { name: "Nablus", latitude: 32.2241, longitude: 35.2581, accuracy: 500 },
+    { name: "Bethlehem", latitude: 31.7054, longitude: 35.2024, accuracy: 500 },
+    { name: "Hebron", latitude: 31.5326, longitude: 35.0998, accuracy: 500 },
+    { name: "Tel Aviv", latitude: 32.0853, longitude: 34.7818, accuracy: 500 },
+    { name: "Haifa", latitude: 32.7940, longitude: 34.9896, accuracy: 500 }
+  ];
+
   const tryIPBasedLocation = () => {
     console.log("🌐 Attempting IP-based location as fallback...");
     
@@ -703,12 +748,113 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
                   border: "none",
                   borderRadius: "4px",
                   cursor: "pointer",
+                  marginBottom: "4px",
                 }}
               >
                 Try IP Location
               </button>
+              <button
+                onClick={() => setShowLocationSelector(true)}
+                style={{
+                  fontSize: "0.75rem",
+                  padding: "4px 8px",
+                  backgroundColor: "#9c27b0",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Select Location
+              </button>
             </Box>
           )}
+        </Box>
+      )}
+      
+      {/* Location Selector Modal */}
+      {showLocationSelector && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000,
+          }}
+        >
+          <Box
+            sx={{
+              backgroundColor: "white",
+              borderRadius: 2,
+              padding: 3,
+              maxWidth: 400,
+              maxHeight: "80vh",
+              overflow: "auto",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
+            }}
+          >
+            <Typography variant="h6" sx={{ marginBottom: 2, textAlign: "center" }}>
+              Select Your Location
+            </Typography>
+            <Typography variant="body2" sx={{ marginBottom: 2, textAlign: "center", color: "#666" }}>
+              Choose your current location for accurate map display
+            </Typography>
+            
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1, marginBottom: 2 }}>
+              {predefinedLocations.map((location, index) => (
+                <button
+                  key={index}
+                  onClick={() => selectPredefinedLocation(location)}
+                  style={{
+                    padding: "12px 16px",
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                    backgroundColor: "white",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    fontSize: "14px",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.backgroundColor = "#f5f5f5";
+                    e.target.style.borderColor = "#9c27b0";
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.backgroundColor = "white";
+                    e.target.style.borderColor = "#ddd";
+                  }}
+                >
+                  <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+                    {location.name}
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#666" }}>
+                    Accuracy: ±{location.accuracy}m
+                  </div>
+                </button>
+              ))}
+            </Box>
+            
+            <button
+              onClick={() => setShowLocationSelector(false)}
+              style={{
+                width: "100%",
+                padding: "12px",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+                backgroundColor: "#f5f5f5",
+                cursor: "pointer",
+                fontSize: "14px",
+              }}
+            >
+              Cancel
+            </button>
+          </Box>
         </Box>
       )}
       
