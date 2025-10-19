@@ -398,7 +398,7 @@ const Map = () => {
   // Initial location detection
   useEffect(() => {
     console.log("🗺️ Initializing VISITOR location tracking...");
-    console.log("🔄 FORCE REFRESH - GPS Map v3.0 loaded!");
+    console.log("🔄 FORCE REFRESH - GPS Map v3.1 loaded!");
     console.log("🎯 GPS-ONLY MODE: Will show YOUR real location or nothing!");
     console.log("🚨 ANTI-FALLBACK: Once GPS works, it stays locked to YOUR location!");
     console.log("🔧 IMPROVED ERROR HANDLING: Better GPS permission and error detection!");
@@ -408,6 +408,7 @@ const Map = () => {
     console.log("🛡️ FRESH GPS ERROR FIX: Handle empty error objects in Force Fresh Location!");
     console.log("🔒 ANTI-OVERWRITE PROTECTION: Reject poor GPS updates that would overwrite good locations!");
     console.log("🛡️ SAFE FRESH LOCATION: Force Fresh Location won't break your current good location!");
+    console.log("🖱️ ZOOM LOCK: User zoom/pan is preserved - no auto-zoom after interaction!");
     startLocationTracking();
     
     // Cleanup
@@ -416,14 +417,57 @@ const Map = () => {
     };
   }, [startLocationTracking, stopLocationTracking]);
 
-  // Component to center map on position
+  // Component to center map on position (ONLY on initial load or significant movement)
   const MapCenter = ({ position }) => {
     const map = useMap();
+    const lastCenteredPositionRef = useRef(null);
+    const hasUserInteractedRef = useRef(false);
+    
+    useEffect(() => {
+      // Detect if user has zoomed or panned
+      const handleMapInteraction = () => {
+        hasUserInteractedRef.current = true;
+        console.log("🖱️ User interacted with map - disabling auto-centering");
+      };
+      
+      map.on('zoomstart', handleMapInteraction);
+      map.on('movestart', handleMapInteraction);
+      
+      return () => {
+        map.off('zoomstart', handleMapInteraction);
+        map.off('movestart', handleMapInteraction);
+      };
+    }, [map]);
     
     useEffect(() => {
       if (position && position[0] && position[1]) {
-        console.log("🎯 Centering map on VISITOR location:", position);
-        map.setView(position, 13);
+        // Only center if:
+        // 1. This is the first position (initial load)
+        // 2. User hasn't interacted with the map yet
+        // 3. Position changed significantly (>100m)
+        
+        if (!lastCenteredPositionRef.current) {
+          // First position - always center
+          console.log("🎯 Initial centering on VISITOR location:", position);
+          map.setView(position, 13);
+          lastCenteredPositionRef.current = position;
+        } else if (!hasUserInteractedRef.current) {
+          // User hasn't interacted - check if position changed significantly
+          const lastPos = lastCenteredPositionRef.current;
+          const distance = Math.sqrt(
+            Math.pow((position[0] - lastPos[0]) * 111000, 2) + 
+            Math.pow((position[1] - lastPos[1]) * 111000, 2)
+          ); // Approximate distance in meters
+          
+          if (distance > 100) {
+            // Significant movement - recenter
+            console.log(`🎯 Significant movement detected (${Math.round(distance)}m) - recentering map`);
+            map.setView(position, map.getZoom()); // Keep current zoom level
+            lastCenteredPositionRef.current = position;
+          }
+        } else {
+          console.log("🖱️ User has interacted - skipping auto-centering");
+        }
       }
     }, [position, map]);
     
@@ -486,7 +530,7 @@ const Map = () => {
         <Box textAlign="center">
           <CircularProgress size={60} />
           <Typography variant="h6" style={{ marginTop: 16, color: "#666" }}>
-            Getting YOUR real GPS location... (v3.0 - {new Date().toLocaleTimeString()})
+            Getting YOUR real GPS location... (v3.1 - {new Date().toLocaleTimeString()})
           </Typography>
           <Typography variant="body2" style={{ marginTop: 8, color: "#999" }}>
             🚨 IMPORTANT: Click &quot;Allow&quot; when browser asks for location permission!
