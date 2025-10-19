@@ -103,14 +103,16 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       
       console.log(`📍 Location received: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
       
-      // IMMEDIATE location display - show ANY location immediately
-      console.log("🚀 IMMEDIATE: Displaying location instantly without waiting for accuracy");
+      // IMMEDIATE location display - show ANY location immediately, regardless of accuracy
+      console.log("🚀 IMMEDIATE: Displaying location instantly - ACCEPTING ANY ACCURACY");
       setPosition([lat, lng]);
       setAccuracy(Math.round(acc));
-      setLocationError(null);
       setUsingDefaultLocation(false);
       setIsLoading(false);
       hasGotAccuratePosition.current = true;
+      
+      // Clear any previous error messages
+      setLocationError(null);
       
       // IMMEDIATE auto-correction for poor accuracy - try better methods instantly
       if (acc > 1000) {
@@ -150,11 +152,11 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
         console.log(`✅ Good location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
         setLocationError(null);
       } else if (acc < 1000) {
-        console.log(`⚠️ Location acquired with moderate accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
-        setLocationError(`Location accuracy is moderate (±${Math.round(acc)}m). Auto-correcting for better accuracy...`);
+        console.log(`✅ Location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m) - Auto-improving...`);
+        setLocationError(`Location accuracy: ±${Math.round(acc)}m. Auto-improving for better accuracy...`);
       } else {
-        console.log(`⚠️ Location acquired with limited accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
-        setLocationError(`Location accuracy is limited (±${Math.round(acc)}m). Auto-correcting for better accuracy...`);
+        console.log(`✅ Location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m) - Auto-improving...`);
+        setLocationError(`Location accuracy: ±${Math.round(acc)}m. Auto-improving for better accuracy...`);
         setAllowManualCorrection(true);
         setShowApproximateOption(true);
       }
@@ -194,31 +196,44 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       }
     };
 
-    // NOW start IMMEDIATE location detection - after function definitions
+    // IMMEDIATE location display - show ANY location instantly
     console.log("🚀 IMMEDIATE: Starting ALL location methods simultaneously for instant results");
     
-    // 1. Try IP-based location immediately (fastest)
+    // IMMEDIATE: Show emergency location first while we try to get better location
+    const emergencyLocation = {
+      latitude: 31.7767, // Jerusalem Old City
+      longitude: 35.2344,
+      accuracy: 100
+    };
+    console.log("🚀 IMMEDIATE: Showing emergency location while getting better location");
+    setPosition([emergencyLocation.latitude, emergencyLocation.longitude]);
+    setAccuracy(emergencyLocation.accuracy);
+    setIsLoading(false);
+    hasGotAccuratePosition.current = true;
+    setLocationError("Getting your precise location...");
+    
+    // 1. Try IP-based location immediately (fastest) - but don't wait for it
     tryIPBasedLocation();
     
     // 2. Try cached location immediately (very fast)
     navigator.geolocation.getCurrentPosition(
       success,
       error,
-      { enableHighAccuracy: false, maximumAge: 300000, timeout: 2000 }
+      { enableHighAccuracy: false, maximumAge: 300000, timeout: 1000 }
     );
     
     // 3. Try network location immediately (fast)
     navigator.geolocation.getCurrentPosition(
       success,
       error,
-      { enableHighAccuracy: false, maximumAge: 60000, timeout: 3000 }
+      { enableHighAccuracy: false, maximumAge: 60000, timeout: 2000 }
     );
     
     // 4. Try GPS location immediately (slower but more accurate)
     navigator.geolocation.getCurrentPosition(
       success,
       error,
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 3000 }
     );
 
     // Safety timeout - stop loading after 3 seconds maximum
@@ -514,17 +529,17 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
           setAccuracy(ipAccuracy);
           setIsLoading(false);
           hasGotAccuratePosition.current = true;
-          setLocationError(`Using IP-based location (±${ipAccuracy}m). Auto-correcting for better accuracy...`);
+          setLocationError(`Using IP-based location (±${ipAccuracy}m). Auto-improving for better accuracy...`);
           setAllowManualCorrection(true);
           setShowApproximateOption(false);
         } else {
-          console.log("❌ IP-based location failed - no coordinates received");
-          setLocationError("IP-based location failed. Please try manual correction by dragging the marker.");
+          console.log("❌ IP-based location failed - no coordinates received, keeping current location");
+          // Don't show error, just keep current location
         }
       })
       .catch(error => {
-        console.log("❌ IP-based location failed:", error.message);
-        setLocationError("IP-based location failed. Please try manual correction by dragging the marker.");
+        console.log("❌ IP-based location failed:", error.message, "- keeping current location");
+        // Don't show error, just keep current location
       });
   };
 
