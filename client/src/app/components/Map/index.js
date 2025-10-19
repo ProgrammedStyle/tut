@@ -19,84 +19,90 @@ const Map = () => {
   const [error, setError] = useState(null);
   const [locationInfo, setLocationInfo] = useState(null);
   const [lastUpdateTime, setLastUpdateTime] = useState(null);
-  const [isTracking, setIsTracking] = useState(false);
+  const [isTracking, setIsTracking] = useState(true);
   const [accuracy, setAccuracy] = useState(null);
   
   // Refs for tracking
   const watchIdRef = useRef(null);
   const lastPositionRef = useRef(null);
+  const updateIntervalRef = useRef(null);
 
-  // Get current location using browser GPS only
-  const getCurrentLocation = useCallback((options = {}) => {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) {
-        reject(new Error('Geolocation is not supported by this browser'));
-        return;
+  // Get visitor's location from backend IP service
+  const getVisitorLocation = useCallback(async () => {
+    try {
+      console.log("🌍 Getting VISITOR's location from backend...");
+      
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const endpoint = `${API_URL}/api/location/ip`;
+      
+      const response = await fetch(endpoint);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-
-      const defaultOptions = {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 30000
-      };
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const coords = {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            accuracy: position.coords.accuracy
-          };
-          console.log(`📍 GPS Location: ${coords.latitude}, ${coords.longitude} (±${Math.round(coords.accuracy)}m)`);
-          resolve(coords);
-        },
-        (error) => {
-          let errorMessage = 'Unknown error';
-          switch(error.code) {
-            case error.PERMISSION_DENIED:
-              errorMessage = 'Location access denied by user';
-              break;
-            case error.POSITION_UNAVAILABLE:
-              errorMessage = 'Location information unavailable';
-              break;
-            case error.TIMEOUT:
-              errorMessage = 'Location request timed out';
-              break;
+      
+      const data = await response.json();
+      console.log("🌍 Backend location data:", data);
+      
+      if (data.success && data.latitude && data.longitude) {
+        const newPosition = [data.latitude, data.longitude];
+        
+        // Check if position has changed significantly (more than 1km)
+        if (lastPositionRef.current) {
+          const distance = calculateDistance(lastPositionRef.current, newPosition);
+          if (distance > 1) { // More than 1km change
+            console.log(`🔄 VISITOR moved ${distance.toFixed(2)}km - updating map!`);
           }
-          console.error(`❌ GPS Error: ${errorMessage}`);
-          reject(new Error(errorMessage));
-        },
-        { ...defaultOptions, ...options }
-      );
-    });
+        }
+        
+        setPosition(newPosition);
+        lastPositionRef.current = newPosition;
+        setAccuracy(data.accuracy || 1000);
+        
+        setLocationInfo({
+          latitude: data.latitude,
+          longitude: data.longitude,
+          city: data.city || 'Unknown',
+          country: data.country || 'Unknown',
+          accuracy: data.accuracy || 1000,
+          method: data.method || 'IP Geolocation',
+          note: data.note || 'Visitor location detected'
+        });
+        
+        setLastUpdateTime(new Date().toLocaleTimeString());
+        setLoading(false);
+        setError(null);
+        
+        console.log(`✅ VISITOR location set: ${data.city}, ${data.country} at ${new Date().toLocaleTimeString()}`);
+      } else {
+        throw new Error("No valid location data received from backend");
+      }
+    } catch (error) {
+      console.error("❌ Error getting visitor location:", error);
+      setError(error.message);
+      setLoading(false);
+      
+      // Try GPS as fallback
+      console.log("🔄 Trying GPS as fallback...");
+      tryGPSLocation();
+    }
   }, []);
 
-  // Start continuous location tracking
-  const startLocationTracking = useCallback(() => {
+  // Try GPS location as fallback
+  const tryGPSLocation = useCallback(() => {
     if (!navigator.geolocation) {
-      setError('Geolocation is not supported by this browser');
-      setLoading(false);
+      console.log("🌍 GPS not available");
       return;
     }
 
-    console.log("🌍 Starting GPS location tracking...");
-    setIsTracking(true);
+    console.log("🌍 Trying GPS location as fallback...");
     
-    const options = {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 10000 // Accept cached position up to 10 seconds old
-    };
-
-    // Watch position for continuous updates
-    watchIdRef.current = navigator.geolocation.watchPosition(
+    navigator.geolocation.getCurrentPosition(
       (position) => {
         const newPosition = [position.coords.latitude, position.coords.longitude];
         const newAccuracy = position.coords.accuracy;
         
-        console.log(`📍 GPS Update: ${newPosition[0].toFixed(6)}, ${newPosition[1].toFixed(6)} (±${Math.round(newAccuracy)}m)`);
+        console.log(`📍 GPS Fallback: ${newPosition[0].toFixed(6)}, ${newPosition[1].toFixed(6)} (±${Math.round(newAccuracy)}m)`);
         
-        // Always update with GPS data - it's the most accurate we have
         setPosition(newPosition);
         setAccuracy(newAccuracy);
         lastPositionRef.current = newPosition;
@@ -104,84 +110,87 @@ const Map = () => {
         setLocationInfo({
           latitude: newPosition[0],
           longitude: newPosition[1],
+          city: 'GPS Location',
+          country: 'Your Device',
           accuracy: newAccuracy,
-          method: `GPS (±${Math.round(newAccuracy)}m accuracy)`,
-          timestamp: new Date()
+          method: `GPS Fallback (±${Math.round(newAccuracy)}m accuracy)`,
+          note: 'Using GPS as fallback when IP detection failed'
         });
         
         setLastUpdateTime(new Date().toLocaleTimeString());
         setLoading(false);
         setError(null);
         
-        console.log(`✅ Location updated successfully!`);
+        console.log(`✅ GPS fallback successful!`);
       },
       (error) => {
-        let errorMessage = 'Unknown error';
-        switch(error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = 'Location access denied. Please allow location access and try again.';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Location information unavailable. Please check your internet connection.';
-            break;
-          case error.TIMEOUT:
-            errorMessage = 'Location request timed out. Please try again.';
-            break;
-        }
-        console.error(`❌ GPS Tracking Error: ${errorMessage}`);
-        setError(errorMessage);
+        console.error(`❌ GPS fallback also failed: ${error.message}`);
+        setError(`Both IP and GPS location failed: ${error.message}`);
         setLoading(false);
       },
-      options
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 30000
+      }
     );
   }, []);
+
+  // Calculate distance between two coordinates (in km)
+  const calculateDistance = (pos1, pos2) => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (pos2[0] - pos1[0]) * Math.PI / 180;
+    const dLon = (pos2[1] - pos1[1]) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(pos1[0] * Math.PI / 180) * Math.cos(pos2[0] * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  // Start continuous location tracking
+  const startLocationTracking = useCallback(() => {
+    console.log("🌍 Starting continuous VISITOR location tracking...");
+    setIsTracking(true);
+    
+    // Get initial location
+    getVisitorLocation();
+    
+    // Set up periodic updates (every 30 seconds)
+    updateIntervalRef.current = setInterval(() => {
+      if (isTracking) {
+        console.log("🔄 Periodic VISITOR location check...");
+        getVisitorLocation();
+      }
+    }, 30000); // Check every 30 seconds
+  }, [getVisitorLocation, isTracking]);
 
   // Stop location tracking
   const stopLocationTracking = useCallback(() => {
     if (watchIdRef.current) {
       navigator.geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
-      setIsTracking(false);
-      console.log("⏸️ Location tracking stopped");
     }
+    if (updateIntervalRef.current) {
+      clearInterval(updateIntervalRef.current);
+      updateIntervalRef.current = null;
+    }
+    setIsTracking(false);
+    console.log("⏸️ VISITOR location tracking stopped");
   }, []);
 
   // Manual location refresh
   const refreshLocation = useCallback(async () => {
     setLoading(true);
     setError(null);
-    console.log("🔄 Manual location refresh...");
+    console.log("🔄 Manual VISITOR location refresh...");
     
-    try {
-      const coords = await getCurrentLocation();
-      const newPosition = [coords.latitude, coords.longitude];
-      
-      setPosition(newPosition);
-      setAccuracy(coords.accuracy);
-      lastPositionRef.current = newPosition;
-      
-      setLocationInfo({
-        latitude: newPosition[0],
-        longitude: newPosition[1],
-        accuracy: coords.accuracy,
-        method: `GPS (±${Math.round(coords.accuracy)}m accuracy)`,
-        timestamp: new Date()
-      });
-      
-      setLastUpdateTime(new Date().toLocaleTimeString());
-      setLoading(false);
-      
-      console.log(`✅ Manual refresh successful!`);
-    } catch (error) {
-      console.error(`❌ Manual refresh failed: ${error.message}`);
-      setError(error.message);
-      setLoading(false);
-    }
-  }, [getCurrentLocation]);
+    await getVisitorLocation();
+  }, [getVisitorLocation]);
 
   // Initial location detection
   useEffect(() => {
-    console.log("🗺️ Initializing GPS-only location detection...");
+    console.log("🗺️ Initializing VISITOR location tracking...");
     startLocationTracking();
     
     // Cleanup
@@ -196,8 +205,8 @@ const Map = () => {
     
     useEffect(() => {
       if (position && position[0] && position[1]) {
-        console.log("🎯 Centering map on:", position);
-        map.setView(position, 15); // Zoom level 15 for better detail
+        console.log("🎯 Centering map on VISITOR location:", position);
+        map.setView(position, 13);
       }
     }, [position, map]);
     
@@ -260,10 +269,10 @@ const Map = () => {
         <Box textAlign="center">
           <CircularProgress size={60} />
           <Typography variant="h6" style={{ marginTop: 16, color: "#666" }}>
-            Getting your current location...
+            Detecting visitor's current location...
           </Typography>
           <Typography variant="body2" style={{ marginTop: 8, color: "#999" }}>
-            Please allow location access in your browser
+            This will update automatically when the visitor moves
           </Typography>
           <Button 
             onClick={refreshLocation} 
@@ -283,7 +292,7 @@ const Map = () => {
       {/* Status indicators */}
       <Box style={{ position: "absolute", top: 10, left: 10, zIndex: 1000, display: "flex", gap: 8, flexWrap: "wrap" }}>
         <Chip 
-          label={isTracking ? "🔄 Live GPS Tracking" : "⏸️ GPS Tracking Paused"} 
+          label={isTracking ? "🔄 Live Visitor Tracking" : "⏸️ Tracking Paused"} 
           color={isTracking ? "success" : "default"}
           size="small"
           onClick={toggleTracking}
@@ -322,7 +331,7 @@ const Map = () => {
       
       <MapContainer
         center={position || [0, 0]}
-        zoom={position ? 15 : 2}
+        zoom={position ? 13 : 2}
         style={{ height: "100%", width: "100%" }}
         zoomControl={true}
       >
@@ -341,10 +350,13 @@ const Map = () => {
             <Popup>
               <div style={{ textAlign: "center", padding: "8px", minWidth: "200px" }}>
                 <Typography variant="h6" style={{ margin: "0 0 8px 0", color: "#333" }}>
-                  📍 Your Current Location
+                  📍 Visitor's Current Location
                 </Typography>
                 {locationInfo && (
                   <>
+                    <Typography variant="body2" style={{ margin: "4px 0", color: "#666" }}>
+                      🏙️ {locationInfo.city}, {locationInfo.country}
+                    </Typography>
                     <Typography variant="body2" style={{ margin: "4px 0", color: "#666" }}>
                       📍 {locationInfo.latitude.toFixed(6)}, {locationInfo.longitude.toFixed(6)}
                     </Typography>
@@ -355,7 +367,7 @@ const Map = () => {
                       🕒 Last updated: {lastUpdateTime}
                     </Typography>
                     <Typography variant="caption" style={{ color: "#888", display: "block", marginTop: "4px" }}>
-                      💡 This location updates automatically when you move
+                      💡 This location updates automatically when the visitor moves
                     </Typography>
                   </>
                 )}
@@ -381,7 +393,10 @@ const Map = () => {
           }}
         >
           <Typography variant="h6" style={{ fontWeight: "bold", color: "#333", margin: "0 0 4px 0" }}>
-            📍 Your Current Location
+            📍 Visitor's Current Location
+          </Typography>
+          <Typography variant="body2" style={{ color: "#666", margin: "0 0 4px 0" }}>
+            🏙️ {locationInfo.city}, {locationInfo.country}
           </Typography>
           <Typography variant="body2" style={{ color: "#666", margin: "0 0 4px 0" }}>
             📍 {locationInfo.latitude.toFixed(6)}, {locationInfo.longitude.toFixed(6)}
@@ -393,7 +408,7 @@ const Map = () => {
             🕒 Updated: {lastUpdateTime}
           </Typography>
           <Typography variant="caption" style={{ color: "#888", display: "block", marginTop: "4px" }}>
-            💡 Location updates automatically when you move
+            💡 Location updates automatically when visitor moves
           </Typography>
         </Box>
       )}

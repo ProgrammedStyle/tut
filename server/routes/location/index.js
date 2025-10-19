@@ -27,134 +27,155 @@ router.get("/ip", async (req, res) => {
     
     console.log(`📍 Visitor's IP: ${clientIP}`);
     
-    // Try multiple IP geolocation services for better reliability
-    const geolocationServices = [
-      {
-        name: 'ipapi.co',
-        url: `https://ipapi.co/${clientIP}/json/`,
-        parser: (data) => ({
-          latitude: parseFloat(data.latitude),
-          longitude: parseFloat(data.longitude),
-          city: data.city,
-          country: data.country_name,
-          accuracy: 1000
-        })
-      },
-      {
-        name: 'ip-api.com',
-        url: `http://ip-api.com/json/${clientIP}?fields=status,lat,lon,city,country`,
-        parser: (data) => ({
-          latitude: parseFloat(data.lat),
-          longitude: parseFloat(data.lon),
-          city: data.city,
-          country: data.country,
-          accuracy: 1000
-        })
-      },
-      {
-        name: 'ipwhois.app',
-        url: `https://ipwhois.app/json/${clientIP}`,
-        parser: (data) => ({
-          latitude: parseFloat(data.latitude),
-          longitude: parseFloat(data.longitude),
-          city: data.city,
-          country: data.country,
-          accuracy: 1000
-        })
-      },
-      {
-        name: 'ipinfo.io',
-        url: `https://ipinfo.io/${clientIP}/json`,
-        parser: (data) => {
-          const coords = data.loc ? data.loc.split(',') : [null, null];
-          return {
-            latitude: parseFloat(coords[0]),
-            longitude: parseFloat(coords[1]),
-            city: data.city,
-            country: data.country,
-            accuracy: 1000
-          };
-        }
-      },
-      {
-        name: 'ipgeolocation.io',
-        url: `https://api.ipgeolocation.io/ipgeo?apiKey=free&ip=${clientIP}`,
-        parser: (data) => ({
-          latitude: parseFloat(data.latitude),
-          longitude: parseFloat(data.longitude),
-          city: data.city,
-          country: data.country_name,
-          accuracy: 1000
-        })
-      }
-    ];
+    // For localhost testing, return a test location
+    if (clientIP === '::1' || clientIP === '127.0.0.1' || clientIP === 'localhost') {
+      console.log("🏠 Localhost detected, returning test location");
+      return res.json({
+        success: true,
+        latitude: 32.0853,
+        longitude: 34.7818,
+        city: "Tel Aviv",
+        country: "Israel",
+        accuracy: 100,
+        method: "Localhost Test Location",
+        note: "This is a test location for localhost development"
+      });
+    }
     
-    // Try each service until one works
-    for (const service of geolocationServices) {
-      try {
-        console.log(`🔍 Trying ${service.name}...`);
-        const response = await axios.get(service.url, { 
-          timeout: 5000,
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-          }
-        });
-        
-        if (response.data) {
-          const location = service.parser(response.data);
-          
-          // Validate that we got valid coordinates
-          if (location.latitude && location.longitude && 
-              !isNaN(location.latitude) && !isNaN(location.longitude)) {
-            
-            console.log(`✅ SUCCESS with ${service.name}: Found VISITOR's location: ${location.latitude}, ${location.longitude} (${location.city}, ${location.country})`);
-            
-            // Additional validation: Check if coordinates are reasonable (not in the middle of ocean or obviously wrong)
-            if (location.latitude >= -90 && location.latitude <= 90 && 
-                location.longitude >= -180 && location.longitude <= 180) {
-              
-              return res.json({
-                success: true,
-                latitude: location.latitude,
-                longitude: location.longitude,
-                city: location.city || 'Unknown',
-                country: location.country || 'Unknown',
-                accuracy: location.accuracy,
-                method: `IP Geolocation (${service.name})`,
-                note: "This is the VISITOR's actual location based on their IP address"
-              });
-            } else {
-              console.log(`⚠️ ${service.name} returned invalid coordinates: ${location.latitude}, ${location.longitude}`);
-            }
-          }
+    // Try a simple, reliable IP geolocation service with better error handling
+    try {
+      console.log("🔍 Trying ipapi.co with improved error handling...");
+      const response = await axios.get(`https://ipapi.co/${clientIP}/json/`, { 
+        timeout: 8000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
-      } catch (error) {
-        console.log(`❌ ${service.name} failed: ${error.message}`);
-        // Continue to next service
+      });
+      
+      if (response.data && response.data.latitude && response.data.longitude) {
+        const location = {
+          latitude: parseFloat(response.data.latitude),
+          longitude: parseFloat(response.data.longitude),
+          city: response.data.city || 'Unknown',
+          country: response.data.country_name || 'Unknown',
+          accuracy: 1000
+        };
+        
+        console.log(`✅ SUCCESS: Found VISITOR's location: ${location.latitude}, ${location.longitude} (${location.city}, ${location.country})`);
+        
+        return res.json({
+          success: true,
+          latitude: location.latitude,
+          longitude: location.longitude,
+          city: location.city,
+          country: location.country,
+          accuracy: location.accuracy,
+          method: "IP Geolocation (ipapi.co)",
+          note: "This is the VISITOR's actual location based on their IP address"
+        });
+      }
+    } catch (error) {
+      console.log(`❌ ipapi.co failed: ${error.message}`);
+      
+      // If rate limited, wait and try a different approach
+      if (error.response && error.response.status === 429) {
+        console.log("⏳ Rate limited, trying backup service...");
+        
+        try {
+          // Try ip-api.com as backup
+          const backupResponse = await axios.get(`http://ip-api.com/json/${clientIP}?fields=status,lat,lon,city,country`, { 
+            timeout: 8000,
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+          });
+          
+          if (backupResponse.data && backupResponse.data.status === 'success') {
+            const location = {
+              latitude: parseFloat(backupResponse.data.lat),
+              longitude: parseFloat(backupResponse.data.lon),
+              city: backupResponse.data.city || 'Unknown',
+              country: backupResponse.data.country || 'Unknown',
+              accuracy: 1000
+            };
+            
+            console.log(`✅ BACKUP SUCCESS: Found VISITOR's location: ${location.latitude}, ${location.longitude} (${location.city}, ${location.country})`);
+            
+            return res.json({
+              success: true,
+              latitude: location.latitude,
+              longitude: location.longitude,
+              city: location.city,
+              country: location.country,
+              accuracy: location.accuracy,
+              method: "IP Geolocation (ip-api.com backup)",
+              note: "This is the VISITOR's actual location based on their IP address"
+            });
+          }
+        } catch (backupError) {
+          console.log(`❌ Backup service also failed: ${backupError.message}`);
+        }
       }
     }
     
-    // All services failed - use emergency fallback
-    console.log("⚠️ All IP geolocation services failed, using emergency fallback");
-    const emergencyLocation = {
-      latitude: 31.7767,
-      longitude: 35.2344,
-      city: "Jerusalem Old City",
-      country: "Israel/Palestine",
-      accuracy: 100,
-      method: "Emergency fallback",
-      note: "All IP geolocation services failed - using emergency location"
-    };
+    // All services failed - use a smart fallback based on common visitor locations
+    console.log("⚠️ All IP geolocation services failed, using smart fallback");
+    
+    // Try to determine a reasonable fallback based on timezone or other headers
+    const timezone = req.headers['x-timezone'] || 'UTC';
+    let fallbackLocation;
+    
+    if (timezone.includes('Asia') || timezone.includes('Jerusalem') || timezone.includes('Tel_Aviv')) {
+      fallbackLocation = {
+        latitude: 32.0853,
+        longitude: 34.7818,
+        city: "Tel Aviv",
+        country: "Israel",
+        accuracy: 1000,
+        method: "Smart Fallback (Asia/Israel)",
+        note: "IP services failed - using regional fallback"
+      };
+    } else if (timezone.includes('Europe')) {
+      fallbackLocation = {
+        latitude: 51.5074,
+        longitude: -0.1278,
+        city: "London",
+        country: "United Kingdom",
+        accuracy: 1000,
+        method: "Smart Fallback (Europe)",
+        note: "IP services failed - using regional fallback"
+      };
+    } else if (timezone.includes('America')) {
+      fallbackLocation = {
+        latitude: 40.7128,
+        longitude: -74.0060,
+        city: "New York",
+        country: "United States",
+        accuracy: 1000,
+        method: "Smart Fallback (America)",
+        note: "IP services failed - using regional fallback"
+      };
+    } else {
+      fallbackLocation = {
+        latitude: 0.0,
+        longitude: 0.0,
+        city: "Unknown",
+        country: "Unknown",
+        accuracy: 1000,
+        method: "Default Fallback",
+        note: "IP services failed - using default fallback"
+      };
+    }
     
     res.json({
       success: true,
-      latitude: emergencyLocation.latitude,
-      longitude: emergencyLocation.longitude,
-      city: emergencyLocation.city,
-      country: emergencyLocation.country,
-      accuracy: emergencyLocation.accuracy,
-      method: emergencyLocation.method,
-      note: emergencyLocation.note
+      latitude: fallbackLocation.latitude,
+      longitude: fallbackLocation.longitude,
+      city: fallbackLocation.city,
+      country: fallbackLocation.country,
+      accuracy: fallbackLocation.accuracy,
+      method: fallbackLocation.method,
+      note: fallbackLocation.note
     });
 
   } catch (error) {
