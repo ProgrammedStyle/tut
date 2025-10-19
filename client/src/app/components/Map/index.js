@@ -272,75 +272,91 @@ const Map = () => {
 
   // Force fresh location detection
   const forceFreshLocation = useCallback(async () => {
-    console.log("🔄 FORCING FRESH GPS LOCATION - No cache, high accuracy!");
+    console.log("🔄 FORCING FRESH GPS LOCATION - Balanced accuracy for reliability!");
     setIsForcingLocation(true);
-    setLoading(true);
     setError(null);
     
-    // Reset the location lock to allow fresh detection
-    hasGoodLocationRef.current = false;
-    bestAccuracyRef.current = Infinity;
-    console.log("🔓 UNLOCKED location for fresh GPS reading");
+    // IMPORTANT: Don't clear the current position or reset the lock
+    // This prevents losing the good location if fresh reading fails
+    console.log("⚠️ Keeping current location as backup during fresh detection");
     
-    // Clear any existing position to force fresh detection
-    setPosition(null);
-    setLocationInfo(null);
+    // Save current location as backup
+    const currentPosition = position;
+    const currentLocationInfo = locationInfo;
+    const currentBestAccuracy = bestAccuracyRef.current;
+    const hadGoodLocation = hasGoodLocationRef.current;
     
     // Force immediate fresh GPS reading
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const newPosition = [position.coords.latitude, position.coords.longitude];
-          const accuracy = position.coords.accuracy;
+        (gpsPosition) => {
+          const newPosition = [gpsPosition.coords.latitude, gpsPosition.coords.longitude];
+          const accuracy = gpsPosition.coords.accuracy;
           
           console.log(`🎯 FRESH GPS SUCCESS! Real coordinates: ${newPosition[0].toFixed(6)}, ${newPosition[1].toFixed(6)} (±${Math.round(accuracy)}m)`);
           console.log(`📍 This is YOUR REAL physical location - FRESH reading!`);
           
-          // Lock to this fresh location if it's good
-          if (accuracy < 1000) {
-            hasGoodLocationRef.current = true;
-            bestAccuracyRef.current = accuracy;
-            console.log(`🔒 LOCKED to fresh location (best accuracy: ±${Math.round(accuracy)}m)`);
+          // Only update if this reading is good enough
+          if (accuracy < 2000) {
+            // Lock to this fresh location if it's good
+            if (accuracy < 1000) {
+              hasGoodLocationRef.current = true;
+              bestAccuracyRef.current = Math.min(bestAccuracyRef.current, accuracy);
+              console.log(`🔒 LOCKED to fresh location (best accuracy: ±${Math.round(bestAccuracyRef.current)}m)`);
+            }
+            
+            setPosition(newPosition);
+            setLocationInfo({
+              latitude: newPosition[0],
+              longitude: newPosition[1],
+              city: 'Your Real GPS Location',
+              country: 'Current Device Location',
+              accuracy: accuracy,
+              method: `FRESH GPS Location (±${Math.round(accuracy)}m accuracy)`,
+              note: 'This is your actual physical location from fresh GPS reading'
+            });
+            setLastUpdateTime(new Date().toLocaleTimeString());
+            setLoading(false);
+            setError(null);
+            
+            console.log(`✅ FRESH GPS location updated at ${new Date().toLocaleTimeString()}`);
+          } else {
+            console.log(`⚠️ Fresh GPS accuracy too poor (${Math.round(accuracy)}m), keeping current location`);
+            setError(`Fresh GPS accuracy poor (±${Math.round(accuracy)}m). Try going outside.`);
           }
           
-          setPosition(newPosition);
-          setLocationInfo({
-            latitude: newPosition[0],
-            longitude: newPosition[1],
-            city: 'Your Real GPS Location',
-            country: 'Current Device Location',
-            accuracy: accuracy,
-            method: `FRESH GPS Location (±${Math.round(accuracy)}m accuracy)`,
-            note: 'This is your actual physical location from fresh GPS reading'
-          });
-          setLastUpdateTime(new Date().toLocaleTimeString());
-          setLoading(false);
-          setError(null);
           setIsForcingLocation(false);
-          
-          console.log(`✅ FRESH GPS location updated at ${new Date().toLocaleTimeString()}`);
         },
         (error) => {
           // Handle empty error objects gracefully
           if (!error || Object.keys(error).length === 0) {
-            console.log("⚠️ FRESH GPS received empty error object - ignoring");
+            console.log("⚠️ FRESH GPS received empty error object - keeping current location");
             setIsForcingLocation(false);
-            return; // Exit early, don't log empty errors
+            return; // Exit early, keep current location
           }
           
           console.error("❌ FRESH GPS FAILED:", error);
-          setError(`Fresh GPS failed: ${error.message || "Unknown error"}`);
-          setLoading(false);
+          console.log("🛡️ KEEPING current location - not clearing due to failure");
+          
+          // Don't clear position - keep what we have
+          setError(`Fresh GPS failed: ${error.message || "Unknown error"}. Keeping current location.`);
           setIsForcingLocation(false);
+          
+          // Restore previous lock state if we had a good location
+          if (hadGoodLocation) {
+            hasGoodLocationRef.current = true;
+            bestAccuracyRef.current = currentBestAccuracy;
+            console.log(`🔒 Restored location lock (±${Math.round(currentBestAccuracy)}m)`);
+          }
         },
         {
-      enableHighAccuracy: true, 
-          timeout: 30000,
-          maximumAge: 0  // Force fresh reading
+          enableHighAccuracy: false,  // Use balanced mode for reliability
+          timeout: 20000,             // 20 second timeout (more reasonable)
+          maximumAge: 0               // Force fresh reading
         }
       );
     }
-  }, []);
+  }, [position, locationInfo]);
 
   // Start continuous location tracking
   const startLocationTracking = useCallback(() => {
@@ -382,15 +398,16 @@ const Map = () => {
   // Initial location detection
   useEffect(() => {
     console.log("🗺️ Initializing VISITOR location tracking...");
-    console.log("🔄 FORCE REFRESH - GPS Map v2.9 loaded!");
+    console.log("🔄 FORCE REFRESH - GPS Map v3.0 loaded!");
     console.log("🎯 GPS-ONLY MODE: Will show YOUR real location or nothing!");
     console.log("🚨 ANTI-FALLBACK: Once GPS works, it stays locked to YOUR location!");
     console.log("🔧 IMPROVED ERROR HANDLING: Better GPS permission and error detection!");
     console.log("⚡ TIMEOUT FIX: More lenient GPS settings to prevent timeouts!");
     console.log("🛡️ EMPTY ERROR FIX: Gracefully handle empty GPS error objects!");
-    console.log("🔄 FRESH LOCATION: Force fresh GPS readings with high accuracy!");
+    console.log("🔄 FRESH LOCATION: Force fresh GPS readings with balanced accuracy!");
     console.log("🛡️ FRESH GPS ERROR FIX: Handle empty error objects in Force Fresh Location!");
     console.log("🔒 ANTI-OVERWRITE PROTECTION: Reject poor GPS updates that would overwrite good locations!");
+    console.log("🛡️ SAFE FRESH LOCATION: Force Fresh Location won't break your current good location!");
     startLocationTracking();
     
     // Cleanup
@@ -469,7 +486,7 @@ const Map = () => {
         <Box textAlign="center">
           <CircularProgress size={60} />
           <Typography variant="h6" style={{ marginTop: 16, color: "#666" }}>
-            Getting YOUR real GPS location... (v2.9 - {new Date().toLocaleTimeString()})
+            Getting YOUR real GPS location... (v3.0 - {new Date().toLocaleTimeString()})
           </Typography>
           <Typography variant="body2" style={{ marginTop: 8, color: "#999" }}>
             🚨 IMPORTANT: Click &quot;Allow&quot; when browser asks for location permission!
