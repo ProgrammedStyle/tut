@@ -97,9 +97,8 @@ router.get('/google/callback',
     const token = jwt.sign({ id: req.user._id, email: req.user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined, // Allow cookie to work across all onrender.com subdomains
+      secure: true, // Always secure for HTTPS
+      sameSite: 'none', // Allow cross-domain
       maxAge: 1000 * 60 * 60 * 24 * 7
     });
     
@@ -199,9 +198,8 @@ router.get('/facebook/callback',
     const token = jwt.sign({ id: req.user._id, email: req.user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined, // Allow cookie to work across all onrender.com subdomains
+      secure: true, // Always secure for HTTPS
+      sameSite: 'none', // Allow cross-domain
       maxAge: 1000 * 60 * 60 * 24 * 7
     });
     
