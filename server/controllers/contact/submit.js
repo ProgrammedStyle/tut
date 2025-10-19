@@ -27,16 +27,32 @@ const submitContactForm = async (req, res) => {
             });
         }
 
+        // Sanitize inputs to prevent injection
+        const sanitizedData = {
+            name: name.trim().substring(0, 100), // Limit length
+            email: email.trim().toLowerCase(),
+            subject: subject.trim().substring(0, 200), // Limit length
+            message: message.trim().substring(0, 5000) // Limit length
+        };
+
+        // Validate input lengths
+        if (!sanitizedData.name || !sanitizedData.email || !sanitizedData.subject || !sanitizedData.message) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required"
+            });
+        }
+
         console.log('📧 Contact form submission received:', {
-            name,
-            email,
-            subject,
-            messageLength: message.length
+            name: sanitizedData.name,
+            email: sanitizedData.email,
+            subject: sanitizedData.subject,
+            messageLength: sanitizedData.message.length
         });
 
         // Send emails using the new email service
         console.log('📧 Sending contact form emails...');
-        const result = await sendContactFormEmails({ name, email, subject, message });
+        const result = await sendContactFormEmails(sanitizedData);
         
         console.log('✅ Contact form emails sent successfully');
         console.log('📧 Admin email method:', result.adminResult.method);
