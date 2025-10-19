@@ -95,33 +95,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
 
     const device = detectDevice();
 
-    // IMMEDIATE location detection - start ALL methods at once
-    console.log("🚀 IMMEDIATE: Starting ALL location methods simultaneously for instant results");
-    
-    // 1. Try IP-based location immediately (fastest)
-    tryIPBasedLocation();
-    
-    // 2. Try cached location immediately (very fast)
-    navigator.geolocation.getCurrentPosition(
-      success,
-      () => console.log("Cached location failed"),
-      { enableHighAccuracy: false, maximumAge: 300000, timeout: 2000 }
-    );
-    
-    // 3. Try network location immediately (fast)
-    navigator.geolocation.getCurrentPosition(
-      success,
-      () => console.log("Network location failed"),
-      { enableHighAccuracy: false, maximumAge: 60000, timeout: 3000 }
-    );
-    
-    // 4. Try GPS location immediately (slower but more accurate)
-    navigator.geolocation.getCurrentPosition(
-      success,
-      () => console.log("GPS location failed"),
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
-    );
-
+    // Define success and error handlers FIRST
     const success = (pos) => {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
@@ -219,6 +193,33 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
         setLocationError("Failed to get your location. Showing approximate location. For better accuracy, try: 1) Moving to an open area, 2) Connecting to Wi-Fi, 3) Checking location permissions.");
       }
     };
+
+    // NOW start IMMEDIATE location detection - after function definitions
+    console.log("🚀 IMMEDIATE: Starting ALL location methods simultaneously for instant results");
+    
+    // 1. Try IP-based location immediately (fastest)
+    tryIPBasedLocation();
+    
+    // 2. Try cached location immediately (very fast)
+    navigator.geolocation.getCurrentPosition(
+      success,
+      error,
+      { enableHighAccuracy: false, maximumAge: 300000, timeout: 2000 }
+    );
+    
+    // 3. Try network location immediately (fast)
+    navigator.geolocation.getCurrentPosition(
+      success,
+      error,
+      { enableHighAccuracy: false, maximumAge: 60000, timeout: 3000 }
+    );
+    
+    // 4. Try GPS location immediately (slower but more accurate)
+    navigator.geolocation.getCurrentPosition(
+      success,
+      error,
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+    );
 
     // Safety timeout - stop loading after 3 seconds maximum
     const safetyTimeout = setTimeout(() => {
