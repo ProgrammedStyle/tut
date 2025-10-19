@@ -24,97 +24,111 @@ const Map = () => {
   // Refs for tracking
   const updateIntervalRef = useRef(null);
 
-  // Get visitor's location from backend IP service
+  // Get visitor's REAL physical location using browser GPS
   const getVisitorLocation = useCallback(async () => {
-    try {
-      console.log("🌍 Getting VISITOR location from backend...");
-      
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const endpoint = `${API_URL}/api/location/ip`;
-      console.log(`📡 Calling: ${endpoint}`);
-      
-      const response = await fetch(endpoint, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include'
-      });
-      
-      console.log(`📡 Response status: ${response.status}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      console.log("🌍 Backend response:", data);
-      
-      if (data.success && data.latitude && data.longitude) {
-        const newPosition = [data.latitude, data.longitude];
+    console.log("🌍 Getting VISITOR's REAL physical location using GPS...");
+    
+    if (!navigator.geolocation) {
+      console.error("❌ Geolocation is not supported by this browser");
+      setError("Geolocation is not supported by your browser");
+      setLoading(false);
+      return;
+    }
+    
+    // Use watchPosition for continuous real-time tracking
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const newPosition = [position.coords.latitude, position.coords.longitude];
+        const accuracy = position.coords.accuracy;
+        
+        console.log(`📍 GPS Location: ${newPosition[0].toFixed(6)}, ${newPosition[1].toFixed(6)} (±${Math.round(accuracy)}m)`);
         
         setPosition(newPosition);
         
         setLocationInfo({
-          latitude: data.latitude,
-          longitude: data.longitude,
-          city: data.city || 'Unknown',
-          country: data.country || 'Unknown',
-          accuracy: data.accuracy || 1000,
-          method: data.method || 'IP Geolocation',
-          note: data.note || 'Visitor location detected'
+          latitude: newPosition[0],
+          longitude: newPosition[1],
+          city: 'GPS Location',
+          country: 'Current Device Location',
+          accuracy: accuracy,
+          method: `GPS/Device Location (±${Math.round(accuracy)}m accuracy)`,
+          note: 'Real-time GPS tracking - updates automatically when you move'
         });
         
         setLastUpdateTime(new Date().toLocaleTimeString());
         setLoading(false);
         setError(null);
         
-        console.log(`✅ VISITOR location set: ${data.city}, ${data.country} at ${new Date().toLocaleTimeString()}`);
-      } else {
-        throw new Error("No valid location data received from backend");
+        console.log(`✅ REAL location updated at ${new Date().toLocaleTimeString()}`);
+      },
+      (error) => {
+        console.error("❌ GPS Error:", error);
+        let errorMessage = "Could not get your location. ";
+        
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += "Please allow location access in your browser settings.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += "Location information is unavailable.";
+            break;
+          case error.TIMEOUT:
+            errorMessage += "Location request timed out.";
+            break;
+          default:
+            errorMessage += "An unknown error occurred.";
+        }
+        
+        setError(errorMessage);
+        setLoading(false);
+      },
+      {
+        enableHighAccuracy: true,  // Use GPS for highest accuracy
+        timeout: 10000,            // 10 second timeout
+        maximumAge: 0              // Don't use cached position
       }
-    } catch (error) {
-      console.error("❌ Error getting visitor location:", error);
-      setError(error.message);
-      setLoading(false);
-    }
+    );
+    
+    // Return the watchId so we can clear it later
+    return watchId;
   }, []);
 
   // Start continuous location tracking
   const startLocationTracking = useCallback(() => {
-    console.log("🌍 Starting VISITOR location tracking...");
+    console.log("🌍 Starting REAL-TIME GPS location tracking...");
     setIsTracking(true);
     
-    // Get initial location
-    getVisitorLocation();
+    // Start GPS tracking (watchPosition will continuously update)
+    const watchId = getVisitorLocation();
     
-    // Set up periodic updates (every 30 seconds)
-    updateIntervalRef.current = setInterval(() => {
-      if (isTracking) {
-        console.log("🔄 Periodic VISITOR location check...");
-        getVisitorLocation();
-      }
-    }, 30000); // Check every 30 seconds
-  }, [getVisitorLocation, isTracking]);
+    // Store watchId in ref for cleanup
+    updateIntervalRef.current = watchId;
+  }, [getVisitorLocation]);
 
   // Stop location tracking
   const stopLocationTracking = useCallback(() => {
     if (updateIntervalRef.current) {
-      clearInterval(updateIntervalRef.current);
+      navigator.geolocation.clearWatch(updateIntervalRef.current);
       updateIntervalRef.current = null;
     }
     setIsTracking(false);
-    console.log("⏸️ VISITOR location tracking stopped");
+    console.log("⏸️ GPS location tracking stopped");
   }, []);
 
   // Manual location refresh
   const refreshLocation = useCallback(async () => {
     setLoading(true);
     setError(null);
-    console.log("🔄 Manual VISITOR location refresh...");
+    console.log("🔄 Manual GPS location refresh...");
     
-    await getVisitorLocation();
-  }, [getVisitorLocation]);
+    // Stop current tracking
+    stopLocationTracking();
+    
+    // Start new tracking
+    setTimeout(() => {
+      startLocationTracking();
+    }, 100);
+  }, [startLocationTracking, stopLocationTracking]);
 
   // Initial location detection
   useEffect(() => {
@@ -197,10 +211,13 @@ const Map = () => {
         <Box textAlign="center">
           <CircularProgress size={60} />
           <Typography variant="h6" style={{ marginTop: 16, color: "#666" }}>
-            Detecting visitor&apos;s current location...
+            Getting your real GPS location...
           </Typography>
           <Typography variant="body2" style={{ marginTop: 8, color: "#999" }}>
-            This will update automatically when the visitor moves
+            Please allow location access when prompted
+          </Typography>
+          <Typography variant="body2" style={{ marginTop: 8, color: "#999" }}>
+            Your exact location will update automatically as you move
           </Typography>
           <Button 
             onClick={refreshLocation} 
@@ -220,7 +237,7 @@ const Map = () => {
       {/* Status indicators */}
       <Box style={{ position: "absolute", top: 10, left: 10, zIndex: 1000, display: "flex", gap: 8, flexWrap: "wrap" }}>
         <Chip 
-          label={isTracking ? "🔄 Live Visitor Tracking" : "⏸️ Tracking Paused"} 
+          label={isTracking ? "🔄 Live GPS Tracking" : "⏸️ GPS Paused"} 
           color={isTracking ? "success" : "default"}
           size="small"
           onClick={toggleTracking}
@@ -270,7 +287,7 @@ const Map = () => {
             <Popup>
               <div style={{ textAlign: "center", padding: "8px", minWidth: "200px" }}>
                 <Typography variant="h6" style={{ margin: "0 0 8px 0", color: "#333" }}>
-                  📍 Visitor&apos;s Current Location
+                  📍 Your Real GPS Location
                 </Typography>
                 {locationInfo && (
                   <>
@@ -287,7 +304,7 @@ const Map = () => {
                       🕒 Last updated: {lastUpdateTime}
                     </Typography>
                     <Typography variant="caption" style={{ color: "#888", display: "block", marginTop: "4px" }}>
-                      💡 This location updates automatically when the visitor moves
+                      💡 GPS updates automatically as you move
                     </Typography>
                   </>
                 )}
@@ -313,7 +330,7 @@ const Map = () => {
           }}
         >
           <Typography variant="h6" style={{ fontWeight: "bold", color: "#333", margin: "0 0 4px 0" }}>
-            📍 Visitor&apos;s Current Location
+            📍 Your Real GPS Location
           </Typography>
           <Typography variant="body2" style={{ color: "#666", margin: "0 0 4px 0" }}>
             🏙️ {locationInfo.city}, {locationInfo.country}
@@ -328,7 +345,7 @@ const Map = () => {
             🕒 Updated: {lastUpdateTime}
           </Typography>
           <Typography variant="caption" style={{ color: "#888", display: "block", marginTop: "4px" }}>
-            💡 Location updates automatically when visitor moves
+            💡 GPS updates automatically as you move
           </Typography>
         </Box>
       )}
