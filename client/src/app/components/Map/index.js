@@ -103,93 +103,36 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       
       console.log(`📍 Location received: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
       
-      // Collect location readings for better accuracy
-      const newReading = { lat, lng, acc, timestamp: Date.now() };
-      setLocationReadings(prev => {
-        const updated = [...prev, newReading].slice(-10); // Keep last 10 readings for better averaging
-        
-        // Calculate average position from recent readings
-        if (updated.length >= 3) {
-          const avgLat = updated.reduce((sum, r) => sum + r.lat, 0) / updated.length;
-          const avgLng = updated.reduce((sum, r) => sum + r.lng, 0) / updated.length;
-          const avgAcc = Math.max(...updated.map(r => r.acc)); // Use worst accuracy as safety margin
-          
-          console.log(`📊 Averaged location from ${updated.length} readings: ${avgLat.toFixed(6)}, ${avgLng.toFixed(6)} (±${Math.round(avgAcc)}m)`);
-          
-          // Only update position if we have better accuracy or this is our first good reading
-          if (avgAcc < 2000 || !hasGotAccuratePosition.current) {
-            console.log("🚀 IMMEDIATE: Displaying averaged location");
-            setPosition([avgLat, avgLng]);
-            setAccuracy(Math.round(avgAcc));
-            setUsingDefaultLocation(false);
-            setIsLoading(false);
-            hasGotAccuratePosition.current = true;
-            setLocationError(null);
-          }
-        } else {
-          // Use individual reading if we don't have enough for averaging
-          console.log("🚀 IMMEDIATE: Displaying individual location reading");
-          setPosition([lat, lng]);
-          setAccuracy(Math.round(acc));
-          setUsingDefaultLocation(false);
-          setIsLoading(false);
-          hasGotAccuratePosition.current = true;
-          setLocationError(null);
-        }
-        
-        return updated;
-      });
-      
-      // IMMEDIATE auto-correction for poor accuracy - try better methods instantly
+      // REJECT poor GPS readings that are obviously wrong
       if (acc > 1000) {
-        console.log("🚀 IMMEDIATE auto-correction for poor accuracy - trying better methods instantly");
-        
-        // Try IP location immediately (no delay)
-        tryIPBasedLocation();
-        
-        // Try GPS improvement immediately (no delay)
-        improveLocationAccuracy();
-        
-        // Try network location immediately (no delay)
-        useApproximateLocation();
-        
-        // Emergency fallback for extremely poor accuracy (very fast)
-        if (acc > 2000) {
-          console.log("🚨 EMERGENCY: GPS accuracy extremely poor, using immediate fallback");
-          setTimeout(() => {
-            const emergencyLocation = {
-              latitude: 31.7767, // Jerusalem Old City
-              longitude: 35.2344,
-              accuracy: 100
-            };
-            console.log(`🚨 EMERGENCY: Using emergency location: ${emergencyLocation.latitude}, ${emergencyLocation.longitude}`);
-            setPosition([emergencyLocation.latitude, emergencyLocation.longitude]);
-            setAccuracy(emergencyLocation.accuracy);
-            setLocationError(null);
-          }, 500); // Very fast emergency fallback
-        }
+        console.log(`❌ REJECTING poor GPS reading: ±${Math.round(acc)}m accuracy is too poor`);
+        console.log("🔄 Continuing to search for better location...");
+        return; // Don't use this reading
       }
       
-      // Show appropriate messages based on accuracy
+      // ACCEPT only good GPS readings
+      console.log(`✅ ACCEPTING good GPS reading: ±${Math.round(acc)}m accuracy`);
+      
+      // IMMEDIATE location display for good readings
+      setPosition([lat, lng]);
+      setAccuracy(Math.round(acc));
+      setUsingDefaultLocation(false);
+      setIsLoading(false);
+      hasGotAccuratePosition.current = true;
+      setLocationError(null);
+      
+      console.log(`🎯 IMMEDIATE: Displaying ACCURATE location: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+      
+      // Show success message for good accuracy
       if (acc < 100) {
         console.log(`✅ Excellent location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
         setLocationError(null);
       } else if (acc < 500) {
         console.log(`✅ Good location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
         setLocationError(null);
-      } else if (acc < 1000) {
-        console.log(`✅ Location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m) - Auto-improving...`);
-        setLocationError(`Location accuracy: ±${Math.round(acc)}m. Auto-improving for better accuracy...`);
-      } else if (acc < 2000) {
-        console.log(`⚠️ Location acquired with moderate accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m) - Auto-improving...`);
-        setLocationError(`Location accuracy: ±${Math.round(acc)}m. Auto-improving for better accuracy...`);
-        setAllowManualCorrection(true);
-        setShowApproximateOption(true);
       } else {
-        console.log(`⚠️ Location acquired with poor accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m) - Auto-improving...`);
-        setLocationError(`Location accuracy is poor: ±${Math.round(acc)}m. Auto-improving for better accuracy...`);
-        setAllowManualCorrection(true);
-        setShowApproximateOption(true);
+        console.log(`✅ Accurate location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+        setLocationError(null);
       }
     };
 
@@ -260,11 +203,25 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       { enableHighAccuracy: false, maximumAge: 60000, timeout: 2000 }
     );
     
-    // 4. Try GPS location immediately (slower but more accurate)
+    // 4. Try GPS location immediately (high accuracy)
     navigator.geolocation.getCurrentPosition(
       success,
       error,
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 3000 }
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+    );
+    
+    // 5. Try GPS location with longer timeout (maximum accuracy)
+    navigator.geolocation.getCurrentPosition(
+      success,
+      error,
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+    );
+    
+    // 6. Try GPS location with even longer timeout (for difficult environments)
+    navigator.geolocation.getCurrentPosition(
+      success,
+      error,
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
     );
 
     // Continuous location monitoring for better accuracy
@@ -280,20 +237,19 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
         error, 
         {
           enableHighAccuracy: true,
-          maximumAge: 5000, // Accept cached position up to 5 seconds old
-          timeout: 15000 // Give more time for continuous monitoring
+          maximumAge: 0, // Don't accept cached positions for continuous monitoring
+          timeout: 20000 // Give more time for continuous monitoring
         }
       );
     };
 
-    // Start continuous monitoring after initial location is found
+    // Start continuous monitoring immediately - don't wait
     const monitoringTimeout = setTimeout(() => {
-      if (hasGotAccuratePosition.current) {
-        startContinuousMonitoring();
-      }
-    }, 2000);
+      console.log("🔄 Starting continuous monitoring immediately...");
+      startContinuousMonitoring();
+    }, 1000);
 
-    // Safety timeout - stop loading after 5 seconds maximum
+    // Safety timeout - stop loading after 10 seconds maximum
     const safetyTimeout = setTimeout(() => {
       if (!hasGotAccuratePosition.current) {
         console.log("⏰ IMMEDIATE: Location timeout - using emergency fallback");
@@ -309,7 +265,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
         hasGotAccuratePosition.current = true;
         setLocationError("Location timeout - showing approximate location");
       }
-    }, 5000); // Increased timeout for better accuracy
+    }, 10000); // Increased timeout for better accuracy
 
     return () => {
       if (locationWatchId.current) {
