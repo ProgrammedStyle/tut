@@ -118,6 +118,7 @@ const Dashboard = () => {
     const hasCheckedPassword = useRef(false); // Track if we've already checked
     const [pendingEmail, setPendingEmail] = useState(null); // Track pending email change
     
+    
     // Form setup (MUST be before conditional return!)
     const { register, handleSubmit, formState: { errors }, reset, watch, setError } = useForm({
         resolver: zodResolver(profileSchema),
