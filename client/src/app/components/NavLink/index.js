@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Tooltip } from "@mui/material";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { showLoading } from "../../slices/loadingSlice";
 import WhiteIconButton from "../WhiteIconButton";
@@ -9,10 +9,14 @@ import WhiteIconButton from "../WhiteIconButton";
 const NavLink = ({ role = null, title = "", link = null }) => {
     const router = useRouter();
     const dispatch = useDispatch();
+    const pathname = usePathname();
     
         const handleClick = () => {
-            if (link) {
-                dispatch(showLoading()); // Show loading immediately
+            if (link && link !== pathname) {
+                dispatch(showLoading()); // Only show loading for different page navigation
+                router.push(link);
+            } else if (link === pathname) {
+                // Same page navigation - just navigate without loading
                 router.push(link);
             }
         };
