@@ -150,6 +150,16 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
           setLocationError(`Location accuracy is limited (±${Math.round(acc)}m). Your actual location could be up to ${Math.round(acc/1000)}km away. For better accuracy, try moving to an open area or use manual correction.`);
           setAllowManualCorrection(true);
           setShowApproximateOption(true);
+          
+          // Auto-try IP location if GPS accuracy is very poor
+          if (acc > 1500) {
+            console.log("🚀 Auto-trying IP location due to very poor GPS accuracy...");
+            setTimeout(() => {
+              if (!hasGotAccuratePosition.current || accuracy > 1500) {
+                tryIPBasedLocation();
+              }
+            }, 3000);
+          }
         }
       }
     };
