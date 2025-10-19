@@ -103,37 +103,32 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       
       console.log(`📍 Location received: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
       
-      // REJECT poor GPS readings that are obviously wrong
-      if (acc > 1000) {
-        console.log(`❌ REJECTING poor GPS reading: ±${Math.round(acc)}m accuracy is too poor`);
-        console.log("🔄 Continuing to search for better location...");
-        return; // Don't use this reading
-      }
+      // ALWAYS ACCEPT the location but use smart fallback for poor accuracy
+      console.log(`✅ ACCEPTING location: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
       
-      // ACCEPT only good GPS readings
-      console.log(`✅ ACCEPTING good GPS reading: ±${Math.round(acc)}m accuracy`);
-      
-      // IMMEDIATE location display for good readings
+      // IMMEDIATE location display
       setPosition([lat, lng]);
       setAccuracy(Math.round(acc));
       setUsingDefaultLocation(false);
       setIsLoading(false);
       hasGotAccuratePosition.current = true;
-      setLocationError(null);
       
-      console.log(`🎯 IMMEDIATE: Displaying ACCURATE location: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
-      
-      // Show success message for good accuracy
+      // Show appropriate message based on accuracy
       if (acc < 100) {
         console.log(`✅ Excellent location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
         setLocationError(null);
       } else if (acc < 500) {
         console.log(`✅ Good location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
         setLocationError(null);
+      } else if (acc < 1000) {
+        console.log(`✅ Location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+        setLocationError(`Location accuracy: ±${Math.round(acc)}m. This should be close to your actual location.`);
       } else {
-        console.log(`✅ Accurate location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
-        setLocationError(null);
+        console.log(`⚠️ Location acquired with limited accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+        setLocationError(`Location accuracy: ±${Math.round(acc)}m. This may not be your exact location. For better accuracy, try moving to an open area.`);
       }
+      
+      console.log(`🎯 IMMEDIATE: Displaying location: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
     };
 
     const error = (err) => {
@@ -207,21 +202,14 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
     navigator.geolocation.getCurrentPosition(
       success,
       error,
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 8000 }
     );
     
     // 5. Try GPS location with longer timeout (maximum accuracy)
     navigator.geolocation.getCurrentPosition(
       success,
       error,
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-    );
-    
-    // 6. Try GPS location with even longer timeout (for difficult environments)
-    navigator.geolocation.getCurrentPosition(
-      success,
-      error,
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 }
     );
 
     // Continuous location monitoring for better accuracy
@@ -543,7 +531,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
           setAccuracy(ipAccuracy);
           setIsLoading(false);
           hasGotAccuratePosition.current = true;
-          setLocationError(`Using IP-based location (±${ipAccuracy}m). Auto-improving for better accuracy...`);
+          setLocationError(`Using IP-based location (±${ipAccuracy}m). This should be close to your region.`);
           setAllowManualCorrection(true);
           setShowApproximateOption(false);
         } else {
