@@ -101,34 +101,22 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       const lng = pos.coords.longitude;
       const acc = pos.coords.accuracy;
       
-      console.log(`📍 Location received: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+      console.log(`📍 GPS Location received: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
       
-      // ALWAYS ACCEPT the location but use smart fallback for poor accuracy
-      console.log(`✅ ACCEPTING location: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
-      
-      // IMMEDIATE location display
-      setPosition([lat, lng]);
-      setAccuracy(Math.round(acc));
-      setUsingDefaultLocation(false);
-      setIsLoading(false);
-      hasGotAccuratePosition.current = true;
-      
-      // Show appropriate message based on accuracy
-      if (acc < 100) {
-        console.log(`✅ Excellent location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+      // ONLY use GPS if it's very accurate, otherwise stick with IP location
+      if (acc < 500) {
+        console.log(`✅ EXCELLENT GPS - Using GPS location: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+        setPosition([lat, lng]);
+        setAccuracy(Math.round(acc));
+        setUsingDefaultLocation(false);
+        setIsLoading(false);
+        hasGotAccuratePosition.current = true;
         setLocationError(null);
-      } else if (acc < 500) {
-        console.log(`✅ Good location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
-        setLocationError(null);
-      } else if (acc < 1000) {
-        console.log(`✅ Location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
-        setLocationError(`Location accuracy: ±${Math.round(acc)}m. This should be close to your actual location.`);
+        console.log(`🎯 GPS ACCEPTED: Displaying GPS location: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
       } else {
-        console.log(`⚠️ Location acquired with limited accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
-        setLocationError(`Location accuracy: ±${Math.round(acc)}m. This may not be your exact location. For better accuracy, try moving to an open area.`);
+        console.log(`❌ GPS ACCURACY TOO POOR (${Math.round(acc)}m) - Keeping IP location instead`);
+        // Don't update position, keep the IP location which is more reliable
       }
-      
-      console.log(`🎯 IMMEDIATE: Displaying location: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
     };
 
     const error = (err) => {
@@ -185,58 +173,17 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
     console.log("🌐 PRIORITY: Trying IP-based location first (most reliable)");
     tryIPBasedLocation();
     
-    // 2. Try cached location immediately (very fast)
-    navigator.geolocation.getCurrentPosition(
-      success,
-      error,
-      { enableHighAccuracy: false, maximumAge: 300000, timeout: 1000 }
-    );
-    
-    // 3. Try network location immediately (fast)
-    navigator.geolocation.getCurrentPosition(
-      success,
-      error,
-      { enableHighAccuracy: false, maximumAge: 60000, timeout: 2000 }
-    );
-    
-    // 4. Try GPS location immediately (high accuracy)
-    navigator.geolocation.getCurrentPosition(
-      success,
-      error,
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 8000 }
-    );
-    
-    // 5. Try GPS location with longer timeout (maximum accuracy)
-    navigator.geolocation.getCurrentPosition(
-      success,
-      error,
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 }
-    );
-
-    // Continuous location monitoring for better accuracy
-    const startContinuousMonitoring = () => {
-      if (locationWatchId.current) {
-        navigator.geolocation.clearWatch(locationWatchId.current);
-      }
-      
-      console.log("🔄 Starting continuous location monitoring for improved accuracy...");
-      
-      locationWatchId.current = navigator.geolocation.watchPosition(
-        success, 
-        error, 
-        {
-          enableHighAccuracy: true,
-          maximumAge: 0, // Don't accept cached positions for continuous monitoring
-          timeout: 20000 // Give more time for continuous monitoring
-        }
+    // 2. Try ONLY high-accuracy GPS (don't interfere with IP location)
+    setTimeout(() => {
+      console.log("🛰️ Trying high-accuracy GPS (won't interfere with IP location)");
+      navigator.geolocation.getCurrentPosition(
+        success,
+        error,
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
       );
-    };
+    }, 2000); // Wait 2 seconds for IP location to work first
 
-    // Start continuous monitoring immediately - don't wait
-    const monitoringTimeout = setTimeout(() => {
-      console.log("🔄 Starting continuous monitoring immediately...");
-      startContinuousMonitoring();
-    }, 1000);
+    // NO continuous monitoring - IP location is reliable enough
 
     // Safety timeout - stop loading after 10 seconds maximum
     const safetyTimeout = setTimeout(() => {
@@ -264,7 +211,6 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
         clearTimeout(autoCorrectionTimeout.current);
       }
       clearTimeout(safetyTimeout);
-      clearTimeout(monitoringTimeout);
     };
   }, []);
 
