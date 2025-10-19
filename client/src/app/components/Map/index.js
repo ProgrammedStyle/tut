@@ -540,15 +540,20 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
   const tryIPBasedLocation = () => {
     console.log("🌐 Attempting IP-based location as fallback...");
     
-    // Use a free IP geolocation service
-    fetch('https://ipapi.co/json/')
-      .then(response => response.json())
+    // Use your backend server to fetch IP location (avoids CORS issues)
+    fetch('/api/location/ip')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+      })
       .then(data => {
         if (data.latitude && data.longitude) {
           console.log(`🌐 IP-based location: ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)} (City: ${data.city || 'Unknown'})`);
           
           // IP-based location typically has accuracy of 1-10km
-          const ipAccuracy = 5000; // Assume 5km accuracy for IP location
+          const ipAccuracy = data.accuracy || 5000; // Use server-provided accuracy or default to 5km
           
           setPosition([data.latitude, data.longitude]);
           setAccuracy(ipAccuracy);

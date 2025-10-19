@@ -101,12 +101,14 @@ import userRoute from "./routes/user/index.js";
 import analyticsRoute from "./routes/analytics/index.js";
 import translationsRoute from "./routes/translations/index.js";
 import contactRoute from "./routes/contact.js";
+import locationRoute from "./routes/location/index.js";
 import checkPasswordExpiry from "./middleware/passwordExpiry.js";
 
 app.use("/api/user", userRoute);
 app.use("/api/analytics", analyticsRoute);
 app.use("/api/translations", translationsRoute);
 app.use("/api/contact", contactRoute);
+app.use("/api/location", locationRoute);
 
 // Apply password expiry check to all protected routes
 app.use(checkPasswordExpiry);
