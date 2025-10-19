@@ -80,8 +80,13 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
         
         if (acc < 100) {
           console.log(`✅ Good location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+          setLocationError(null);
+        } else if (acc < 500) {
+          console.log(`⚠️ Location acquired with moderate accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+          setLocationError(`Location accuracy is moderate (±${Math.round(acc)}m). For better accuracy, try moving to an open area or use the refresh button.`);
         } else {
-          console.log(`⚠️ Location acquired with limited accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+          console.log(`⚠️ Location acquired with poor accuracy: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+          setLocationError(`Location accuracy is poor (±${Math.round(acc)}m). Your actual location could be up to ${Math.round(acc/1000)}km away. Try moving to an open area with clear sky view or use the refresh button.`);
         }
       }
     };
@@ -168,6 +173,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
     
     setIsRefreshing(true);
     hasGotAccuratePosition.current = false;
+    setLocationError(null);
     
     const success = (pos) => {
       const lat = pos.coords.latitude;
@@ -179,17 +185,27 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       setPosition([lat, lng]);
       setAccuracy(Math.round(acc));
       setIsRefreshing(false);
+      
+      // Show results based on accuracy
+      if (acc < 100) {
+        setLocationError(null);
+      } else if (acc < 500) {
+        setLocationError(`Refreshed location accuracy: ±${Math.round(acc)}m. For better accuracy, try moving to an open area.`);
+      } else {
+        setLocationError(`Refreshed location accuracy: ±${Math.round(acc)}m. Your actual location could be up to ${Math.round(acc/1000)}km away. Try moving to an open area with clear sky view.`);
+      }
     };
 
     const error = (err) => {
       console.log("Location refresh error:", err.message);
       setIsRefreshing(false);
+      setLocationError("Failed to refresh location. Please check your GPS/network connection.");
     };
 
     const options = { 
       enableHighAccuracy: true, 
       maximumAge: 0, // Always get fresh location
-      timeout: 10000
+      timeout: 15000 // Give more time for refresh
     };
 
     navigator.geolocation.getCurrentPosition(success, error, options);
