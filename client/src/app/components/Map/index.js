@@ -51,8 +51,10 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
   const [allowManualCorrection, setAllowManualCorrection] = useState(false);
   const [showApproximateOption, setShowApproximateOption] = useState(false);
   const [deviceType, setDeviceType] = useState(null);
+  const [locationReadings, setLocationReadings] = useState([]);
   const mapRef = useRef(null);
   const hasGotAccuratePosition = useRef(false);
+  const locationWatchId = useRef(null);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -92,9 +94,29 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       setLocationError(null);
       setUsingDefaultLocation(false);
       
-      // Always update position, but prioritize more accurate ones
-      setPosition([lat, lng]);
-      setAccuracy(Math.round(acc));
+      // Collect multiple location readings for averaging
+      const newReading = { lat, lng, acc, timestamp: Date.now() };
+      setLocationReadings(prev => {
+        const updated = [...prev, newReading].slice(-5); // Keep last 5 readings
+        
+        // Calculate average position from recent readings
+        if (updated.length >= 2) {
+          const avgLat = updated.reduce((sum, r) => sum + r.lat, 0) / updated.length;
+          const avgLng = updated.reduce((sum, r) => sum + r.lng, 0) / updated.length;
+          const avgAcc = Math.max(...updated.map(r => r.acc)); // Use worst accuracy as safety margin
+          
+          console.log(`📊 Averaged location from ${updated.length} readings: ${avgLat.toFixed(6)}, ${avgLng.toFixed(6)} (±${Math.round(avgAcc)}m)`);
+          
+          setPosition([avgLat, avgLng]);
+          setAccuracy(Math.round(avgAcc));
+        } else {
+          // Use individual reading if we don't have enough for averaging
+          setPosition([lat, lng]);
+          setAccuracy(Math.round(acc));
+        }
+        
+        return updated;
+      });
       
       // Stop loading if we get reasonably accurate location OR if we've tried enough
       if (acc < 2000 || !hasGotAccuratePosition.current) { // Accept up to 2km accuracy
@@ -239,20 +261,46 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
     // Start the comprehensive approach
     tryLocationStrategies();
     
-    // Watch for position updates to get better accuracy over time
-    const watchId = navigator.geolocation.watchPosition(success, error, accurateOptions);
+    // Continuous location monitoring for better accuracy
+    const startContinuousMonitoring = () => {
+      if (locationWatchId.current) {
+        navigator.geolocation.clearWatch(locationWatchId.current);
+      }
+      
+      console.log("🔄 Starting continuous location monitoring for improved accuracy...");
+      
+      locationWatchId.current = navigator.geolocation.watchPosition(
+        success, 
+        error, 
+        {
+          enableHighAccuracy: true,
+          maximumAge: 5000, // Accept cached position up to 5 seconds old
+          timeout: 20000 // Give more time for continuous monitoring
+        }
+      );
+    };
 
-    // Safety timeout - stop loading after 8 seconds
+    // Start continuous monitoring after initial location is found
+    const monitoringTimeout = setTimeout(() => {
+      if (hasGotAccuratePosition.current) {
+        startContinuousMonitoring();
+      }
+    }, 3000);
+
+    // Safety timeout - stop loading after 10 seconds
     const safetyTimeout = setTimeout(() => {
       if (!hasGotAccuratePosition.current) {
         console.log("⏰ Location timeout - using best available location");
         setIsLoading(false);
       }
-    }, 8000);
+    }, 10000);
 
     return () => {
-      navigator.geolocation.clearWatch(watchId);
+      if (locationWatchId.current) {
+        navigator.geolocation.clearWatch(locationWatchId.current);
+      }
       clearTimeout(safetyTimeout);
+      clearTimeout(monitoringTimeout);
     };
   }, []);
 
@@ -411,6 +459,71 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
     navigator.geolocation.getCurrentPosition(success, error, approximateOptions);
   };
 
+  const improveLocationAccuracy = () => {
+    console.log("🎯 Attempting to improve location accuracy by collecting more readings...");
+    setLocationReadings([]); // Reset readings
+    setAllowManualCorrection(false);
+    setShowApproximateOption(false);
+    
+    // Force new location readings
+    if (locationWatchId.current) {
+      navigator.geolocation.clearWatch(locationWatchId.current);
+    }
+    
+    // Try multiple quick readings
+    const quickReadings = [];
+    let readingCount = 0;
+    const maxReadings = 3;
+    
+    const collectQuickReading = () => {
+      if (readingCount >= maxReadings) {
+        // Calculate best location from readings
+        if (quickReadings.length > 0) {
+          const bestReading = quickReadings.reduce((best, current) => 
+            current.acc < best.acc ? current : best
+          );
+          
+          console.log(`🎯 Best reading from ${quickReadings.length} attempts: ${bestReading.lat.toFixed(6)}, ${bestReading.lng.toFixed(6)} (±${Math.round(bestReading.acc)}m)`);
+          
+          setPosition([bestReading.lat, bestReading.lng]);
+          setAccuracy(Math.round(bestReading.acc));
+          
+          if (bestReading.acc < 1000) {
+            setLocationError(null);
+          } else {
+            setLocationError(`Improved location accuracy: ±${Math.round(bestReading.acc)}m. For even better accuracy, try moving to an open area.`);
+          }
+        }
+        return;
+      }
+      
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const reading = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            acc: pos.coords.accuracy
+          };
+          quickReadings.push(reading);
+          readingCount++;
+          
+          console.log(`📊 Reading ${readingCount}: ${reading.lat.toFixed(6)}, ${reading.lng.toFixed(6)} (±${Math.round(reading.acc)}m)`);
+          
+          // Try next reading after a short delay
+          setTimeout(collectQuickReading, 1000);
+        },
+        (err) => {
+          console.log(`Reading ${readingCount + 1} failed:`, err.message);
+          readingCount++;
+          setTimeout(collectQuickReading, 1000);
+        },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+      );
+    };
+    
+    collectQuickReading();
+  };
+
   return (
     <div style={{ height: "500px", width: "100%", position: "relative", borderRadius: "16px", overflow: "hidden" }}>
       {isLoading && (
@@ -493,6 +606,21 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
               <Typography variant="caption" sx={{ fontSize: "0.75rem", color: "#666" }}>
                 GPS accuracy is poor. Try:
               </Typography>
+              <button
+                onClick={improveLocationAccuracy}
+                style={{
+                  fontSize: "0.75rem",
+                  padding: "4px 8px",
+                  backgroundColor: "#34a853",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  marginBottom: "4px",
+                }}
+              >
+                Improve Location
+              </button>
               <button
                 onClick={useApproximateLocation}
                 style={{
