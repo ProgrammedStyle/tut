@@ -432,10 +432,15 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
 
   const tryIPBasedLocation = () => {
     console.log("🌐 IMMEDIATE: Getting VISITOR's REAL current location...");
-    console.log("📡 Fetching from backend: /api/location/ip");
+    
+    // Get the correct backend URL
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const endpoint = `${API_URL}/api/location/ip`;
+    
+    console.log("📡 Fetching from backend:", endpoint);
     
     // Use your backend server to fetch IP location (avoids CORS issues)
-    fetch('/api/location/ip')
+    fetch(endpoint)
       .then(response => {
         console.log(`📡 Backend response status: ${response.status}`);
         if (!response.ok) {
