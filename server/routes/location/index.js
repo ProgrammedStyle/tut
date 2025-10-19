@@ -3,51 +3,107 @@ import axios from "axios";
 
 const router = express.Router();
 
-// REAL IP-based location endpoint that detects YOUR actual location
+// REAL IP-based location endpoint that detects the VISITOR's actual location
 router.get("/ip", async (req, res) => {
   try {
-    console.log("🌐 Fetching YOUR REAL IP-based location...");
+    console.log("🌐 Fetching VISITOR's REAL location...");
     
-    // Get client IP address
-    const clientIP = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || '127.0.0.1';
-    console.log(`📍 Your IP: ${clientIP}`);
+    // Get client IP address (the visitor's IP)
+    let clientIP = req.headers['x-forwarded-for'] || 
+                   req.headers['x-real-ip'] || 
+                   req.connection.remoteAddress || 
+                   req.socket.remoteAddress ||
+                   req.ip;
     
-    // Try real IP geolocation services to get YOUR actual location
-    try {
-      console.log("🔍 Getting YOUR real location from IP...");
-      const response = await axios.get(`https://ipapi.co/${clientIP}/json/`, { timeout: 5000 });
-      
-      if (response.data && response.data.latitude && response.data.longitude) {
-        const yourRealLocation = {
-          latitude: parseFloat(response.data.latitude),
-          longitude: parseFloat(response.data.longitude),
-          city: response.data.city || 'Unknown',
-          country: response.data.country_name || 'Unknown',
-          accuracy: 1000,
-          method: "Real IP Geolocation",
-          note: "This is YOUR actual location based on your IP address"
-        };
-        
-        console.log(`✅ SUCCESS: Found YOUR REAL location: ${yourRealLocation.latitude}, ${yourRealLocation.longitude} (${yourRealLocation.city}, ${yourRealLocation.country})`);
-        
-        res.json({
-          success: true,
-          latitude: yourRealLocation.latitude,
-          longitude: yourRealLocation.longitude,
-          city: yourRealLocation.city,
-          country: yourRealLocation.country,
-          accuracy: yourRealLocation.accuracy,
-          method: yourRealLocation.method,
-          note: yourRealLocation.note
-        });
-        return;
-      }
-    } catch (ipError) {
-      console.log("❌ Real IP geolocation failed:", ipError.message);
+    // Clean up IP if it has multiple IPs (take the first one)
+    if (clientIP && clientIP.includes(',')) {
+      clientIP = clientIP.split(',')[0].trim();
     }
     
-    // Fallback to emergency location if real IP detection fails
-    console.log("⚠️ Real IP detection failed, using emergency fallback");
+    // Remove IPv6 prefix if present
+    if (clientIP && clientIP.startsWith('::ffff:')) {
+      clientIP = clientIP.substring(7);
+    }
+    
+    console.log(`📍 Visitor's IP: ${clientIP}`);
+    
+    // Try multiple IP geolocation services for better reliability
+    const geolocationServices = [
+      {
+        name: 'ipapi.co',
+        url: `https://ipapi.co/${clientIP}/json/`,
+        parser: (data) => ({
+          latitude: parseFloat(data.latitude),
+          longitude: parseFloat(data.longitude),
+          city: data.city,
+          country: data.country_name,
+          accuracy: 1000
+        })
+      },
+      {
+        name: 'ip-api.com',
+        url: `http://ip-api.com/json/${clientIP}?fields=status,lat,lon,city,country`,
+        parser: (data) => ({
+          latitude: parseFloat(data.lat),
+          longitude: parseFloat(data.lon),
+          city: data.city,
+          country: data.country,
+          accuracy: 1000
+        })
+      },
+      {
+        name: 'ipwhois.app',
+        url: `https://ipwhois.app/json/${clientIP}`,
+        parser: (data) => ({
+          latitude: parseFloat(data.latitude),
+          longitude: parseFloat(data.longitude),
+          city: data.city,
+          country: data.country,
+          accuracy: 1000
+        })
+      }
+    ];
+    
+    // Try each service until one works
+    for (const service of geolocationServices) {
+      try {
+        console.log(`🔍 Trying ${service.name}...`);
+        const response = await axios.get(service.url, { 
+          timeout: 5000,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
+        });
+        
+        if (response.data) {
+          const location = service.parser(response.data);
+          
+          // Validate that we got valid coordinates
+          if (location.latitude && location.longitude && 
+              !isNaN(location.latitude) && !isNaN(location.longitude)) {
+            
+            console.log(`✅ SUCCESS with ${service.name}: Found VISITOR's location: ${location.latitude}, ${location.longitude} (${location.city}, ${location.country})`);
+            
+            return res.json({
+              success: true,
+              latitude: location.latitude,
+              longitude: location.longitude,
+              city: location.city || 'Unknown',
+              country: location.country || 'Unknown',
+              accuracy: location.accuracy,
+              method: `IP Geolocation (${service.name})`,
+              note: "This is the VISITOR's actual location based on their IP address"
+            });
+          }
+        }
+      } catch (error) {
+        console.log(`❌ ${service.name} failed: ${error.message}`);
+        // Continue to next service
+      }
+    }
+    
+    // All services failed - use emergency fallback
+    console.log("⚠️ All IP geolocation services failed, using emergency fallback");
     const emergencyLocation = {
       latitude: 31.7767,
       longitude: 35.2344,
@@ -55,7 +111,7 @@ router.get("/ip", async (req, res) => {
       country: "Israel/Palestine",
       accuracy: 100,
       method: "Emergency fallback",
-      note: "Real IP detection failed - using emergency location"
+      note: "All IP geolocation services failed - using emergency location"
     };
     
     res.json({
