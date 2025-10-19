@@ -11,24 +11,55 @@ router.get("/ip", async (req, res) => {
     const clientIP = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || '127.0.0.1';
     console.log(`📍 Client IP: ${clientIP}`);
     
-    // For now, provide a default location based on common patterns
-    // This is a fallback when external services are unavailable
+    // Provide multiple relevant locations in the Middle East region
     const defaultLocations = [
       {
-        name: "Middle East Default",
+        name: "Jerusalem Center",
         latitude: 31.7683,
         longitude: 35.2137,
         city: "Jerusalem",
-        country: "Israel",
-        accuracy: 10000 // 10km accuracy for default location
+        country: "Israel/Palestine",
+        accuracy: 5000
       },
       {
-        name: "Palestine Default", 
+        name: "Jerusalem Old City", 
+        latitude: 31.7767,
+        longitude: 35.2344,
+        city: "Jerusalem Old City",
+        country: "Israel/Palestine",
+        accuracy: 5000
+      },
+      {
+        name: "West Bank Center",
         latitude: 31.9522,
         longitude: 35.2332,
-        city: "Jerusalem",
+        city: "Ramallah",
         country: "Palestine",
-        accuracy: 10000
+        accuracy: 5000
+      },
+      {
+        name: "Nablus Area",
+        latitude: 32.2241,
+        longitude: 35.2581,
+        city: "Nablus",
+        country: "Palestine",
+        accuracy: 5000
+      },
+      {
+        name: "Bethlehem",
+        latitude: 31.7054,
+        longitude: 35.2024,
+        city: "Bethlehem",
+        country: "Palestine",
+        accuracy: 5000
+      },
+      {
+        name: "Tel Aviv",
+        latitude: 32.0853,
+        longitude: 34.7818,
+        city: "Tel Aviv",
+        country: "Israel",
+        accuracy: 5000
       }
     ];
     
