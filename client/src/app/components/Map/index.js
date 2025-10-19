@@ -20,104 +20,40 @@ const Map = () => {
   const [locationInfo, setLocationInfo] = useState(null);
   const [lastUpdateTime, setLastUpdateTime] = useState(null);
   const [isTracking, setIsTracking] = useState(true);
-  const [accuracy, setAccuracy] = useState(null);
   
   // Refs for tracking
-  const watchIdRef = useRef(null);
-  const lastPositionRef = useRef(null);
   const updateIntervalRef = useRef(null);
-
-  // Calculate distance between two coordinates (in km)
-  const calculateDistance = useCallback((pos1, pos2) => {
-    const R = 6371; // Earth's radius in km
-    const dLat = (pos2[0] - pos1[0]) * Math.PI / 180;
-    const dLon = (pos2[1] - pos1[1]) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(pos1[0] * Math.PI / 180) * Math.cos(pos2[0] * Math.PI / 180) *
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  }, []);
-
-  // Try GPS location as fallback
-  const tryGPSLocation = useCallback(() => {
-    if (!navigator.geolocation) {
-      console.log("🌍 GPS not available");
-      return;
-    }
-
-    console.log("🌍 Trying GPS location as fallback...");
-    
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const newPosition = [position.coords.latitude, position.coords.longitude];
-        const newAccuracy = position.coords.accuracy;
-        
-        console.log(`📍 GPS Fallback: ${newPosition[0].toFixed(6)}, ${newPosition[1].toFixed(6)} (±${Math.round(newAccuracy)}m)`);
-        
-        setPosition(newPosition);
-        setAccuracy(newAccuracy);
-        lastPositionRef.current = newPosition;
-        
-        setLocationInfo({
-          latitude: newPosition[0],
-          longitude: newPosition[1],
-          city: 'GPS Location',
-          country: 'Your Device',
-          accuracy: newAccuracy,
-          method: `GPS Fallback (±${Math.round(newAccuracy)}m accuracy)`,
-          note: 'Using GPS as fallback when IP detection failed'
-        });
-        
-        setLastUpdateTime(new Date().toLocaleTimeString());
-        setLoading(false);
-        setError(null);
-        
-        console.log(`✅ GPS fallback successful!`);
-      },
-      (error) => {
-        console.error(`❌ GPS fallback also failed: ${error.message}`);
-        setError(`Both IP and GPS location failed: ${error.message}`);
-        setLoading(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 30000
-      }
-    );
-  }, []);
 
   // Get visitor's location from backend IP service
   const getVisitorLocation = useCallback(async () => {
     try {
-      console.log("🌍 Getting VISITOR&apos;s location from backend...");
+      console.log("🌍 Getting VISITOR location from backend...");
       
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       const endpoint = `${API_URL}/api/location/ip`;
+      console.log(`📡 Calling: ${endpoint}`);
       
-      const response = await fetch(endpoint);
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+      
+      console.log(`📡 Response status: ${response.status}`);
+      
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
       const data = await response.json();
-      console.log("🌍 Backend location data:", data);
+      console.log("🌍 Backend response:", data);
       
       if (data.success && data.latitude && data.longitude) {
         const newPosition = [data.latitude, data.longitude];
         
-        // Check if position has changed significantly (more than 1km)
-        if (lastPositionRef.current) {
-          const distance = calculateDistance(lastPositionRef.current, newPosition);
-          if (distance > 1) { // More than 1km change
-            console.log(`🔄 VISITOR moved ${distance.toFixed(2)}km - updating map!`);
-          }
-        }
-        
         setPosition(newPosition);
-        lastPositionRef.current = newPosition;
-        setAccuracy(data.accuracy || 1000);
         
         setLocationInfo({
           latitude: data.latitude,
@@ -141,16 +77,12 @@ const Map = () => {
       console.error("❌ Error getting visitor location:", error);
       setError(error.message);
       setLoading(false);
-      
-      // Try GPS as fallback
-      console.log("🔄 Trying GPS as fallback...");
-      tryGPSLocation();
     }
-  }, [tryGPSLocation, calculateDistance]);
+  }, []);
 
   // Start continuous location tracking
   const startLocationTracking = useCallback(() => {
-    console.log("🌍 Starting continuous VISITOR location tracking...");
+    console.log("🌍 Starting VISITOR location tracking...");
     setIsTracking(true);
     
     // Get initial location
@@ -167,10 +99,6 @@ const Map = () => {
 
   // Stop location tracking
   const stopLocationTracking = useCallback(() => {
-    if (watchIdRef.current) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
-    }
     if (updateIntervalRef.current) {
       clearInterval(updateIntervalRef.current);
       updateIntervalRef.current = null;
@@ -213,7 +141,7 @@ const Map = () => {
     return null;
   };
 
-  // Custom marker icon with pulse animation
+  // Custom marker icon
   const createPulseIcon = () => {
     return L.divIcon({
       className: 'pulse-marker',
@@ -303,14 +231,6 @@ const Map = () => {
             label={`Updated: ${lastUpdateTime}`} 
             variant="outlined"
             size="small"
-          />
-        )}
-        {accuracy && (
-          <Chip 
-            label={`±${Math.round(accuracy)}m accuracy`} 
-            variant="outlined"
-            size="small"
-            color={accuracy < 100 ? "success" : accuracy < 500 ? "warning" : "error"}
           />
         )}
       </Box>
