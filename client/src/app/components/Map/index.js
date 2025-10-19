@@ -3,7 +3,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker, useMap, Popup } from "react-leaflet";
 import L from "leaflet";
-import { CircularProgress, Box, Typography } from "@mui/material";
+import { CircularProgress, Box, Typography, IconButton, Tooltip } from "@mui/material";
+import { MyLocation as MyLocationIcon } from "@mui/icons-material";
 
 const createUserIcon = () =>
   L.divIcon({
@@ -44,6 +45,7 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
   const [position, setPosition] = useState(initialPosition);
   const [isLoading, setIsLoading] = useState(true);
   const [accuracy, setAccuracy] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const mapRef = useRef(null);
   const hasGotAccuratePosition = useRef(false);
 
@@ -61,21 +63,19 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       
       console.log(`📍 Location received: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
       
-      // Only update if this is more accurate than what we have, or if we don't have a position yet
-      // Accept position if accuracy is better than 100 meters, or it's the first position
-      if (!hasGotAccuratePosition.current || acc < 100) {
-        setPosition([lat, lng]);
-        setAccuracy(Math.round(acc));
-        
-        // If we got good accuracy (< 50m), mark it and stop loading
-        if (acc < 50) {
-          hasGotAccuratePosition.current = true;
-          setIsLoading(false);
-          console.log(`✅ Accurate location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
-        } else if (!hasGotAccuratePosition.current) {
-          // First position received, but not very accurate - show it but keep trying
-          setIsLoading(false);
-        }
+      // Always update position, but prioritize more accurate ones
+      setPosition([lat, lng]);
+      setAccuracy(Math.round(acc));
+      
+      // Stop loading if we get reasonably accurate location
+      if (acc < 100) {
+        hasGotAccuratePosition.current = true;
+        setIsLoading(false);
+        console.log(`✅ Good location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+      } else if (!hasGotAccuratePosition.current) {
+        // First position received, show it but keep trying for better accuracy
+        setIsLoading(false);
+        console.log(`⚠️ Location received but not very accurate (±${Math.round(acc)}m), will keep trying...`);
       }
     };
 
@@ -85,29 +85,88 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       setIsLoading(false);
     };
 
-    // High accuracy tracking with longer timeout
-    const options = { 
-      enableHighAccuracy: true, 
-      maximumAge: 0, // Don't use cached position - always get fresh location
-      timeout: 30000 // Increased to 30 seconds to give GPS time to get accurate fix
+    // First try: Get quick cached position if available
+    const quickOptions = { 
+      enableHighAccuracy: false, 
+      maximumAge: 60000, // Accept cached position up to 1 minute old
+      timeout: 5000 // Quick timeout for cached position
     };
 
-    // Get initial position
-    navigator.geolocation.getCurrentPosition(success, error, options);
+    // Second try: Get high accuracy position
+    const accurateOptions = { 
+      enableHighAccuracy: true, 
+      maximumAge: 10000, // Accept cached position up to 10 seconds old
+      timeout: 15000 // Reasonable timeout for high accuracy
+    };
+
+    // Try quick position first
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const acc = pos.coords.accuracy;
+        console.log(`🚀 Quick position: ±${Math.round(acc)}m`);
+        
+        if (acc < 200) {
+          // Quick position is good enough, use it
+          success(pos);
+        } else {
+          // Quick position not accurate enough, try high accuracy
+          console.log("Quick position not accurate enough, trying high accuracy...");
+          navigator.geolocation.getCurrentPosition(success, error, accurateOptions);
+        }
+      },
+      () => {
+        // Quick position failed, try high accuracy
+        console.log("Quick position failed, trying high accuracy...");
+        navigator.geolocation.getCurrentPosition(success, error, accurateOptions);
+      },
+      quickOptions
+    );
     
     // Watch for position updates to get better accuracy over time
-    const watchId = navigator.geolocation.watchPosition(success, error, options);
+    const watchId = navigator.geolocation.watchPosition(success, error, accurateOptions);
 
-    // Safety timeout - stop loading after 15 seconds even if we don't have great accuracy
+    // Safety timeout - stop loading after 10 seconds
     const safetyTimeout = setTimeout(() => {
       setIsLoading(false);
-    }, 15000);
+    }, 10000);
 
     return () => {
       navigator.geolocation.clearWatch(watchId);
       clearTimeout(safetyTimeout);
     };
   }, []);
+
+  const refreshLocation = () => {
+    if (!navigator.geolocation) return;
+    
+    setIsRefreshing(true);
+    hasGotAccuratePosition.current = false;
+    
+    const success = (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const acc = pos.coords.accuracy;
+      
+      console.log(`🔄 Refreshed location: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${Math.round(acc)}m)`);
+      
+      setPosition([lat, lng]);
+      setAccuracy(Math.round(acc));
+      setIsRefreshing(false);
+    };
+
+    const error = (err) => {
+      console.log("Location refresh error:", err.message);
+      setIsRefreshing(false);
+    };
+
+    const options = { 
+      enableHighAccuracy: true, 
+      maximumAge: 0, // Always get fresh location
+      timeout: 10000
+    };
+
+    navigator.geolocation.getCurrentPosition(success, error, options);
+  };
 
   return (
     <div style={{ height: "500px", width: "100%", position: "relative", borderRadius: "16px", overflow: "hidden" }}>
@@ -133,6 +192,33 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
             Getting your location...
           </Typography>
         </Box>
+      )}
+      
+      {/* Refresh Location Button */}
+      {!isLoading && (
+        <Tooltip title="Refresh Location">
+          <IconButton
+            onClick={refreshLocation}
+            disabled={isRefreshing}
+            sx={{
+              position: "absolute",
+              top: 10,
+              right: 10,
+              zIndex: 1000,
+              backgroundColor: "white",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+              "&:hover": {
+                backgroundColor: "rgba(255,255,255,0.9)",
+              },
+            }}
+          >
+            {isRefreshing ? (
+              <CircularProgress size={20} />
+            ) : (
+              <MyLocationIcon />
+            )}
+          </IconButton>
+        </Tooltip>
       )}
       
       <MapContainer 
