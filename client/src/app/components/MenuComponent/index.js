@@ -1,7 +1,7 @@
 "use client";
 
 import { Divider, Menu, MenuItem } from "@mui/material";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { showLoading } from "../../slices/loadingSlice";
@@ -12,6 +12,7 @@ const MenuComponent = ({ menuItemsStyle = ``, menuAnchor, menuItems }) => {
     const open = Boolean(anchorEl);
     const router = useRouter();
     const dispatch = useDispatch();
+    const pathname = usePathname();
     const myMenuItems = [ ...menuItems ];
 
     const handleClick = e => {
@@ -20,8 +21,11 @@ const MenuComponent = ({ menuItemsStyle = ``, menuAnchor, menuItems }) => {
 
         const handleClose = ( link = null ) => {
             setAnchorEl(null);
-            if (link) {
-                dispatch(showLoading()); // Show loading immediately
+            if (link && link !== pathname) {
+                dispatch(showLoading()); // Only show loading for different page navigation
+                router.push(link);
+            } else if (link === pathname) {
+                // Same page navigation - just navigate without loading
                 router.push(link);
             }
         };
