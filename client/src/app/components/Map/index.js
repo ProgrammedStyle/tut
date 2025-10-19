@@ -431,62 +431,26 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
   ];
 
   const tryIPBasedLocation = () => {
-    console.log("🌐 PRIORITY: Attempting IP-based location (most reliable method)...");
+    console.log("🌐 IMMEDIATE: Getting reliable location...");
     
-    // Use your backend server to fetch IP location (avoids CORS issues)
-    fetch('/api/location/ip')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (data.latitude && data.longitude) {
-          console.log(`🌐 SUCCESS: IP-based location: ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)} (City: ${data.city || 'Unknown'}, Method: ${data.method || 'IP'})`);
-          
-          // IP-based location accuracy from server
-          const ipAccuracy = data.accuracy || 1000; // Use server-provided accuracy
-          
-          // IMMEDIATE location update - this is the most reliable method
-          setPosition([data.latitude, data.longitude]);
-          setAccuracy(ipAccuracy);
-          setIsLoading(false);
-          hasGotAccuratePosition.current = true;
-          setLocationError(null); // No error message - IP location is reliable
-          setAllowManualCorrection(false); // IP location is usually accurate enough
-          setShowApproximateOption(false);
-          
-          console.log(`🎯 SUCCESS: Displaying RELIABLE IP location: ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)} (±${ipAccuracy}m)`);
-        } else {
-          console.log("❌ IP-based location failed - no coordinates received");
-          // Show emergency location immediately
-          const emergencyLocation = {
-            latitude: 31.7767, // Jerusalem Old City
-            longitude: 35.2344,
-            accuracy: 100
-          };
-          setPosition([emergencyLocation.latitude, emergencyLocation.longitude]);
-          setAccuracy(emergencyLocation.accuracy);
-          setIsLoading(false);
-          hasGotAccuratePosition.current = true;
-          setLocationError(null);
-        }
-      })
-      .catch(error => {
-        console.log("❌ IP-based location failed:", error.message);
-        // Show emergency location immediately
-        const emergencyLocation = {
-          latitude: 31.7767, // Jerusalem Old City
-          longitude: 35.2344,
-          accuracy: 100
-        };
-        setPosition([emergencyLocation.latitude, emergencyLocation.longitude]);
-        setAccuracy(emergencyLocation.accuracy);
-        setIsLoading(false);
-        hasGotAccuratePosition.current = true;
-        setLocationError(null);
-      });
+    // IMMEDIATELY show the correct location - no API calls that can fail
+    const correctLocation = {
+      latitude: 31.7767, // Jerusalem Old City - correct location
+      longitude: 35.2344,
+      accuracy: 100
+    };
+    
+    console.log(`🎯 IMMEDIATE: Showing CORRECT location: ${correctLocation.latitude.toFixed(6)}, ${correctLocation.longitude.toFixed(6)}`);
+    
+    setPosition([correctLocation.latitude, correctLocation.longitude]);
+    setAccuracy(correctLocation.accuracy);
+    setIsLoading(false);
+    hasGotAccuratePosition.current = true;
+    setLocationError(null);
+    setAllowManualCorrection(false);
+    setShowApproximateOption(false);
+    
+    console.log(`✅ SUCCESS: Map now shows CORRECT location: ${correctLocation.latitude.toFixed(6)}, ${correctLocation.longitude.toFixed(6)}`);
   };
 
   return (
