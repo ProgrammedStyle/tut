@@ -27,6 +27,7 @@ const Map = () => {
   // Get visitor's REAL physical location using browser GPS
   const getVisitorLocation = useCallback(async () => {
     console.log("🌍 Getting VISITOR's REAL physical location using GPS...");
+    console.log("🚨 GPS-ONLY MODE: No IP fallbacks, only real GPS!");
     
     if (!navigator.geolocation) {
       console.error("❌ Geolocation is not supported by this browser");
@@ -34,6 +35,68 @@ const Map = () => {
       setLoading(false);
       return;
     }
+    
+    // Force GPS permission request
+    console.log("🔐 Requesting GPS permission...");
+    
+    // First try getCurrentPosition for immediate location
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const newPosition = [position.coords.latitude, position.coords.longitude];
+        const accuracy = position.coords.accuracy;
+        
+        console.log(`🎯 GPS SUCCESS! Real coordinates: ${newPosition[0].toFixed(6)}, ${newPosition[1].toFixed(6)} (±${Math.round(accuracy)}m)`);
+        console.log(`📍 This is YOUR REAL physical location!`);
+        
+        setPosition(newPosition);
+        
+        setLocationInfo({
+          latitude: newPosition[0],
+          longitude: newPosition[1],
+          city: 'Your Real GPS Location',
+          country: 'Current Device Location',
+          accuracy: accuracy,
+          method: `REAL GPS Location (±${Math.round(accuracy)}m accuracy)`,
+          note: 'This is your actual physical location from GPS'
+        });
+        
+        setLastUpdateTime(new Date().toLocaleTimeString());
+        setLoading(false);
+        setError(null);
+        
+        console.log(`✅ REAL GPS location updated at ${new Date().toLocaleTimeString()}`);
+      },
+      (error) => {
+        console.error("❌ GPS FAILED:", error);
+        console.error("❌ GPS Error Code:", error.code);
+        console.error("❌ GPS Error Message:", error.message);
+        
+        let errorMessage = "GPS location failed. ";
+        
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += "Please ALLOW location access in your browser!";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += "GPS signal not available. Try going outside.";
+            break;
+          case error.TIMEOUT:
+            errorMessage += "GPS timeout. Try again.";
+            break;
+          default:
+            errorMessage += "GPS error occurred.";
+        }
+        
+        setError(errorMessage);
+        setLoading(false);
+        console.log("🚨 NO GPS = NO LOCATION! We need GPS to work!");
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 0  // Force fresh GPS reading
+      }
+    );
     
     // Use watchPosition for continuous real-time tracking
     const watchId = navigator.geolocation.watchPosition(
@@ -63,6 +126,9 @@ const Map = () => {
       },
       (error) => {
         console.error("❌ GPS Error:", error);
+        console.error("❌ GPS Error Code:", error.code);
+        console.error("❌ GPS Error Message:", error.message);
+        
         let errorMessage = "Could not get your location. ";
         
         switch(error.code) {
@@ -73,19 +139,24 @@ const Map = () => {
             errorMessage += "Location information is unavailable.";
             break;
           case error.TIMEOUT:
-            errorMessage += "Location request timed out.";
+            errorMessage += "Location request timed out. Try going outside or improving GPS signal.";
             break;
           default:
             errorMessage += "An unknown error occurred.";
         }
         
-        setError(errorMessage);
-        setLoading(false);
+        // Don't set error if we already have a position (timeout on subsequent updates)
+        if (!position) {
+          setError(errorMessage);
+          setLoading(false);
+        } else {
+          console.log("⚠️ GPS timeout on update, but keeping current position");
+        }
       },
       {
         enableHighAccuracy: true,  // Use GPS for highest accuracy
-        timeout: 10000,            // 10 second timeout
-        maximumAge: 0              // Don't use cached position
+        timeout: 30000,            // 30 second timeout (increased)
+        maximumAge: 60000          // Allow 1 minute cached position to prevent timeouts
       }
     );
     
@@ -133,6 +204,8 @@ const Map = () => {
   // Initial location detection
   useEffect(() => {
     console.log("🗺️ Initializing VISITOR location tracking...");
+    console.log("🔄 FORCE REFRESH - GPS Map v2.2 loaded!");
+    console.log("🎯 GPS-ONLY MODE: Will show YOUR real location or nothing!");
     startLocationTracking();
     
     // Cleanup
@@ -211,10 +284,13 @@ const Map = () => {
         <Box textAlign="center">
           <CircularProgress size={60} />
           <Typography variant="h6" style={{ marginTop: 16, color: "#666" }}>
-            Getting your real GPS location...
+            Getting YOUR real GPS location... (v2.2 - {new Date().toLocaleTimeString()})
           </Typography>
           <Typography variant="body2" style={{ marginTop: 8, color: "#999" }}>
-            Please allow location access when prompted
+            🚨 IMPORTANT: Click "Allow" when browser asks for location permission!
+          </Typography>
+          <Typography variant="body2" style={{ marginTop: 8, color: "#999" }}>
+            This will show YOUR real physical location, not IP location
           </Typography>
           <Typography variant="body2" style={{ marginTop: 8, color: "#999" }}>
             Your exact location will update automatically as you move
