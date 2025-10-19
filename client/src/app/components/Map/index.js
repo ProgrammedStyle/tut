@@ -99,6 +99,19 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
       setLocationReadings(prev => {
         const updated = [...prev, newReading].slice(-5); // Keep last 5 readings
         
+        // Check if all readings are consistently poor and identical
+        if (updated.length >= 3) {
+          const allSameCoords = updated.every(r => 
+            Math.abs(r.lat - lat) < 0.000001 && Math.abs(r.lng - lng) < 0.000001
+          );
+          const allPoorAccuracy = updated.every(r => r.acc > 1000);
+          
+          if (allSameCoords && allPoorAccuracy) {
+            console.log("⚠️ GPS consistently returning poor accuracy - trying IP-based location as fallback");
+            setTimeout(tryIPBasedLocation, 2000); // Try IP location after 2 seconds
+          }
+        }
+        
         // Calculate average position from recent readings
         if (updated.length >= 2) {
           const avgLat = updated.reduce((sum, r) => sum + r.lat, 0) / updated.length;
@@ -524,6 +537,35 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
     collectQuickReading();
   };
 
+  const tryIPBasedLocation = () => {
+    console.log("🌐 Attempting IP-based location as fallback...");
+    
+    // Use a free IP geolocation service
+    fetch('https://ipapi.co/json/')
+      .then(response => response.json())
+      .then(data => {
+        if (data.latitude && data.longitude) {
+          console.log(`🌐 IP-based location: ${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)} (City: ${data.city || 'Unknown'})`);
+          
+          // IP-based location typically has accuracy of 1-10km
+          const ipAccuracy = 5000; // Assume 5km accuracy for IP location
+          
+          setPosition([data.latitude, data.longitude]);
+          setAccuracy(ipAccuracy);
+          setLocationError(`Using IP-based location (±${ipAccuracy}m). This may be more accurate than GPS in your current environment.`);
+          setAllowManualCorrection(true);
+          setShowApproximateOption(false);
+        } else {
+          console.log("❌ IP-based location failed - no coordinates received");
+          setLocationError("IP-based location failed. Please try manual correction by dragging the marker.");
+        }
+      })
+      .catch(error => {
+        console.log("❌ IP-based location failed:", error.message);
+        setLocationError("IP-based location failed. Please try manual correction by dragging the marker.");
+      });
+  };
+
   return (
     <div style={{ height: "500px", width: "100%", position: "relative", borderRadius: "16px", overflow: "hidden" }}>
       {isLoading && (
@@ -631,9 +673,24 @@ export default function LiveMap({ initialPosition = [31.9522, 35.2332], initialZ
                   border: "none",
                   borderRadius: "4px",
                   cursor: "pointer",
+                  marginBottom: "4px",
                 }}
               >
                 Use Network Location
+              </button>
+              <button
+                onClick={tryIPBasedLocation}
+                style={{
+                  fontSize: "0.75rem",
+                  padding: "4px 8px",
+                  backgroundColor: "#ff6b35",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Try IP Location
               </button>
             </Box>
           )}
