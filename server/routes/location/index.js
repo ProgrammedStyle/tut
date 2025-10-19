@@ -27,24 +27,40 @@ router.get("/ip", async (req, res) => {
     
     console.log(`📍 Visitor's IP: ${clientIP}`);
     
-    // For localhost testing, return a test location
+    // For localhost, we'll still try to get real location through IP services
+    // This ensures we get the actual visitor's location even when testing locally
     if (clientIP === '::1' || clientIP === '127.0.0.1' || clientIP === 'localhost') {
-      console.log("🏠 Localhost detected, returning test location");
-      return res.json({
-        success: true,
-        latitude: 32.0853,
-        longitude: 34.7818,
-        city: "Tel Aviv",
-        country: "Israel",
-        accuracy: 100,
-        method: "Localhost Test Location",
-        note: "This is a test location for localhost development"
-      });
+      console.log("🏠 Localhost detected, but trying to get real visitor location through IP services...");
+      // We'll continue to the IP geolocation services below
+    }
+    
+    // For localhost, try to get the visitor's real public IP first
+    if (clientIP === '::1' || clientIP === '127.0.0.1' || clientIP === 'localhost') {
+      console.log("🔍 Localhost detected - trying to get visitor's real public IP...");
+      try {
+        // Try to get the visitor's public IP using a service that doesn't require an IP parameter
+        const publicIPResponse = await axios.get('https://api.ipify.org?format=json', { 
+          timeout: 5000,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
+        });
+        
+        if (publicIPResponse.data && publicIPResponse.data.ip) {
+          clientIP = publicIPResponse.data.ip;
+          console.log(`🌐 Got visitor's public IP: ${clientIP}`);
+        } else {
+          console.log("⚠️ Could not get public IP, will try localhost IP anyway");
+        }
+      } catch (publicIPError) {
+        console.log("⚠️ Failed to get public IP:", publicIPError.message);
+        console.log("🔄 Will try with localhost IP anyway");
+      }
     }
     
     // Try a simple, reliable IP geolocation service with better error handling
     try {
-      console.log("🔍 Trying ipapi.co with improved error handling...");
+      console.log(`🔍 Trying ipapi.co for IP: ${clientIP}...`);
       const response = await axios.get(`https://ipapi.co/${clientIP}/json/`, { 
         timeout: 8000,
         headers: {
