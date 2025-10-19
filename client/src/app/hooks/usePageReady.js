@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { hideLoading } from '../slices/loadingSlice';
 import { usePathname } from 'next/navigation';
@@ -15,16 +15,26 @@ import { usePathname } from 'next/navigation';
 export const usePageReady = (isReady = true, minDelay = 1500) => {
     const dispatch = useDispatch();
     const pathname = usePathname();
+    const isReadyRef = useRef(false);
+
+    // Reset isReady when pathname changes
+    useEffect(() => {
+        isReadyRef.current = false;
+    }, [pathname]);
 
     useEffect(() => {
         if (isReady) {
+            isReadyRef.current = true;
             let timeoutId;
             
             // Wait for next animation frame to ensure rendering is complete
             // Then add minimum delay for smooth UX
             const rafId = requestAnimationFrame(() => {
                 timeoutId = setTimeout(() => {
-                    dispatch(hideLoading());
+                    // Only hide loading if we're still ready and on the same pathname
+                    if (isReadyRef.current) {
+                        dispatch(hideLoading());
+                    }
                 }, minDelay);
             });
             
@@ -35,7 +45,7 @@ export const usePageReady = (isReady = true, minDelay = 1500) => {
                 }
             };
         }
-    }, [isReady, minDelay, dispatch, pathname]); // Add pathname to dependencies to reset when route changes
+    }, [isReady, minDelay, dispatch, pathname]);
 };
 
 export default usePageReady;

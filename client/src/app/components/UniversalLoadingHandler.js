@@ -29,13 +29,8 @@ const UniversalLoadingHandler = () => {
             clearTimeout(timeoutRef.current);
         }
 
-        // If navigating to the same page, hide loading immediately
-        if (previousPathRef.current === pathname) {
-            console.log('🔄 Same page navigation detected - hiding loading immediately');
-            dispatch(hideLoading());
-            previousPathRef.current = pathname;
-            return;
-        }
+        // Note: Removed same-page detection as it conflicts with usePageReady
+        // Pages should use usePageReady() hook to control their own loading timing
         
         // Fallback: Auto-hide after pages have had time to render and load
         // This prevents loading from getting stuck on pages that don't use the hook
