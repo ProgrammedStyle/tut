@@ -14,8 +14,10 @@ export const useProtectedRoute = () => {
     const [isChecking, setIsChecking] = useState(true);
 
     useEffect(() => {
-        // Give useAuthPersistence time to load user data from cookie (e.g., after OAuth)
-        // Also give time for sign in to complete and save data
+        // Check authentication immediately if userData is already available
+        // Only delay if userData is not yet loaded (e.g., after OAuth)
+        const delay = userData ? 0 : 500;
+        
         const checkAuthWithDelay = setTimeout(() => {
             let isValid = false;
             
@@ -57,7 +59,7 @@ export const useProtectedRoute = () => {
                 setIsAuthenticated(true);
                 setIsChecking(false);
             }
-        }, 2000); // Increased to 2000ms to give more time for sign in completion and data persistence
+        }, delay);
 
         return () => clearTimeout(checkAuthWithDelay);
     }, [userData, router, dispatch]);

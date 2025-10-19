@@ -31,7 +31,7 @@ const UniversalLoadingHandler = () => {
         // This prevents loading from getting stuck on pages that don't use the hook
         timeoutRef.current = setTimeout(() => {
             dispatch(hideLoading());
-        }, 5000); // Maximum 5 seconds if page doesn't use usePageReady()
+        }, 2000); // Reduced to 2 seconds for faster response
         
         return () => {
             if (timeoutRef.current) {
