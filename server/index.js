@@ -31,27 +31,31 @@ app.use(helmet({
     contentSecurityPolicy: false, // Disable CSP for OAuth redirects
 }));
 
-// Rate limiting
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
-    message: "Too many requests from this IP, please try again later.",
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-app.use(limiter);
+// Rate limiting (disable globally in development)
+if (process.env.NODE_ENV === 'production') {
+    const limiter = rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 100, // Limit each IP to 100 requests per windowMs
+        message: "Too many requests from this IP, please try again later.",
+        standardHeaders: true,
+        legacyHeaders: false,
+    });
+    app.use(limiter);
+}
 
-// Stricter rate limiting for auth endpoints
-const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 auth requests per windowMs
-    message: "Too many authentication attempts, please try again later.",
-    skipSuccessfulRequests: true,
-});
-app.use("/api/user/create", authLimiter);
-app.use("/api/user/signin", authLimiter);
-app.use("/api/user/facebook", authLimiter);
-app.use("/api/user/google", authLimiter);
+// Stricter rate limiting for auth endpoints (disabled in development)
+if (process.env.NODE_ENV === 'production') {
+    const authLimiter = rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 100, // Limit each IP to 100 auth requests per windowMs
+        message: "Too many authentication attempts, please try again later.",
+        skipSuccessfulRequests: true,
+    });
+    app.use("/api/user/create", authLimiter);
+    app.use("/api/user/signin", authLimiter);
+    app.use("/api/user/facebook", authLimiter);
+    app.use("/api/user/google", authLimiter);
+}
 
 app.use(cookieParser());
 
@@ -66,7 +70,7 @@ const corsOptions = {
             callback(null, true);
         } 
         // Allow requests from your frontend domain
-        else if (origin === 'https://tut-2-64sz.onrender.com') {
+        else if (origin === process.env.CLIENT_URL) {
             console.log('✅ CORS: Allowing frontend domain');
             callback(null, true);
         }

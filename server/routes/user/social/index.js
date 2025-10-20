@@ -95,10 +95,13 @@ router.get('/google/callback',
     console.log('Google auth successful for user:', req.user.email);
     
     const token = jwt.sign({ id: req.user._id, email: req.user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const isProd = process.env.NODE_ENV === 'production';
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: true, // Always secure for HTTPS
-      sameSite: 'none', // Allow cross-domain
+      httpOnly: isProd, // disable httpOnly locally to ease debugging/cookie propagation
+      // In production we must use secure + SameSite=None for cross-site OAuth.
+      // In localhost (http), secure cookies are dropped by the browser, so relax.
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
       maxAge: 1000 * 60 * 60 * 24 * 7
     });
     
@@ -110,6 +113,7 @@ router.get('/google/callback',
     };
     
     const encodedUserData = encodeURIComponent(JSON.stringify(userData));
+    // Redirect to Dashboard (capital D) to match your route
     res.redirect(`${process.env.CLIENT_URL}/Dashboard?oauth_success=true&user_data=${encodedUserData}`);
   }
 );
@@ -203,10 +207,11 @@ router.get('/facebook/callback',
     console.log('Facebook auth successful for user:', req.user.email);
     
     const token = jwt.sign({ id: req.user._id, email: req.user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const isProd = process.env.NODE_ENV === 'production';
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: true, // Always secure for HTTPS
-      sameSite: 'none', // Allow cross-domain
+      httpOnly: isProd,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
       maxAge: 1000 * 60 * 60 * 24 * 7
     });
     
@@ -218,6 +223,7 @@ router.get('/facebook/callback',
     };
     
     const encodedUserData = encodeURIComponent(JSON.stringify(userData));
+    // Redirect to Dashboard (capital D) to match your route
     res.redirect(`${process.env.CLIENT_URL}/Dashboard?oauth_success=true&user_data=${encodedUserData}`);
   }
 );

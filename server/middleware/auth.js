@@ -36,7 +36,12 @@ const authenticateUser = async (req, res, next) => {
         if (!user) {
             console.log('⚠️ User has valid JWT but account deleted from database - logging them out!');
             // Clear the cookie
-            res.clearCookie('token');
+            const isProd = process.env.NODE_ENV === 'production';
+            res.clearCookie('token', {
+                httpOnly: isProd,
+                secure: isProd,
+                sameSite: isProd ? 'none' : 'lax'
+            });
             return res.status(401).json({ 
                 success: false,
                 message: "Your account has been deleted. Please contact support.",

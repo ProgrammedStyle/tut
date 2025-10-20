@@ -1,7 +1,17 @@
 import axios from 'axios';
 
-// Get the API URL from environment variable
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+// Get the API URL from environment variable with sensible browser fallback
+// - In production on Render, fall back to the known backend URL if env is missing
+// - In local dev, default to localhost
+let API_URL = process.env.NEXT_PUBLIC_API_URL;
+if (!API_URL) {
+    if (typeof window !== 'undefined') {
+        const isRender = window.location.hostname.includes('onrender.com');
+        API_URL = isRender ? 'https://tut-be9h.onrender.com' : 'http://localhost:5000';
+    } else {
+        API_URL = 'http://localhost:5000';
+    }
+}
 
 // Log the API URL being used (helps debug deployment issues)
 console.log('🔗 Axios configured with baseURL:', API_URL);
@@ -72,6 +82,8 @@ axiosInstance.interceptors.response.use(
             // Only redirect if we're not already on sign-in related pages
             if (typeof window !== 'undefined') {
                 const currentPath = window.location.pathname;
+                // Avoid bouncing users immediately after social OAuth to dashboard
+                const onDashboard = currentPath.toLowerCase().startsWith('/dashboard');
                 const isAuthPage = currentPath.includes('/SignIn') || 
                                    currentPath.includes('/SignOut') || 
                                    currentPath.includes('/CreateAccount') ||
@@ -84,7 +96,11 @@ axiosInstance.interceptors.response.use(
                                    currentPath.startsWith('/en/') ||
                                    currentPath.startsWith('/ar/');
                 
-                if (!isAuthPage) {
+                // If we're on dashboard and we already have userData locally, don't force redirect;
+                // allow a retry flow to re-sync cookies without bouncing the UI.
+                const hasLocalUser = !!localStorage.getItem('userData');
+
+                if (!isAuthPage && !(onDashboard && hasLocalUser)) {
                     isRedirecting = true;
                     localStorage.removeItem('userData');
                     // Clear all cookies by setting them to expire

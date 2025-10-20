@@ -21,7 +21,7 @@ export const useProtectedRoute = () => {
         
         // Check authentication immediately if userData is already available
         // Use longer delay for OAuth redirects to allow state to sync
-        const delay = userData ? 0 : (isOAuthRedirect ? 1000 : 500);
+        const delay = userData ? 0 : (isOAuthRedirect ? 1400 : 500);
         
         const checkAuthWithDelay = setTimeout(() => {
             let isValid = false;
@@ -59,7 +59,20 @@ export const useProtectedRoute = () => {
                 setIsAuthenticated(false);
                 setIsChecking(false);
                 dispatch(showLoading());
-                router.replace('/SignIn');
+                // If this is immediately after OAuth, give one last short grace period
+                if (isOAuthRedirect) {
+                    setTimeout(() => {
+                        const retryUser = localStorage.getItem('userData');
+                        if (retryUser) {
+                            setIsAuthenticated(true);
+                            setIsChecking(false);
+                            return;
+                        }
+                        router.replace('/SignIn');
+                    }, 500);
+                } else {
+                    router.replace('/SignIn');
+                }
             } else {
                 console.log('✅ Authenticated - allowing access');
                 setIsAuthenticated(true);
