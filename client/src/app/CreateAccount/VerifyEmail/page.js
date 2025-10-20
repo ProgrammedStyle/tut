@@ -1,5 +1,8 @@
 "use client";
 
+// Force dynamic rendering due to useSearchParams
+export const dynamic = 'force-dynamic';
+
 import SignInContBox from "../../components/SignInContBox";
 import { useEffect, useState, Suspense } from "react";
 import { useDispatch } from "react-redux";

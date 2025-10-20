@@ -1,5 +1,8 @@
 "use client";
 
+// Force dynamic rendering due to useSearchParams
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect, Suspense } from "react";
 import SignInContBox from "../../../components/SignInContBox";
 import { useRouter, useSearchParams } from "next/navigation";

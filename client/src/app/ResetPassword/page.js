@@ -1,5 +1,8 @@
 "use client";
 
+// Force dynamic rendering due to useSearchParams
+export const dynamic = 'force-dynamic';
+
 import SignInCont from "../components/SignInCont";
 import signInContStyles from "../components/SignInCont/index.module.css";
 import LockResetOutlinedIcon from "@mui/icons-material/LockResetOutlined";

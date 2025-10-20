@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+
+// Force dynamic rendering for protected routes
+export const dynamic = 'force-dynamic';
 import {
     Box,
     Container,
