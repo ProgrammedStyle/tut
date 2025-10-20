@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     Box, Container, Card, CardContent, Typography, TextField, Button, 
     Grid, Select, MenuItem, FormControl, InputLabel, IconButton, Alert,
@@ -62,11 +62,7 @@ const ImageLinksManagement = () => {
     usePageReady(pageRendered);
     
     // Fetch image links for the selected language
-    useEffect(() => {
-        fetchImageLinks();
-    }, [selectedLanguage]);
-    
-    const fetchImageLinks = async () => {
+    const fetchImageLinks = useCallback(async () => {
         try {
             setLoading(true);
             const response = await axios.get(`/api/image-links?language=${selectedLanguage}`);
@@ -88,7 +84,11 @@ const ImageLinksManagement = () => {
                 }, 500);
             });
         }
-    };
+    }, [selectedLanguage]);
+
+    useEffect(() => {
+        fetchImageLinks();
+    }, [fetchImageLinks]);
     
     const handleLinkChange = (imageId, value) => {
         setImageLinks(prev => ({
@@ -238,7 +238,7 @@ const ImageLinksManagement = () => {
                             • Enter a URL (starting with http:// or https://) to make an image clickable<br/>
                             • Leave blank or remove to make an image non-clickable<br/>
                             • Links are language-specific - set different links for different languages<br/>
-                            • Click "Save Link" after entering/modifying a URL
+                            • Click &quot;Save Link&quot; after entering/modifying a URL
                         </Typography>
                     </Alert>
                 </Fade>
