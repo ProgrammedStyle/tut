@@ -1,9 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-
-// Force dynamic rendering for protected routes
-export const dynamic = 'force-dynamic';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { usePageReady } from '../../hooks/usePageReady';
 import axios from '../../utils/axios';

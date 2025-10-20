@@ -1,10 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
-
-// Force dynamic rendering for protected routes
-export const dynamic = 'force-dynamic';
-
 import ErrorBoundary from '../components/ErrorBoundary';
 import {
     Box,
