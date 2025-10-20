@@ -102,8 +102,15 @@ router.get('/google/callback',
       maxAge: 1000 * 60 * 60 * 24 * 7
     });
     
-    // Redirect to home page - client will detect the token and update state
-    res.redirect(`${process.env.CLIENT_URL}/Dashboard`);
+    // Include user data in URL params to help client-side state initialization
+    const userData = {
+      email: req.user.email,
+      id: req.user._id,
+      hasPassword: req.user.hasPassword || false
+    };
+    
+    const encodedUserData = encodeURIComponent(JSON.stringify(userData));
+    res.redirect(`${process.env.CLIENT_URL}/Dashboard?oauth_success=true&user_data=${encodedUserData}`);
   }
 );
 
@@ -203,8 +210,15 @@ router.get('/facebook/callback',
       maxAge: 1000 * 60 * 60 * 24 * 7
     });
     
-    // Redirect to Dashboard - client will detect the token and update state
-    res.redirect(`${process.env.CLIENT_URL}/Dashboard`);
+    // Include user data in URL params to help client-side state initialization
+    const userData = {
+      email: req.user.email,
+      id: req.user._id,
+      hasPassword: req.user.hasPassword || false
+    };
+    
+    const encodedUserData = encodeURIComponent(JSON.stringify(userData));
+    res.redirect(`${process.env.CLIENT_URL}/Dashboard?oauth_success=true&user_data=${encodedUserData}`);
   }
 );
 

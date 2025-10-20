@@ -53,7 +53,7 @@ import { z } from 'zod';
 import { useSelector, useDispatch } from 'react-redux';
 import { setUserData } from '../slices/userSlice';
 import { showLoading, hideLoading } from '../slices/loadingSlice';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import axios from '../utils/axios';
 import { useProtectedRoute } from '../hooks/useProtectedRoute';
 import { usePasswordExpiry } from '../hooks/usePasswordExpiry';
@@ -93,6 +93,7 @@ const Dashboard = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const dispatch = useDispatch();
     const router = useRouter();
+    const searchParams = useSearchParams();
     
     // Redux state
     const { userData } = useSelector((state) => state.user);
@@ -134,6 +135,32 @@ const Dashboard = () => {
 
     // Signal when page data is loaded and rendered
     usePageReady(pageRendered);
+
+    // Handle OAuth success - set user data immediately if coming from OAuth redirect
+    useEffect(() => {
+        const oauthSuccess = searchParams.get('oauth_success');
+        const userDataParam = searchParams.get('user_data');
+        
+        if (oauthSuccess === 'true' && userDataParam && !userData) {
+            try {
+                const decodedUserData = JSON.parse(decodeURIComponent(userDataParam));
+                console.log('🎉 OAuth success - setting user data immediately:', decodedUserData);
+                
+                // Set user data in Redux and localStorage immediately
+                dispatch(setUserData(decodedUserData));
+                localStorage.setItem('userData', JSON.stringify(decodedUserData));
+                
+                // Clean up URL parameters
+                const url = new URL(window.location);
+                url.searchParams.delete('oauth_success');
+                url.searchParams.delete('user_data');
+                window.history.replaceState({}, '', url.toString());
+                
+            } catch (error) {
+                console.error('Failed to parse OAuth user data:', error);
+            }
+        }
+    }, [searchParams, userData, dispatch]);
 
     // Fetch user data to ensure we have hasPassword field
     useEffect(() => {

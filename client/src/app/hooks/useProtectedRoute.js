@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { showLoading } from '../slices/loadingSlice';
 
 export const useProtectedRoute = () => {
     const router = useRouter();
     const dispatch = useDispatch();
+    const searchParams = useSearchParams();
     const { userData } = useSelector((state) => state.user);
     
     // ALWAYS start with true during SSR to prevent hydration mismatch
@@ -14,15 +15,20 @@ export const useProtectedRoute = () => {
     const [isChecking, setIsChecking] = useState(true);
 
     useEffect(() => {
+        // Check if this is an OAuth redirect
+        const oauthSuccess = searchParams.get('oauth_success');
+        const isOAuthRedirect = oauthSuccess === 'true';
+        
         // Check authentication immediately if userData is already available
-        // Only delay if userData is not yet loaded (e.g., after OAuth)
-        const delay = userData ? 0 : 500;
+        // Use longer delay for OAuth redirects to allow state to sync
+        const delay = userData ? 0 : (isOAuthRedirect ? 1000 : 500);
         
         const checkAuthWithDelay = setTimeout(() => {
             let isValid = false;
             
             console.log('🔒 Protected route checking authentication...');
             console.log('📦 Redux userData:', userData);
+            console.log('🔄 Is OAuth redirect:', isOAuthRedirect);
             
             // Check if userData exists in Redux
             if (userData && userData.email) {
@@ -62,7 +68,7 @@ export const useProtectedRoute = () => {
         }, delay);
 
         return () => clearTimeout(checkAuthWithDelay);
-    }, [userData, router, dispatch]);
+    }, [userData, router, dispatch, searchParams]);
 
     return { isChecking, isAuthenticated };
 };
