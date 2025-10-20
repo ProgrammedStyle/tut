@@ -423,6 +423,51 @@ const languageData = {
     'button-next': 'Weiter',
     'button-search': 'Suchen',
     'button-loading': 'Wird geladen...',
+  },
+  'it': {
+    code: 'it',
+    name: 'Italiano',
+    flag: '🇮🇹',
+    // HOME PAGE - ITALIAN
+    'home-hero-title': 'Scopri Gerusalemme',
+    'home-hero-subtitle': 'Esplora la ricca storia e la bellezza sacra di Al-Quds attraverso il nostro viaggio virtuale immersivo',
+    'home-badge-routes': '10 Percorsi Sacri',
+    'home-badge-map': 'Mappa Interattiva',
+    'home-badge-history': 'Storia Ricca',
+    'home-guide-title': 'Guida Virtuale di Alquds',
+    'home-guide-quote': 'La Guida di Inoy alle Migliori Attrazioni della Città Vecchia di Alquds',
+    'home-guide-description-1': 'La Città Vecchia di Alquds è un sito del Patrimonio Mondiale UNESCO diviso in quattro quartieri — Musulmano, Cristiano, Ebraico e Armeno — ognuno con il suo ritmo unico, punti di riferimento e storie.',
+    'home-guide-description-2': 'L\'intera città murata è solo di circa 1 km², quindi puoi esplorare gran parte di essa a piedi.',
+    'home-video-title': 'Guarda la Nostra Storia',
+    'home-video-subtitle': 'Scopri la bellezza e la storia di Gerusalemme attraverso la nostra esperienza video immersiva',
+    'home-routes-title': 'Esplora la Gerusalemme Sacra',
+    'home-map-title': 'Mappa Interattiva',
+    'home-map-subtitle': 'Esplora i percorsi sacri e i punti di riferimento di Gerusalemme con la nostra mappa interattiva',
+    'home-map-location': 'Città Vecchia di Gerusalemme',
+    'home-cta-title': 'Pronto a Iniziare il Tuo Viaggio?',
+    'home-cta-subtitle': 'Scopri le antiche strade, i siti sacri e il ricco patrimonio culturale che rendono Gerusalemme una delle città più affascinanti del mondo.',
+    'home-cta-button': 'Esplora Ora',
+    'home-start-button': 'Inizia a Esplorare',
+
+    // HEADER
+    'header-home': 'Casa',
+    'header-cart': 'Il Mio Carrello',
+    'header-profile': 'Profilo',
+    'header-search-placeholder': 'Cerca',
+    'header-language': 'Seleziona Lingua',
+
+    // GENERAL BUTTONS
+    'button-save': 'Salva',
+    'button-cancel': 'Annulla',
+    'button-delete': 'Elimina',
+    'button-edit': 'Modifica',
+    'button-add': 'Aggiungi',
+    'button-submit': 'Invia',
+    'button-close': 'Chiudi',
+    'button-back': 'Indietro',
+    'button-next': 'Avanti',
+    'button-search': 'Cerca',
+    'button-loading': 'Caricamento...',
   }
   // Add more languages as needed
 };

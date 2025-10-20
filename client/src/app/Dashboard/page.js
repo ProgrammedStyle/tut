@@ -45,7 +45,8 @@ import {
     TrendingUp as TrendingUpIcon,
     TrendingDown as TrendingDownIcon,
     Analytics as AnalyticsIcon,
-    AccountCircle as AccountCircleIcon
+    AccountCircle as AccountCircleIcon,
+    Image as ImageIcon
 } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -489,13 +490,23 @@ const DashboardContent = () => {
     const ProfileCard = () => (
         <Slide direction="up" in={true}>
             <Card sx={{ height: '100%' }}>
-                <CardContent sx={{ p: 3 }}>
+                <CardContent sx={{ p: 3, pb: 2.5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                         <Avatar sx={{ width: 64, height: 64, mr: 2, bgcolor: 'primary.main' }}>
                             <AccountCircleIcon sx={{ fontSize: 40 }} />
                         </Avatar>
-                        <Box>
-                            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                        <Box sx={{ minWidth: 0, flex: 1 }}>
+                            <Typography 
+                                variant="h5" 
+                                sx={{ 
+                                    fontWeight: 'bold',
+                                    wordBreak: 'break-all',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap'
+                                }}
+                                title={userData?.email || 'User'}
+                            >
                                 {userData?.email || 'User'}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
@@ -513,8 +524,20 @@ const DashboardContent = () => {
                         </Typography>
                         
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                            <EmailIcon sx={{ mr: 2, color: 'text.secondary' }} />
-                            <Typography variant="body1">{userData?.email || 'N/A'}</Typography>
+                            <EmailIcon sx={{ mr: 2, color: 'text.secondary', flexShrink: 0 }} />
+                            <Typography 
+                                variant="body1" 
+                                sx={{ 
+                                    wordBreak: 'break-all',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    minWidth: 0
+                                }}
+                                title={userData?.email || 'N/A'}
+                            >
+                                {userData?.email || 'N/A'}
+                            </Typography>
                         </Box>
                         
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -529,7 +552,7 @@ const DashboardContent = () => {
                         onClick={() => setEditDialogOpen(true)}
                         fullWidth
                         sx={{ 
-                            py: 1.5,
+                            py: 1,
                             background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
                             '&:hover': {
                                 background: 'linear-gradient(45deg, #1976D2 30%, #1CB5E0 90%)'
@@ -645,7 +668,12 @@ const DashboardContent = () => {
                 )}
 
                 {/* Statistics Cards */}
-                <Grid container spacing={3} sx={{ mb: 4 }}>
+                <Grid container spacing={3} sx={{ 
+                    mb: 4,
+                    '@media (max-width: 580px)': {
+                        justifyContent: 'space-around'
+                    }
+                }}>
                         <Grid item xs={12} sm={6} lg={3}>
                             <StatCard
                                 title="Total Visitors"
@@ -689,14 +717,35 @@ const DashboardContent = () => {
                     </Grid>
 
                 {/* Main Content */}
-                <Grid container spacing={3}>
+                <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: { xs: 'column', lg: 'row' },
+                    gap: 3,
+                    alignItems: { xs: 'stretch', lg: 'flex-start' },
+                    '@media (max-width: 1050px)': {
+                        flexDirection: 'column',
+                        alignItems: 'stretch'
+                    },
+                    '@media (min-width: 1050px)': {
+                        flexDirection: 'row',
+                        alignItems: 'flex-start'
+                    }
+                }}>
                     {/* Profile Card */}
-                    <Grid item xs={12} lg={4}>
+                    <Box sx={{ 
+                        width: { xs: '100%', lg: 'auto' },
+                        '@media (max-width: 1050px)': { width: '100%' },
+                        '@media (min-width: 1050px)': { width: 'auto' }
+                    }}>
                         <ProfileCard />
-                    </Grid>
+                    </Box>
                     
                     {/* Additional Info Card */}
-                    <Grid item xs={12} lg={8}>
+                    <Box sx={{ 
+                        width: { xs: '100%', lg: 'auto' },
+                        '@media (max-width: 1050px)': { width: '100%' },
+                        '@media (min-width: 1050px)': { width: 'auto' }
+                    }}>
                         <Slide direction="right" in={true} style={{ transitionDelay: '400ms' }}>
                             <Card sx={{ height: '100%' }}>
                                 <CardContent sx={{ p: 3 }}>
@@ -704,11 +753,11 @@ const DashboardContent = () => {
                                         Quick Actions
                                     </Typography>
                                     
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={12} sm={6}>
+                                    <Grid container spacing={3} justifyContent="space-around">
+                                        <Grid item xs={12} sm={6} md={4}>
                                             <Paper 
                                                 sx={{ 
-                                                    p: 2, 
+                                                    p: 3, 
                                                     textAlign: 'center',
                                                     cursor: 'pointer',
                                                     transition: 'all 0.3s ease',
@@ -730,10 +779,10 @@ const DashboardContent = () => {
                                             </Paper>
                                         </Grid>
                                         
-                                        <Grid item xs={12} sm={6}>
+                                        <Grid item xs={12} sm={6} md={4}>
                                             <Paper 
                                                 sx={{ 
-                                                    p: 2, 
+                                                    p: 3, 
                                                     textAlign: 'center',
                                                     cursor: 'pointer',
                                                     transition: 'all 0.3s ease',
@@ -755,10 +804,10 @@ const DashboardContent = () => {
                                             </Paper>
                                         </Grid>
                                         
-                                        <Grid item xs={12} sm={6}>
+                                        <Grid item xs={12} sm={6} md={4}>
                                             <Paper 
                                                 sx={{ 
-                                                    p: 2, 
+                                                    p: 3, 
                                                     textAlign: 'center',
                                                     cursor: 'pointer',
                                                     transition: 'all 0.3s ease',
@@ -779,12 +828,37 @@ const DashboardContent = () => {
                                                 </Typography>
                                             </Paper>
                                         </Grid>
+                                        
+                                        <Grid item xs={12} sm={6} md={4}>
+                                            <Paper 
+                                                sx={{ 
+                                                    p: 3, 
+                                                    textAlign: 'center',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.3s ease',
+                                                    '&:hover': {
+                                                        transform: 'translateY(-4px)',
+                                                        boxShadow: theme.shadows[8]
+                                                    }
+                                                }}
+                                                onClick={() => {
+                                                    dispatch(showLoading());
+                                                    router.push('/Dashboard/image-links');
+                                                }}
+                                            >
+                                                <ImageIcon sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
+                                                <Typography variant="h6">Image Links</Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Manage clickable image links
+                                                </Typography>
+                                            </Paper>
+                                        </Grid>
                                     </Grid>
                                 </CardContent>
                             </Card>
                         </Slide>
-                    </Grid>
-                </Grid>
+                    </Box>
+                </Box>
 
                 {/* Edit Profile Dialog */}
                 <Dialog 

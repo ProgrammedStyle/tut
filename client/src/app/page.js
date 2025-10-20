@@ -8,15 +8,17 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { useLanguage } from './contexts/LanguageContext';
 import { usePageReady } from './hooks/usePageReady';
+import axios from './utils/axios';
 
 const MapComponent = dynamic(() => import('./components/Map'), { ssr: false });
 
 export default function Home() {
     const routesRef = useRef(null);
     const mapRef = useRef(null);
-    const { t } = useLanguage();
+    const { t, currentLanguage } = useLanguage();
     const [animationDistance, setAnimationDistance] = useState(-50); // Default for SSR
     const [pageReady, setPageReady] = useState(false);
+    const [imageLinks, setImageLinks] = useState({});
     
     useEffect(() => {
         // Set animation distance based on screen size after mount
@@ -29,6 +31,48 @@ export default function Home() {
             }, 1000); // Wait 1000ms after render for page to be fully painted
         });
     }, []);
+
+    // Fetch image links for the current language
+    useEffect(() => {
+        const fetchImageLinks = async () => {
+            try {
+                console.log('='.repeat(50));
+                console.log('🌍 [IMAGE LINKS] Starting fetch...');
+                console.log('📍 [IMAGE LINKS] Current language:', currentLanguage);
+                console.log('📍 [IMAGE LINKS] API URL:', `/api/image-links?language=${currentLanguage}`);
+                
+                const response = await axios.get(`/api/image-links?language=${currentLanguage}`);
+                
+                console.log('📡 [IMAGE LINKS] Response received:');
+                console.log('   - Status:', response.status);
+                console.log('   - Success:', response.data.success);
+                console.log('   - Data:', JSON.stringify(response.data.data, null, 2));
+                
+                if (response.data.success) {
+                    const links = response.data.data || {};
+                    setImageLinks(links);
+                    console.log('✅ [IMAGE LINKS] State updated with:', links);
+                    console.log('   - Number of links:', Object.keys(links).length);
+                    console.log('   - Image IDs with links:', Object.keys(links).join(', '));
+                } else {
+                    console.warn('⚠️ [IMAGE LINKS] Response not successful');
+                }
+                console.log('='.repeat(50));
+            } catch (error) {
+                console.error('❌ [IMAGE LINKS] Error fetching:', error);
+                console.error('   - Message:', error.message);
+                console.error('   - Response:', error.response?.data);
+                console.error('='.repeat(50));
+            }
+        };
+        
+        console.log('🔄 [IMAGE LINKS] useEffect triggered, currentLanguage:', currentLanguage);
+        if (currentLanguage) {
+            fetchImageLinks();
+        } else {
+            console.log('⏸️ [IMAGE LINKS] Waiting for currentLanguage...');
+        }
+    }, [currentLanguage]);
 
     // Signal that the page is ready after rendering completes
     usePageReady(pageReady);
@@ -584,27 +628,57 @@ export default function Home() {
                                     viewport={{ once: true }}
                                     transition={{ duration: 0.6, delay: index * 0.1 }}
                                 >
-                                    <Card
-                                        sx={{
-                                            height: '450px',
-                                            borderRadius: { xs: 4, md: 3 },
-                                            overflow: 'hidden',
-                                            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                                            transition: 'all 0.3s ease',
-                                            cursor: 'pointer',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            '&:hover': {
-                                                transform: 'translateY(-8px)',
-                                                boxShadow: '0 12px 40px rgba(0,0,0,0.15)'
+                                    {/* Debug: Log image link status */}
+                                    {console.log(`Image ${route.id} (${route.name}):`, {
+                                        hasLink: !!imageLinks[route.id],
+                                        link: imageLinks[route.id],
+                                        allLinks: imageLinks
+                                    })}
+                                    <Box
+                                        component={imageLinks[route.id] ? 'a' : 'div'}
+                                        href={imageLinks[route.id] || undefined}
+                                        target={imageLinks[route.id] ? '_blank' : undefined}
+                                        rel={imageLinks[route.id] ? 'noopener noreferrer' : undefined}
+                                        onClick={(e) => {
+                                            console.log('🖱️ Clicked on image:', route.id);
+                                            console.log('🔗 Link:', imageLinks[route.id]);
+                                            console.log('📦 Component type:', imageLinks[route.id] ? 'a' : 'div');
+                                            if (imageLinks[route.id]) {
+                                                console.log('✅ Should redirect to:', imageLinks[route.id]);
+                                                // Force navigation as backup
+                                                window.open(imageLinks[route.id], '_blank');
+                                            } else {
+                                                console.log('❌ No link set for this image');
                                             }
                                         }}
+                                        sx={{
+                                            textDecoration: 'none',
+                                            color: 'inherit',
+                                            display: 'block'
+                                        }}
                                     >
+                                        <Card
+                                            sx={{
+                                                height: '450px',
+                                                borderRadius: { xs: 4, md: 3 },
+                                                overflow: 'hidden',
+                                                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                                                transition: 'all 0.3s ease',
+                                                cursor: imageLinks[route.id] ? 'pointer' : 'default',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                '&:hover': imageLinks[route.id] ? {
+                                                    transform: 'translateY(-8px)',
+                                                    boxShadow: '0 12px 40px rgba(0,0,0,0.15)'
+                                                } : {}
+                                            }}
+                                        >
                                         <Box sx={{ 
                                             position: 'relative', 
                                             width: '100%', 
                                             height: '280px',
-                                            overflow: 'hidden' 
+                                            overflow: 'hidden',
+                                            pointerEvents: 'none' // Allow clicks to pass through
                                         }}>
                                             <Image
                                                 src={route.img}
@@ -613,7 +687,8 @@ export default function Home() {
                                                 style={{ 
                                                     objectFit: 'cover',
                                                     width: '100%',
-                                                    height: '100%'
+                                                    height: '100%',
+                                                    pointerEvents: 'none' // Allow clicks to pass through
                                                 }}
                                             />
                                             <Box
@@ -637,6 +712,32 @@ export default function Home() {
                                                     #{route.id}
                                                 </Typography>
                                             </Box>
+                                            {imageLinks[route.id] && (
+                                                <Box
+                                                    sx={{
+                                                        position: 'absolute',
+                                                        top: 16,
+                                                        left: 16,
+                                                        background: 'rgba(76, 175, 80, 0.9)',
+                                                        borderRadius: 2,
+                                                        px: 2,
+                                                        py: 1,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 0.5
+                                                    }}
+                                                >
+                                                    <Typography
+                                                        sx={{
+                                                            fontSize: '0.875rem',
+                                                            fontWeight: 600,
+                                                            color: 'white'
+                                                        }}
+                                                    >
+                                                        🔗 CLICKABLE
+                                                    </Typography>
+                                                </Box>
+                                            )}
                                         </Box>
 
                                         <CardContent sx={{ p: { xs: 3.5, md: 3 }, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -679,7 +780,8 @@ export default function Home() {
                                                 </Typography>
                                             </Box>
                                         </CardContent>
-                                    </Card>
+                                        </Card>
+                                    </Box>
                                 </motion.div>
                             </Grid>
                         ))}

@@ -28,7 +28,7 @@ const Header = () => {
   const { userData } = useSelector((state) => state.user);
   const [languageAnchorEl, setLanguageAnchorEl] = useState(null);
   const router = useRouter();
-  const { changeLanguage, languageData } = useLanguage();
+  const { changeLanguage, languageData, currentLanguage } = useLanguage();
 
   const languages = [
     { code: 'sa', name: 'العربية', flag: '🇸🇦', englishName: 'Arabic (Saudi Arabia)' },
@@ -180,7 +180,7 @@ const Header = () => {
             title="Select Language"
           >
             <Typography sx={{ fontSize: '1.3rem' }}>
-              {languages.find(l => l.code === languageData.code)?.flag || '🇬🇧'}
+              {languages.find(l => l.code === currentLanguage)?.flag || '🇬🇧'}
             </Typography>
             <LanguageIcon sx={{ fontSize: "20px" }} />
           </IconButton>
@@ -201,7 +201,7 @@ const Header = () => {
             }}
           >
             {languages.map((language) => {
-              const isSelected = languageData.code === language.code;
+              const isSelected = currentLanguage === language.code;
               return (
                 <MenuItem 
                   key={language.code}

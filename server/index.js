@@ -106,6 +106,7 @@ import analyticsRoute from "./routes/analytics/index.js";
 import translationsRoute from "./routes/translations/index.js";
 import contactRoute from "./routes/contact.js";
 import locationRoute from "./routes/location/index.js";
+import imageLinksRoute from "./routes/imageLinks/index.js";
 import checkPasswordExpiry from "./middleware/passwordExpiry.js";
 
 app.use("/api/user", userRoute);
@@ -113,6 +114,7 @@ app.use("/api/analytics", analyticsRoute);
 app.use("/api/translations", translationsRoute);
 app.use("/api/contact", contactRoute);
 app.use("/api/location", locationRoute);
+app.use("/api/image-links", imageLinksRoute);
 
 // Apply password expiry check to all protected routes
 app.use(checkPasswordExpiry);
