@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import ErrorBoundary from '../components/ErrorBoundary';
 import {
     Box,
@@ -83,7 +83,41 @@ const profileSchema = z.object({
     path: ["password"]
 });
 
-const Dashboard = () => {
+// Component to handle OAuth success with useSearchParams
+const OAuthSuccessHandler = () => {
+    const searchParams = useSearchParams();
+    const dispatch = useDispatch();
+    const { userData } = useSelector((state) => state.user);
+
+    useEffect(() => {
+        const oauthSuccess = searchParams.get('oauth_success');
+        const userDataParam = searchParams.get('user_data');
+        
+        if (oauthSuccess === 'true' && userDataParam && !userData) {
+            try {
+                const decodedUserData = JSON.parse(decodeURIComponent(userDataParam));
+                console.log('🎉 OAuth success - setting user data immediately:', decodedUserData);
+                
+                // Set user data in Redux and localStorage immediately
+                dispatch(setUserData(decodedUserData));
+                localStorage.setItem('userData', JSON.stringify(decodedUserData));
+                
+                // Clean up URL parameters
+                const url = new URL(window.location);
+                url.searchParams.delete('oauth_success');
+                url.searchParams.delete('user_data');
+                window.history.replaceState({}, '', url.toString());
+                
+            } catch (error) {
+                console.error('Failed to parse OAuth user data:', error);
+            }
+        }
+    }, [searchParams, userData, dispatch]);
+
+    return null;
+};
+
+const DashboardContent = () => {
     // Protect this route - redirect to sign in if not authenticated
     const { isChecking, isAuthenticated } = useProtectedRoute();
     // Check if password is expired
@@ -93,7 +127,6 @@ const Dashboard = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const dispatch = useDispatch();
     const router = useRouter();
-    const searchParams = useSearchParams();
     
     // Redux state
     const { userData } = useSelector((state) => state.user);
@@ -135,32 +168,6 @@ const Dashboard = () => {
 
     // Signal when page data is loaded and rendered
     usePageReady(pageRendered);
-
-    // Handle OAuth success - set user data immediately if coming from OAuth redirect
-    useEffect(() => {
-        const oauthSuccess = searchParams.get('oauth_success');
-        const userDataParam = searchParams.get('user_data');
-        
-        if (oauthSuccess === 'true' && userDataParam && !userData) {
-            try {
-                const decodedUserData = JSON.parse(decodeURIComponent(userDataParam));
-                console.log('🎉 OAuth success - setting user data immediately:', decodedUserData);
-                
-                // Set user data in Redux and localStorage immediately
-                dispatch(setUserData(decodedUserData));
-                localStorage.setItem('userData', JSON.stringify(decodedUserData));
-                
-                // Clean up URL parameters
-                const url = new URL(window.location);
-                url.searchParams.delete('oauth_success');
-                url.searchParams.delete('user_data');
-                window.history.replaceState({}, '', url.toString());
-                
-            } catch (error) {
-                console.error('Failed to parse OAuth user data:', error);
-            }
-        }
-    }, [searchParams, userData, dispatch]);
 
     // Fetch user data to ensure we have hasPassword field
     useEffect(() => {
@@ -940,11 +947,61 @@ const Dashboard = () => {
     );
 };
 
-// Wrap with ErrorBoundary to suppress development error overlay
-const DashboardWithErrorBoundary = () => (
+// Main Dashboard component with Suspense wrapper
+const Dashboard = () => (
     <ErrorBoundary>
-        <Dashboard />
+        <Suspense fallback={
+            <Box sx={{ 
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            }}>
+                <Fade in={true} timeout={800}>
+                    <Paper elevation={24} sx={{ 
+                        p: 6, 
+                        borderRadius: 4,
+                        background: 'rgba(255,255,255,0.98)',
+                        backdropFilter: 'blur(20px)',
+                        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+                        border: '1px solid rgba(255, 255, 255, 0.18)',
+                        textAlign: 'center',
+                        maxWidth: 400
+                    }}>
+                        <Box sx={{ mb: 3 }}>
+                            <CircularProgress 
+                                size={60} 
+                                thickness={4}
+                                sx={{ 
+                                    color: '#667eea',
+                                    '& .MuiCircularProgress-circle': {
+                                        strokeLinecap: 'round'
+                                    }
+                                }} 
+                            />
+                        </Box>
+                        <Typography variant="h5" sx={{ 
+                            fontWeight: 'bold',
+                            background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            mb: 1.5
+                        }}>
+                            Loading Dashboard
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Please wait...
+                        </Typography>
+                    </Paper>
+                </Fade>
+            </Box>
+        }>
+            <OAuthSuccessHandler />
+            <DashboardContent />
+        </Suspense>
     </ErrorBoundary>
 );
 
-export default DashboardWithErrorBoundary;
+export default Dashboard;
