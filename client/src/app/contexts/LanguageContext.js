@@ -790,9 +790,17 @@ const languageData = {
 export const LanguageProvider = ({ children }) => {
   const [currentLanguage, setCurrentLanguage] = useState('gb');
   const [translations, setTranslations] = useState(languageData['gb']);
+  const [isClient, setIsClient] = useState(false);
+
+  // Set client flag on mount
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Load language from localStorage and fetch from database on mount
   useEffect(() => {
+    if (!isClient) return;
+    
     const loadTranslations = async () => {
       const savedLanguage = localStorage.getItem('selectedLanguage') || 'gb';
       
@@ -819,10 +827,12 @@ export const LanguageProvider = ({ children }) => {
     };
     
     loadTranslations();
-  }, []);
+  }, [isClient]);
 
   // Function to change language
   const changeLanguage = async (languageCode) => {
+    if (!isClient) return;
+    
     try {
       // Try to fetch translations from database
       const response = await axios.get(`/api/translations/${languageCode}`);
@@ -855,6 +865,8 @@ export const LanguageProvider = ({ children }) => {
 
   // Function to update translations (for content management)
   const updateTranslations = async (languageCode, newTranslations) => {
+    if (!isClient) return { success: false, message: 'Not available during SSR' };
+    
     try {
       // Save translations to database
       const response = await axios.put(`/api/translations/${languageCode}`, {
@@ -888,6 +900,10 @@ export const LanguageProvider = ({ children }) => {
 
   // Function to get translation
   const t = (key) => {
+    // During SSR, always return the key to avoid hydration mismatch
+    if (!isClient) {
+      return key;
+    }
     return translations[key] || key;
   };
 

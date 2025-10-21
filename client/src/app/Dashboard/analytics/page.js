@@ -85,10 +85,10 @@ const Analytics = () => {
                             WebkitTextFillColor: 'transparent',
                             mb: 1.5
                         }}>
-                            {isChecking ? 'Loading Analytics' : 'Redirecting'}
+                            {isChecking ? t('analytics-loading') : t('analytics-redirecting')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            {isChecking ? 'Please wait while we load your analytics data...' : 'Taking you to the sign in page...'}
+                            {isChecking ? t('analytics-loading-message') : t('analytics-redirect-message')}
                         </Typography>
                     </Paper>
                 </Fade>
@@ -194,26 +194,26 @@ const Analytics = () => {
                 router.back();
             }} sx={{ mr: 2, color: 'white', backgroundColor: 'rgba(255,255,255,0.1)', '&:hover': { backgroundColor: 'rgba(255,255,255,0.2)' } }}><ArrowBackIcon /></IconButton>
             <Box>
-                <Typography variant={isMobile ? "h4" : "h3"} sx={{ fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>Analytics</Typography>
-                <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.8)' }}>Detailed website performance metrics</Typography>
+                <Typography variant={isMobile ? "h4" : "h3"} sx={{ fontWeight: 'bold', color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>{t('analytics-title')}</Typography>
+                <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.8)' }}>{t('analytics-subtitle')}</Typography>
             </Box>
         </Box></Box>
         {analyticsData.pageViews === 0 ? (
             <Fade in={true}><Card sx={{ mb: 4 }}><CardContent sx={{ textAlign: 'center', py: 6 }}>
-                <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>No Analytics Data Available</Typography>
-                <Typography variant="body1" color="text.secondary">Analytics tracking is active, but no data has been collected yet.</Typography>
+                <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>{t('analytics-no-data-title')}</Typography>
+                <Typography variant="body1" color="text.secondary">{t('analytics-no-data-message')}</Typography>
             </CardContent></Card></Fade>
         ) : (
             <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12} sm={6} lg={3}><MetricCard title="Page Views" value={analyticsData.pageViews.toLocaleString()} subtitle="Total views" trend={0} icon={VisibilityIcon} color="primary" /></Grid>
-                <Grid item xs={12} sm={6} lg={3}><MetricCard title="Unique Visitors" value={analyticsData.uniqueVisitors.toLocaleString()} subtitle="Individual users" trend={8.3} icon={PeopleIcon} color="secondary" /></Grid>
-                <Grid item xs={12} sm={6} lg={3}><MetricCard title="Bounce Rate" value={analyticsData.bounceRate + '%'} subtitle="Single page visits" trend={-5.2} icon={AssessmentIcon} color="warning" /></Grid>
-                <Grid item xs={12} sm={6} lg={3}><MetricCard title="Avg Session" value={analyticsData.avgSessionDuration + 'm'} subtitle="Session duration" trend={15.8} icon={TrendingUpIcon} color="success" /></Grid>
+                <Grid item xs={12} sm={6} lg={3}><MetricCard title={t('analytics-page-views')} value={analyticsData.pageViews.toLocaleString()} subtitle={t('analytics-total-views')} trend={0} icon={VisibilityIcon} color="primary" /></Grid>
+                <Grid item xs={12} sm={6} lg={3}><MetricCard title={t('analytics-unique-visitors')} value={analyticsData.uniqueVisitors.toLocaleString()} subtitle={t('analytics-individual-users')} trend={8.3} icon={PeopleIcon} color="secondary" /></Grid>
+                <Grid item xs={12} sm={6} lg={3}><MetricCard title={t('analytics-bounce-rate')} value={analyticsData.bounceRate + '%'} subtitle={t('analytics-single-page-visits')} trend={-5.2} icon={AssessmentIcon} color="warning" /></Grid>
+                <Grid item xs={12} sm={6} lg={3}><MetricCard title={t('analytics-avg-session')} value={analyticsData.avgSessionDuration + 'm'} subtitle={t('analytics-session-duration')} trend={15.8} icon={TrendingUpIcon} color="success" /></Grid>
             </Grid>
         )}
         <Grid container spacing={3}>
-            <Grid item xs={12} lg={6}>{analyticsData.topPages.length > 0 ? <TopPagesCard /> : <Card><CardContent><Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>Top Pages</Typography><Typography variant="body1" color="text.secondary">No data yet.</Typography></CardContent></Card>}</Grid>
-            <Grid item xs={12} lg={6}>{analyticsData.trafficSources.length > 0 ? <TrafficSourcesCard /> : <Card><CardContent><Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>Traffic Sources</Typography><Typography variant="body1" color="text.secondary">No data yet.</Typography></CardContent></Card>}</Grid>
+            <Grid item xs={12} lg={6}>{analyticsData.topPages.length > 0 ? <TopPagesCard /> : <Card><CardContent><Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>{t('analytics-top-pages')}</Typography><Typography variant="body1" color="text.secondary">{t('analytics-no-data-yet')}</Typography></CardContent></Card>}</Grid>
+            <Grid item xs={12} lg={6}>{analyticsData.trafficSources.length > 0 ? <TrafficSourcesCard /> : <Card><CardContent><Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>{t('analytics-traffic-sources')}</Typography><Typography variant="body1" color="text.secondary">{t('analytics-no-data-yet')}</Typography></CardContent></Card>}</Grid>
         </Grid>
     </Container></Box>);
 };

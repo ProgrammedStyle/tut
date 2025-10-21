@@ -148,10 +148,10 @@ const Users = () => {
                             WebkitTextFillColor: 'transparent',
                             mb: 1.5
                         }}>
-                            {isChecking ? 'Loading Users' : 'Redirecting'}
+                            {isChecking ? t('users-loading') : t('users-redirecting')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            {isChecking ? 'Please wait while we load user data...' : 'Taking you to the sign in page...'}
+                            {isChecking ? t('users-loading-message') : t('users-redirect-message')}
                         </Typography>
                     </Paper>
                 </Fade>
@@ -210,7 +210,7 @@ const Users = () => {
             
             setSnackbar({
                 open: true,
-                message: 'Users exported successfully!',
+                message: t('users-export-success'),
                 severity: 'success'
             });
             
@@ -223,7 +223,7 @@ const Users = () => {
         } catch (error) {
             setSnackbar({
                 open: true,
-                message: 'Export feature coming soon!',
+                message: t('users-export-coming-soon'),
                 severity: 'info'
             });
             
@@ -248,7 +248,7 @@ const Users = () => {
         if (userData && selectedUser.email === userData.email) {
             setSnackbar({
                 open: true,
-                message: 'You cannot delete your own account!',
+                message: t('users-cannot-delete-self'),
                 severity: 'error'
             });
             setActionDialogOpen(false);
@@ -278,7 +278,7 @@ const Users = () => {
                 });
             }
         } catch (error) {
-            const errorMessage = error.response?.data?.message || 'Failed to delete user';
+            const errorMessage = error.response?.data?.message || t('users-delete-failed');
             setSnackbar({
                 open: true,
                 message: errorMessage,
@@ -325,7 +325,7 @@ const Users = () => {
                 });
             }
         } catch (error) {
-            const errorMessage = error.response?.data?.message || 'Failed to update user status';
+            const errorMessage = error.response?.data?.message || t('users-update-failed');
             setSnackbar({
                 open: true,
                 message: errorMessage,
@@ -520,7 +520,7 @@ const Users = () => {
                     <CardContent>
                         <TextField
                             fullWidth
-                            placeholder="Search users by email or role..."
+                            placeholder={t('users-search-placeholder')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             InputProps={{
@@ -542,12 +542,12 @@ const Users = () => {
                                 <Table>
                                     <TableHead>
                                         <TableRow>
-                                            <TableCell>User</TableCell>
-                                            <TableCell>Role</TableCell>
-                                            <TableCell>Status</TableCell>
-                                            <TableCell>Joined</TableCell>
-                                            <TableCell>Last Login</TableCell>
-                                            <TableCell>Actions</TableCell>
+                                            <TableCell>{t('users-user')}</TableCell>
+                                            <TableCell>{t('users-role')}</TableCell>
+                                            <TableCell>{t('users-status')}</TableCell>
+                                            <TableCell>{t('users-joined')}</TableCell>
+                                            <TableCell>{t('users-last-login')}</TableCell>
+                                            <TableCell>{t('users-actions')}</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -559,7 +559,7 @@ const Users = () => {
                                             <TableRow>
                                                 <TableCell colSpan={6} sx={{ textAlign: 'center', py: 4 }}>
                                                     <Typography variant="body1" color="text.secondary">
-                                                        {searchTerm ? 'No users found matching your search.' : 'No users registered yet. Create an account to see users here!'}
+                                                        {searchTerm ? t('users-no-search-results') : t('users-no-users-yet')}
                                                     </Typography>
                                                 </TableCell>
                                             </TableRow>
@@ -603,7 +603,7 @@ const Users = () => {
                             variant="contained"
                             color={selectedUser?.status === 'active' ? 'warning' : 'success'}
                         >
-                            {selectedUser?.status === 'active' ? 'Deactivate' : 'Activate'} User
+                            {selectedUser?.status === 'active' ? t('users-activate-deactivate').replace('Activate', 'Deactivate') : t('users-activate-deactivate')} User
                         </Button>
                         <Button 
                             onClick={handleDeleteUser}

@@ -17,6 +17,7 @@ import { showLoading, hideLoading } from "../slices/loadingSlice";
 import axios from "../utils/axios";
 import LoadingLink from "../components/LoadingLink";
 import { usePageReady } from "../hooks/usePageReady";
+import { useLanguage } from "../contexts/LanguageContext";
 
 // Validation schema
 const signInSchema = z.object({
@@ -27,8 +28,32 @@ const signInSchema = z.object({
 const SignIn = () => {
     const router = useRouter();
     const dispatch = useDispatch();
+    const { t } = useLanguage();
     const [ error, setError ] = useState(null);
     const [pageRendered, setPageRendered] = useState(false);
+    const [isClient, setIsClient] = useState(false);
+
+    // Set client flag on mount
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    // Safe translation function
+    const safeT = (key) => {
+        if (!isClient) {
+            const fallbacks = {
+                'signin-title': 'Sign In',
+                'signin-email-label': 'Email',
+                'signin-password-label': 'Password',
+                'signin-forgot-password': 'Forgot Password?',
+                'signin-button': 'Sign In',
+                'signin-no-account': 'Don\'t have an account?',
+                'signin-create-account': 'Create Account'
+            };
+            return fallbacks[key] || key;
+        }
+        return t(key);
+    };
 
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: zodResolver(signInSchema)
@@ -118,7 +143,7 @@ const SignIn = () => {
     return (
         <SignInContBox>
             <SignInCont 
-                title="Sign In"
+                title={safeT('signin-title')}
                 image={<LockOpenOutlinedIcon sx={{ fontSize: "180px", opacity: "0.2", color: "var(--main-color)" }} />}
             >
                 <form onSubmit={handleSubmit(onSucceededSubmit)} className={signInContStyles.form}>
@@ -148,7 +173,7 @@ const SignIn = () => {
                         bgColor={false}
                         linesColor={"blackColor"}
                         focusLinesColor={"focusMainColor"}
-                        label="Email"
+                        label={safeT('signin-email-label')}
                         focus={true}
                         {...register("email")}
                     />
@@ -165,7 +190,7 @@ const SignIn = () => {
                         bgColor={false}
                         linesColor={"blackColor"}
                         focusLinesColor={"focusMainColor"}
-                        label="Password"
+                        label={safeT('signin-password-label')}
                         focus={false}
                         {...register("password")}
                     />
@@ -176,7 +201,7 @@ const SignIn = () => {
                                 variant="body2" 
                                 sx={{ color: 'var(--main-color)', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
                             >
-                                Forgot Password?
+                                {safeT('signin-forgot-password')}
                             </Typography>
                         </LoadingLink>
                     </Box>
@@ -192,16 +217,16 @@ const SignIn = () => {
                                 padding: { xs: '10px 20px', sm: '8px 22px' }
                             }}
                         >
-                            Sign In
+                            {safeT('signin-button')}
                         </Button>
                     </div>
 
                     <Box sx={{ mt: 3, textAlign: 'center' }}>
                         <Typography variant="body2" color="text.secondary">
-                            Don&apos;t have an account?{' '}
+                            {safeT('signin-no-account')}{' '}
                             <LoadingLink href="/CreateAccount" style={{ textDecoration: 'none' }}>
                                 <span style={{ color: 'var(--main-color)', cursor: 'pointer', fontWeight: 'medium' }}>
-                                    Create Account
+                                    {safeT('signin-create-account')}
                                 </span>
                             </LoadingLink>
                         </Typography>

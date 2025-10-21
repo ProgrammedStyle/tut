@@ -60,7 +60,7 @@ const VerifyEmail_PendingContent = () => {
 
     const handleResendEmail = async () => {
         if (!email) {
-            setResendError("Email address not found. Please go back and try again.");
+            setResendError(t('verify-email-not-found'));
             return;
         }
 
@@ -79,7 +79,7 @@ const VerifyEmail_PendingContent = () => {
             }, 5000);
         } catch (err) {
             console.error('Resend email error:', err);
-            setResendError(err.response?.data?.message || 'Failed to resend email. Please try again.');
+            setResendError(err.response?.data?.message || t('verify-email-resend-failed'));
         } finally {
             setResending(false);
         }
@@ -222,7 +222,7 @@ const VerifyEmail_PendingContent = () => {
                             }}
                         >
                             <OpenInNewIcon sx={{ fontSize: 20 }} />
-                            <strong>Click the link in the email</strong> to verify your account
+                            <strong>{t('verify-email-click-link')}</strong>
                         </Typography>
                         <Typography
                             variant="body2"
@@ -341,7 +341,7 @@ const VerifyEmail_PendingContent = () => {
                                 },
                             }}
                         >
-                            {resending ? "Sending..." : "Resend Email"}
+                            {resending ? t('verify-email-sending') : t('verify-email-resend-button')}
                         </Button>
                     </Box>
                 </Paper>

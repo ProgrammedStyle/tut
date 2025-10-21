@@ -28,7 +28,33 @@ const Header = () => {
   const { userData } = useSelector((state) => state.user);
   const [languageAnchorEl, setLanguageAnchorEl] = useState(null);
   const router = useRouter();
-  const { changeLanguage, languageData, currentLanguage } = useLanguage();
+  const { changeLanguage, languageData, currentLanguage, t } = useLanguage();
+  const [isClient, setIsClient] = useState(false);
+
+  // Set client flag on mount
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Safe translation function for Header
+  const safeT = (key) => {
+    if (!isClient) {
+      // During SSR, return fallback text
+      const fallbacks = {
+        'header-home': 'Home',
+        'header-language': 'Select Language',
+        'header-profile': 'Profile',
+        'header-create-account': 'Create Account',
+        'header-signin': 'Sign In',
+        'header-dashboard': 'Dashboard',
+        'header-about-us': 'About Us',
+        'header-contact-us': 'Contact Us',
+        'header-sign-out': 'Sign Out'
+      };
+      return fallbacks[key] || key;
+    }
+    return t(key);
+  };
 
   const languages = [
     { code: 'sa', name: 'العربية', flag: '🇸🇦', englishName: 'Arabic (Saudi Arabia)' },
@@ -68,7 +94,7 @@ const Header = () => {
       <Fragment>
         <PersonAddAltOutlinedIcon sx={personalIconSX} />
         <div>
-          Create Account
+          {safeT('header-create-account')}
         </div>
       </Fragment>
     ) },
@@ -76,7 +102,7 @@ const Header = () => {
       <Fragment>
         <LoginOutlinedIcon sx={personalIconSX} />
         <div>
-          Sign In
+          {safeT('header-signin')}
         </div>
       </Fragment>
     ) }
@@ -87,7 +113,7 @@ const Header = () => {
       <Fragment>
         <DashboardIcon sx={personalIconSX} />
         <div>
-          Dashboard
+          {safeT('header-dashboard')}
         </div>
       </Fragment>
     ) }
@@ -98,7 +124,7 @@ const Header = () => {
       <Fragment>
         <LogoutIcon sx={personalIconSX} />
         <div>
-          Sign Out
+          {safeT('header-sign-out')}
         </div>
       </Fragment>
     ) }
@@ -161,7 +187,7 @@ const Header = () => {
           <Logo click={true} />
         </div>
         <div className={styles.hRightB}>
-          <NavLink role={<HomeIcon sx={navIconSX}/>} title={"Home"} link={"/"} />          
+          <NavLink role={<HomeIcon sx={navIconSX}/>} title={safeT('header-home')} link={"/"} />          
           {/* Language Dropdown */}
           <IconButton
             onClick={handleLanguageClick}
@@ -177,7 +203,7 @@ const Header = () => {
                 backgroundColor: 'rgba(255, 255, 255, 0.2)'
               }
             }}
-            title="Select Language"
+            title={safeT('header-language')}
           >
             <Typography sx={{ fontSize: '1.3rem' }}>
               {languages.find(l => l.code === currentLanguage)?.flag || '🇬🇧'}
@@ -250,7 +276,7 @@ const Header = () => {
           <MenuComponent
             menuItemsStyle={styles.menuItemsStyle}
             menuAnchor={
-              <NavLink role={<Person sx={navIconSX} />} title={"Profile"} link={null} />
+              <NavLink role={<Person sx={navIconSX} />} title={safeT('header-profile')} link={null} />
             }
             menuItems={[
               ...tools
@@ -260,7 +286,7 @@ const Header = () => {
                 <Fragment>
                   <InfoOutlinedIcon sx={personalIconSX} />
                   <div>
-                    About Us
+                    {safeT('header-about-us')}
                   </div>
                 </Fragment>
               ) },
@@ -268,7 +294,7 @@ const Header = () => {
                 <Fragment>
                   <ContactMailOutlinedIcon sx={personalIconSX} />
                   <div>
-                    Contact Us
+                    {safeT('header-contact-us')}
                   </div>
                 </Fragment>
               ) },

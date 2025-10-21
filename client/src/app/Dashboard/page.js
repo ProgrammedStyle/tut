@@ -54,7 +54,7 @@ import { z } from 'zod';
 import { useSelector, useDispatch } from 'react-redux';
 import { setUserData } from '../slices/userSlice';
 import { showLoading, hideLoading } from '../slices/loadingSlice';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useLanguage } from '../contexts/LanguageContext';
 import axios from '../utils/axios';
 import { useProtectedRoute } from '../hooks/useProtectedRoute';
 import { usePasswordExpiry } from '../hooks/usePasswordExpiry';
@@ -124,6 +124,7 @@ const DashboardContent = () => {
     // Check if password is expired
     const { checking: checkingPasswordExpiry } = usePasswordExpiry();
     
+    const { t } = useLanguage();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const dispatch = useDispatch();
@@ -296,10 +297,10 @@ const DashboardContent = () => {
                             WebkitTextFillColor: 'transparent',
                             mb: 1.5
                         }}>
-                            {isChecking ? 'Loading Dashboard' : 'Redirecting'}
+                            {isChecking ? t('dashboard-loading') : t('dashboard-redirecting')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            {isChecking ? 'Please wait while we prepare your dashboard...' : 'Taking you to the sign in page...'}
+                            {isChecking ? t('dashboard-wait-message') : t('dashboard-signin-redirect')}
                         </Typography>
                     </Paper>
                 </Fade>
@@ -505,9 +506,9 @@ const DashboardContent = () => {
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap'
                                 }}
-                                title={userData?.email || 'User'}
+                                title={userData?.email || t('dashboard-user-fallback')}
                             >
-                                {userData?.email || 'User'}
+                                {userData?.email || t('dashboard-user-fallback')}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
                                 Registered User
@@ -559,7 +560,7 @@ const DashboardContent = () => {
                             }
                         }}
                     >
-                        Edit Profile
+                        {t('dashboard-edit-profile')}
                     </Button>
                 </CardContent>
             </Card>
@@ -606,7 +607,7 @@ const DashboardContent = () => {
                             WebkitTextFillColor: 'transparent',
                             mb: 1.5
                         }}>
-                            Loading Dashboard
+                            {t('dashboard-loading')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                             Fetching your dashboard data...
@@ -636,7 +637,7 @@ const DashboardContent = () => {
                                 textShadow: '0 2px 4px rgba(0,0,0,0.3)'
                             }}
                         >
-                            Dashboard
+                            {t('dashboard-title')}
                         </Typography>
                         <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.8)' }}>
                             Welcome back! Here&apos;s what&apos;s happening with your website.
@@ -676,7 +677,7 @@ const DashboardContent = () => {
                 }}>
                         <Grid item xs={12} sm={6} lg={3}>
                             <StatCard
-                                title="Total Visitors"
+                                title={t('dashboard-total-visitors')}
                                 value={stats.totalVisitors}
                                 change={stats.visitorsGrowth}
                                 icon={VisibilityIcon}
@@ -686,7 +687,7 @@ const DashboardContent = () => {
                         </Grid>
                         <Grid item xs={12} sm={6} lg={3}>
                             <StatCard
-                                title="Registered Users"
+                                title={t('dashboard-registered-users')}
                                 value={stats.totalUsers}
                                 change={stats.userGrowthPercentage}
                                 icon={PeopleIcon}
@@ -696,7 +697,7 @@ const DashboardContent = () => {
                         </Grid>
                         <Grid item xs={12} sm={6} lg={3}>
                             <StatCard
-                                title="Page Views"
+                                title={t('dashboard-page-views')}
                                 value={stats.pageViews}
                                 change={15.2}
                                 icon={AnalyticsIcon}
@@ -706,7 +707,7 @@ const DashboardContent = () => {
                         </Grid>
                         <Grid item xs={12} sm={6} lg={3}>
                             <StatCard
-                                title="Conversion Rate"
+                                title={t('dashboard-conversion-rate')}
                                 value={stats.conversionRate}
                                 change={-2.1}
                                 icon={TrendingUpIcon}
@@ -772,7 +773,7 @@ const DashboardContent = () => {
                                                 }}
                                             >
                                                 <DashboardIcon sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
-                                                <Typography variant="h6">Analytics</Typography>
+                                                <Typography variant="h6">{t('dashboard-nav-analytics')}</Typography>
                                                 <Typography variant="body2" color="text.secondary">
                                                     View detailed analytics
                                                 </Typography>
@@ -797,7 +798,7 @@ const DashboardContent = () => {
                                                 }}
                                             >
                                                 <PeopleIcon sx={{ fontSize: 40, color: 'secondary.main', mb: 1 }} />
-                                                <Typography variant="h6">Users</Typography>
+                                                <Typography variant="h6">{t('dashboard-nav-users')}</Typography>
                                                 <Typography variant="body2" color="text.secondary">
                                                     Manage user accounts
                                                 </Typography>
@@ -822,7 +823,7 @@ const DashboardContent = () => {
                                                 }}
                                             >
                                                 <EditIcon sx={{ fontSize: 40, color: 'info.main', mb: 1 }} />
-                                                <Typography variant="h6">Content Management</Typography>
+                                                <Typography variant="h6">{t('dashboard-nav-content-management')}</Typography>
                                                 <Typography variant="body2" color="text.secondary">
                                                     Edit website content
                                                 </Typography>
@@ -847,7 +848,7 @@ const DashboardContent = () => {
                                                 }}
                                             >
                                                 <ImageIcon sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
-                                                <Typography variant="h6">Image Links</Typography>
+                                                <Typography variant="h6">{t('dashboard-nav-image-links')}</Typography>
                                                 <Typography variant="body2" color="text.secondary">
                                                     Manage clickable image links
                                                 </Typography>
@@ -878,7 +879,7 @@ const DashboardContent = () => {
                         textAlign: 'center',
                         fontWeight: 'bold'
                     }}>
-                        Edit Profile
+                        {t('dashboard-edit-profile')}
                     </DialogTitle>
                     <DialogContent sx={{ p: 3, maxHeight: '70vh', overflowY: 'auto' }}>
                         <form onSubmit={handleSubmit(handleProfileUpdate)} id="profile-edit-form">
@@ -888,7 +889,7 @@ const DashboardContent = () => {
                                 </Typography>
                                 <TextField
                                     fullWidth
-                                    label="Email"
+                                    label={t('dashboard-email-label')}
                                     type="email"
                                     {...register('email')}
                                     error={!!errors.email}
@@ -903,12 +904,12 @@ const DashboardContent = () => {
                             
                             <Box sx={{ mb: 2 }}>
                                 <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 'bold' }}>
-                                    {userHasPassword ? 'Change Password (Optional)' : 'Set Password (Optional)'}
+                                    {userHasPassword ? t('dashboard-change-password') : t('dashboard-set-password')}
                                 </Typography>
                                 <Alert severity="info" sx={{ mb: 2 }}>
                                     {userHasPassword 
-                                        ? 'Leave these fields empty if you don\'t want to change your password'
-                                        : 'You signed in with social media. You can optionally set a password to enable email/password login'
+                                        ? t('dashboard-password-help-change')
+                                        : t('dashboard-password-help-set')
                                     }
                                 </Alert>
                                 
@@ -916,12 +917,12 @@ const DashboardContent = () => {
                                     <Box>
                                         <TextField
                                             fullWidth
-                                            label="Current Password"
+                                            label={t('dashboard-current-password-label')}
                                             type="password"
                                             margin="normal"
                                             {...register('currentPassword')}
                                             error={!!errors.currentPassword}
-                                            helperText={errors.currentPassword?.message || 'Enter your current password'}
+                                            helperText={errors.currentPassword?.message || t('dashboard-current-password-help')}
                                             InputProps={{
                                                 startAdornment: <LockIcon sx={{ mr: 1, color: 'text.secondary' }} />
                                             }}
@@ -952,12 +953,12 @@ const DashboardContent = () => {
                                 
                                 <TextField
                                     fullWidth
-                                    label="New Password"
+                                    label={t('dashboard-new-password-label')}
                                     type="password"
                                     margin="normal"
                                     {...register('password')}
                                     error={!!errors.password}
-                                    helperText={errors.password?.message || 'Minimum 6 characters'}
+                                    helperText={errors.password?.message || t('dashboard-new-password-help')}
                                     InputProps={{
                                         startAdornment: <LockIcon sx={{ mr: 1, color: 'text.secondary' }} />
                                     }}
@@ -965,12 +966,12 @@ const DashboardContent = () => {
                                 
                                 <TextField
                                     fullWidth
-                                    label="Confirm New Password"
+                                    label={t('dashboard-confirm-password-label')}
                                     type="password"
                                     margin="normal"
                                     {...register('confirmPassword')}
                                     error={!!errors.confirmPassword}
-                                    helperText={errors.confirmPassword?.message || 'Re-enter your new password to confirm'}
+                                    helperText={errors.confirmPassword?.message || t('dashboard-confirm-password-help')}
                                     InputProps={{
                                         startAdornment: <LockIcon sx={{ mr: 1, color: 'text.secondary' }} />
                                     }}
@@ -1063,7 +1064,7 @@ const Dashboard = () => (
                             WebkitTextFillColor: 'transparent',
                             mb: 1.5
                         }}>
-                            Loading Dashboard
+                            {t('dashboard-loading')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                             Please wait...
