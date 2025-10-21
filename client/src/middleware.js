@@ -3,6 +3,12 @@ import { NextResponse } from 'next/server';
 export function middleware(request) {
     const { pathname } = request.nextUrl;
     
+    // Allow _html5 static files to pass through without any processing
+    if (pathname.startsWith('/_html5/')) {
+        console.log('Middleware: Allowing _html5 static file:', pathname);
+        return NextResponse.next();
+    }
+    
     // Define protected routes
     const protectedRoutes = ['/Dashboard', '/dashboard'];
     
@@ -25,6 +31,7 @@ export function middleware(request) {
 // Configure which routes should run the middleware
 export const config = {
     matcher: [
+        '/_html5/:path*',
         '/Dashboard/:path*',
         '/dashboard/:path*'
     ]
