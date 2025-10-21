@@ -57,20 +57,33 @@ const InputText = forwardRef((
 
     useEffect(() => {
         const e = document.createElement("div");
+
         const afterElemStyle = window.getComputedStyle(componentRef.current, "::after");
+
         const componentStyle = window.getComputedStyle(componentRef.current);
-        componentRef.current.style.setProperty("--after-top", `${afterElemStyle.top}`, "important");
+
+        const afterElemTop = ((parseInt(componentStyle.height)/2) - (parseInt(afterElemStyle.height)/2)) + "px";
+
+        componentRef.current.style.setProperty("--after-top", `${afterElemTop}`, "important");
+
         e.style.width = afterElemStyle.width;
         e.style.position = "absolute";
         e.style.transform = componentStyle.getPropertyValue("--inputTransform");
         e.style.visibility = "hidden";
+
         componentRef.current.appendChild(e);
+
         const inputBorderBoxLeftSpace = parseInt(componentStyle.getPropertyValue("--inputBorderBoxLeftSpace"));
+
         const moreSpaceToRight = 9;
+
         const newSpace = parseInt(e.getBoundingClientRect().width) - inputBorderBoxLeftSpace + moreSpaceToRight;
         componentRef.current.style.setProperty("--inputBorderRightSpace", newSpace + "px");
+
         componentRef.current.removeChild(e);
+
         inputRef.current.style.paddingRight = (parseInt(window.getComputedStyle(inputRef.current).paddingRight) + inputIconBoxRef.current.offsetWidth) + "px";
+        
         focus && inputRef.current.focus();
     }, [label, focus]);
 
