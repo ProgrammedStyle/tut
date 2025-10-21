@@ -11,6 +11,33 @@ const nextConfig = {
                 destination: '/api/static/_html5/:path*'
             }
         ];
+    },
+    
+    // Configure headers for static files
+    async headers() {
+        return [
+            {
+                source: '/_html5/:path*',
+                headers: [
+                    {
+                        key: 'Access-Control-Allow-Origin',
+                        value: '*',
+                    },
+                    {
+                        key: 'Access-Control-Allow-Methods',
+                        value: 'GET',
+                    },
+                    {
+                        key: 'Access-Control-Allow-Headers',
+                        value: 'Content-Type',
+                    },
+                    {
+                        key: 'Cache-Control',
+                        value: 'public, max-age=31536000',
+                    },
+                ],
+            },
+        ];
     }
 };
 
