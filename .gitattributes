@@ -1,0 +1,4 @@
+# Ensure _html5 directory is included in git
+_html5/** -linguist-vendored
+_html5/** linguist-generated=false
+

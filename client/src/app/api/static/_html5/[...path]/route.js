@@ -5,23 +5,34 @@ import { existsSync, statSync } from 'fs';
 
 export async function GET(request, { params }) {
   try {
+    // Await params to resolve it properly in Next.js 15
+    const resolvedParams = await params;
+    
     // Get the file path from the URL parameters
-    const filePath = params.path.join('/');
+    const filePath = resolvedParams.path.join('/');
     
     // Construct the full path to the file in the _html5 directory
-    // Go up from client/src/app/api/static/_html5 to the root, then into _html5
+    // Go up from client directory to the root, then into _html5
     const rootDir = process.cwd();
     const fullPath = join(rootDir, '..', '_html5', filePath);
+    
+    console.log('=== HTML5 Static File Serving ===');
+    console.log('Requested file:', filePath);
+    console.log('Root dir:', rootDir);
+    console.log('Full path:', fullPath);
+    console.log('File exists:', existsSync(fullPath));
     
     // Security check: ensure the path is within the _html5 directory
     const normalizedPath = join(rootDir, '..', '_html5');
     if (!fullPath.startsWith(normalizedPath)) {
+      console.log('Security check failed: Path outside _html5 directory');
       return new NextResponse('Forbidden', { status: 403 });
     }
     
     // Check if file exists
     if (!existsSync(fullPath)) {
-      return new NextResponse('File not found', { status: 404 });
+      console.log('File not found:', fullPath);
+      return new NextResponse('File not found: ' + fullPath, { status: 404 });
     }
     
     // Check if it's a directory (return 404 for directories)
