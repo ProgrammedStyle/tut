@@ -177,16 +177,6 @@ app.get("/api/debug/routes", (req, res) => {
     res.json({ routes });
 });
 
-// Catch-all route for non-API requests (only for debugging)
-app.get("*", (req, res) => {
-    res.json({ 
-        message: "Route not found", 
-        path: req.path,
-        method: req.method,
-        note: "This is the Express server catch-all route"
-    });
-});
-
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
