@@ -102,14 +102,7 @@ app.use(passport.initialize());
 await import("./config/passport.js");
 console.log('✓ Passport configuration loaded');
 
-import userRoute from "./routes/user/index.js";
-import analyticsRoute from "./routes/analytics/index.js";
-import translationsRoute from "./routes/translations/index.js";
-import contactRoute from "./routes/contact.js";
-import locationRoute from "./routes/location/index.js";
-import imageLinksRoute from "./routes/imageLinks/index.js";
-import checkPasswordExpiry from "./middleware/passwordExpiry.js";
-
+// IMPORTANT: Static file serving and test routes MUST be defined BEFORE any other middleware
 // Static file serving for _html5 directory
 app.use('/_html5', express.static(path.join(__dirname, '..', '_html5'), {
     setHeaders: (res, path) => {
@@ -128,22 +121,11 @@ app.use('/_html5', express.static(path.join(__dirname, '..', '_html5'), {
     }
 }));
 
-app.use("/api/user", userRoute);
-app.use("/api/analytics", analyticsRoute);
-app.use("/api/translations", translationsRoute);
-app.use("/api/contact", contactRoute);
-app.use("/api/location", locationRoute);
-app.use("/api/image-links", imageLinksRoute);
-
-// Apply password expiry check to all protected routes
-app.use(checkPasswordExpiry);
-
-// Test route to verify server is working
+// Test routes (must be before any middleware that might interfere)
 app.get("/api/test", (req, res) => {
     res.json({ message: "Server is working!" });
 });
 
-// Test route to verify _html5 static serving is working
 app.get("/api/test-html5", (req, res) => {
     const html5Path = path.join(__dirname, '..', '_html5');
     
@@ -163,6 +145,24 @@ app.get("/api/test-html5", (req, res) => {
     }
 });
 
+import userRoute from "./routes/user/index.js";
+import analyticsRoute from "./routes/analytics/index.js";
+import translationsRoute from "./routes/translations/index.js";
+import contactRoute from "./routes/contact.js";
+import locationRoute from "./routes/location/index.js";
+import imageLinksRoute from "./routes/imageLinks/index.js";
+import checkPasswordExpiry from "./middleware/passwordExpiry.js";
+
+app.use("/api/user", userRoute);
+app.use("/api/analytics", analyticsRoute);
+app.use("/api/translations", translationsRoute);
+app.use("/api/contact", contactRoute);
+app.use("/api/location", locationRoute);
+app.use("/api/image-links", imageLinksRoute);
+
+// Apply password expiry check to all protected routes
+app.use(checkPasswordExpiry);
+
 // Debug route to check all registered routes
 app.get("/api/debug/routes", (req, res) => {
     const routes = [];
@@ -175,6 +175,16 @@ app.get("/api/debug/routes", (req, res) => {
         }
     });
     res.json({ routes });
+});
+
+// Catch-all route for non-API requests (only for debugging)
+app.get("*", (req, res) => {
+    res.json({ 
+        message: "Route not found", 
+        path: req.path,
+        method: req.method,
+        note: "This is the Express server catch-all route"
+    });
 });
 
 const PORT = process.env.PORT || 5000;
