@@ -188,30 +188,33 @@ const Header = () => {
         </div>
         <div className={styles.hRightB}>
           <NavLink role={<HomeIcon sx={navIconSX}/>} title={safeT('header-home')} link={"/"} />          
-          {/* Language Dropdown */}
-          <IconButton
-            onClick={handleLanguageClick}
-            sx={{ 
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.5,
-              px: 1.5,
-              borderRadius: '12px',
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.2)'
-              }
-            }}
-            title={safeT('header-language')}
-          >
-            <Typography sx={{ fontSize: '1.3rem' }}>
-              {languages.find(l => l.code === currentLanguage)?.flag || '🇬🇧'}
-            </Typography>
-            <LanguageIcon sx={{ fontSize: "20px" }} />
-          </IconButton>
+          {/* Language Dropdown - Only render on client side */}
+          {isClient && (
+            <IconButton
+              onClick={handleLanguageClick}
+              sx={{ 
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                px: 1.5,
+                borderRadius: '12px',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)'
+                }
+              }}
+              title={safeT('header-language')}
+            >
+              <Typography sx={{ fontSize: '1.3rem' }}>
+                {languages.find(l => l.code === currentLanguage)?.flag || '🇬🇧'}
+              </Typography>
+              <LanguageIcon sx={{ fontSize: "20px" }} />
+            </IconButton>
+          )}
           
-          <Menu
+          {isClient && (
+            <Menu
             anchorEl={languageAnchorEl}
             open={Boolean(languageAnchorEl)}
             onClose={handleLanguageClose}
@@ -270,10 +273,12 @@ const Header = () => {
                 </MenuItem>
               );
             })}
-          </Menu>
+            </Menu>
+          )}
           
-          {/* Profile Menu */}
-          <MenuComponent
+          {/* Profile Menu - Only render on client side */}
+          {isClient && (
+            <MenuComponent
             menuItemsStyle={styles.menuItemsStyle}
             menuAnchor={
               <NavLink role={<Person sx={navIconSX} />} title={safeT('header-profile')} link={null} />
@@ -300,7 +305,8 @@ const Header = () => {
               ) },
               ...signout
             ]}
-          />
+            />
+          )}
         </div>
       </div>
     </header>

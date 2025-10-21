@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import { showLoading } from '../../slices/loadingSlice';
 import { useProtectedRoute } from '../../hooks/useProtectedRoute';
 import { usePageReady } from '../../hooks/usePageReady';
+import { useLanguage } from '../../contexts/LanguageContext';
 import {
     Box, Container, Grid, Card, CardContent, Typography, LinearProgress,
     Paper, useTheme, useMediaQuery, Fade, IconButton, Avatar, CircularProgress
@@ -23,6 +24,7 @@ const Analytics = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const router = useRouter();
     const dispatch = useDispatch();
+    const { t } = useLanguage();
     
     // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS!
     const [analyticsData, setAnalyticsData] = useState({ pageViews: 0, uniqueVisitors: 0, bounceRate: 0, avgSessionDuration: 0, topPages: [], trafficSources: [] });
@@ -176,10 +178,10 @@ const Analytics = () => {
                             WebkitTextFillColor: 'transparent',
                             mb: 1.5
                         }}>
-                            Loading Analytics
+                            {t('analytics-loading')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            Fetching your analytics data...
+                            {t('analytics-loading-message')}
                         </Typography>
                     </Paper>
                 </Fade>

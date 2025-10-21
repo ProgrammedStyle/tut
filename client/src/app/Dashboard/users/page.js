@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 import {
     Box,
     Container,
@@ -60,6 +61,7 @@ const Users = () => {
     const router = useRouter();
     const dispatch = useDispatch();
     const { userData } = useSelector((state) => state.user);
+    const { t } = useLanguage();
     
     // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS!
     const [users, setUsers] = useState([]);

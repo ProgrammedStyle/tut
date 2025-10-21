@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import ErrorBoundary from '../components/ErrorBoundary';
 import {
     Box,
@@ -1023,60 +1024,64 @@ const DashboardContent = () => {
 };
 
 // Main Dashboard component with Suspense wrapper
-const Dashboard = () => (
-    <ErrorBoundary>
-        <Suspense fallback={
-            <Box sx={{ 
-                minHeight: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-            }}>
-                <Fade in={true} timeout={800}>
-                    <Paper elevation={24} sx={{ 
-                        p: 6, 
-                        borderRadius: 4,
-                        background: 'rgba(255,255,255,0.98)',
-                        backdropFilter: 'blur(20px)',
-                        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-                        border: '1px solid rgba(255, 255, 255, 0.18)',
-                        textAlign: 'center',
-                        maxWidth: 400
-                    }}>
-                        <Box sx={{ mb: 3 }}>
-                            <CircularProgress 
-                                size={60} 
-                                thickness={4}
-                                sx={{ 
-                                    color: '#667eea',
-                                    '& .MuiCircularProgress-circle': {
-                                        strokeLinecap: 'round'
-                                    }
-                                }} 
-                            />
-                        </Box>
-                        <Typography variant="h5" sx={{ 
-                            fontWeight: 'bold',
-                            background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
-                            backgroundClip: 'text',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            mb: 1.5
+const Dashboard = () => {
+    const { t } = useLanguage();
+    
+    return (
+        <ErrorBoundary>
+            <Suspense fallback={
+                <Box sx={{ 
+                    minHeight: '100vh',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                }}>
+                    <Fade in={true} timeout={800}>
+                        <Paper elevation={24} sx={{ 
+                            p: 6, 
+                            borderRadius: 4,
+                            background: 'rgba(255,255,255,0.98)',
+                            backdropFilter: 'blur(20px)',
+                            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+                            border: '1px solid rgba(255, 255, 255, 0.18)',
+                            textAlign: 'center',
+                            maxWidth: 400
                         }}>
-                            {t('dashboard-loading')}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            Please wait...
-                        </Typography>
-                    </Paper>
-                </Fade>
-            </Box>
-        }>
-            <OAuthSuccessHandler />
-            <DashboardContent />
-        </Suspense>
-    </ErrorBoundary>
-);
+                            <Box sx={{ mb: 3 }}>
+                                <CircularProgress 
+                                    size={60} 
+                                    thickness={4}
+                                    sx={{ 
+                                        color: '#667eea',
+                                        '& .MuiCircularProgress-circle': {
+                                            strokeLinecap: 'round'
+                                        }
+                                    }} 
+                                />
+                            </Box>
+                            <Typography variant="h5" sx={{ 
+                                fontWeight: 'bold',
+                                background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                                backgroundClip: 'text',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                mb: 1.5
+                            }}>
+                                {t('dashboard-loading')}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                {t('dashboard-wait-message')}
+                            </Typography>
+                        </Paper>
+                    </Fade>
+                </Box>
+            }>
+                <OAuthSuccessHandler />
+                <DashboardContent />
+            </Suspense>
+        </ErrorBoundary>
+    );
+};
 
 export default Dashboard;
