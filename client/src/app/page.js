@@ -684,6 +684,7 @@ export default function Home() {
                                                 src={route.img}
                                                 alt={route.name}
                                                 fill
+                                                unoptimized={true}
                                                 style={{ 
                                                     objectFit: 'cover',
                                                     width: '100%',
