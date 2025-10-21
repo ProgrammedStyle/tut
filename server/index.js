@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -109,6 +110,24 @@ import locationRoute from "./routes/location/index.js";
 import imageLinksRoute from "./routes/imageLinks/index.js";
 import checkPasswordExpiry from "./middleware/passwordExpiry.js";
 
+// Static file serving for _html5 directory
+app.use('/_html5', express.static(path.join(__dirname, '..', '_html5'), {
+    setHeaders: (res, path) => {
+        // Set CORS headers for all static files
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        
+        // Set cache headers for better performance
+        res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year
+        
+        // Set appropriate content type for HTML files
+        if (path.endsWith('.html')) {
+            res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        }
+    }
+}));
+
 app.use("/api/user", userRoute);
 app.use("/api/analytics", analyticsRoute);
 app.use("/api/translations", translationsRoute);
@@ -122,6 +141,26 @@ app.use(checkPasswordExpiry);
 // Test route to verify server is working
 app.get("/api/test", (req, res) => {
     res.json({ message: "Server is working!" });
+});
+
+// Test route to verify _html5 static serving is working
+app.get("/api/test-html5", (req, res) => {
+    const html5Path = path.join(__dirname, '..', '_html5');
+    
+    try {
+        const files = fs.readdirSync(html5Path);
+        res.json({ 
+            message: "_html5 static serving is working!", 
+            html5Path: html5Path,
+            files: files.slice(0, 10) // Show first 10 files
+        });
+    } catch (error) {
+        res.json({ 
+            message: "_html5 directory not found", 
+            error: error.message,
+            html5Path: html5Path
+        });
+    }
 });
 
 // Debug route to check all registered routes
