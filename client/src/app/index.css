@@ -39,3 +39,14 @@ input, textarea, select {
 }
 
 /* All screen sizes use desktop/wide screen text and icon sizes */
+
+/* Override Material-UI MenuItem padding */
+.MuiMenuItem-root {
+    padding: 12px 16px !important;
+    min-height: 48px !important;
+}
+
+.MuiMenuItem-gutters {
+    padding: 12px 16px !important;
+    min-height: 48px !important;
+}

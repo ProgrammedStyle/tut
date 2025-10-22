@@ -1,5 +1,5 @@
 .logoCont {
-    --def-height: 50px;
+    --def-height: 70px;
     height: var(--def-height);
     width: auto;
     display: flex;
@@ -18,4 +18,4 @@
     cursor: pointer
 }
 
-/* No size changes for mobile - using desktop size (50px) for all screens */
+/* No size changes for mobile - using desktop size (70px) for all screens */

@@ -30,7 +30,7 @@ const NavLink = ({ role = null, title = "", link = null }) => {
             sx={{
                 cursor: link ? 'pointer' : 'default',
                 '& svg': {
-                    fontSize: '23px' // Fixed desktop size for all screens
+                    fontSize: '28px' // Increased size for all screens
                 }
             }}
         >
@@ -40,9 +40,9 @@ const NavLink = ({ role = null, title = "", link = null }) => {
     return (
         <WhiteIconButton
             sx={{
-                p: "8px", // Fixed desktop padding for all screens
-                minWidth: '40px', // Fixed desktop size for all screens
-                minHeight: '40px' // Fixed desktop size for all screens
+                p: "10px", // Increased padding for all screens
+                minWidth: '48px', // Increased size for all screens
+                minHeight: '48px' // Increased size for all screens
             }}
         >
             <Tooltip title={title}>

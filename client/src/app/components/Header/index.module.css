@@ -1,13 +1,13 @@
 .header {
     box-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12);
-    background-color: var(--main-color);
+    background-color: #000;
     position: fixed;
     top: 0px;
     left: 0px;
     /* Width is set dynamically via JavaScript to account for scrollbar */
     z-index: 1000;
     box-sizing: border-box;
-    padding: 11px 0; /* Vertical padding only */
+    padding: 14px 0; /* Increased vertical padding */
 }
 
 .headerContent {
@@ -19,6 +19,19 @@
     box-sizing: border-box;
 }
 
+/* Enable horizontal scrolling on smaller screens */
+@media (max-width: 960px) {
+    .headerContent {
+        padding: 0 16px;
+    }
+}
+
+@media (max-width: 640px) {
+    .headerContent {
+        padding: 0 12px;
+    }
+}
+
 .hLeftB {
     display: flex;
     align-items: center;
@@ -28,7 +41,14 @@
 }
 
 .hLeftB > *:not(:first-child) {
-    margin-left: 20px
+    margin-left: 20px;
+}
+
+/* Reduce spacing on smaller screens to fit content */
+@media (max-width: 960px) {
+    .hLeftB > *:not(:first-child) {
+        margin-left: 12px;
+    }
 }
 
 .hRightB {
@@ -39,11 +59,18 @@
 }
 
 .hRightB > *:not(:first-child) {
-    margin-left: 11px
+    margin-left: 11px;
+}
+
+/* Reduce spacing on smaller screens to fit content */
+@media (max-width: 960px) {
+    .hRightB > *:not(:first-child) {
+        margin-left: 8px;
+    }
 }
 
 .menuItemsStyle {
-    font-size: 12px
+    font-size: 15px
 }
 
 /* All screen sizes use desktop styling - no responsive changes */

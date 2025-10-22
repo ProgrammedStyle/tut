@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Box, Container, Typography, Grid, Card, CardMedia, CardContent, Button, Chip } from '@mui/material';
+import { Box, Container, Typography, Grid, Card, CardMedia, CardContent, Button } from '@mui/material';
 import { motion } from 'framer-motion';
-import { ArrowForward, LocationOn, Explore, History, Map } from '@mui/icons-material';
+import { ArrowForward, Map } from '@mui/icons-material';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { useLanguage } from './contexts/LanguageContext';
@@ -158,7 +158,7 @@ export default function Home() {
                     minHeight: '100vh',
                     backgroundImage: 'url(/13.jpg)',
                     backgroundSize: 'cover',
-                    backgroundPosition: 'center',
+                    backgroundPosition: 'center bottom',
                     backgroundRepeat: 'no-repeat',
                     display: 'flex',
                     alignItems: 'center',
@@ -166,7 +166,7 @@ export default function Home() {
                     overflow: 'hidden'
                 }}
             >
-                {/* Dark Overlay for Better Text Readability */}
+                {/* Light Dark Overlay */}
                 <Box
                     sx={{
                         position: 'absolute',
@@ -174,30 +174,14 @@ export default function Home() {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background: 'linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 100%)',
+                        background: 'linear-gradient(135deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.3) 100%)',
                         zIndex: 1
                     }}
                 />
 
-                {/* Subtle Pattern Overlay */}
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundImage: `
-                            radial-gradient(circle at 25% 25%, rgba(255,255,255,0.05) 0%, transparent 50%),
-                            radial-gradient(circle at 75% 75%, rgba(255,255,255,0.03) 0%, transparent 50%)
-                        `,
-                        zIndex: 2
-                    }}
-                />
-
                 <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 3, px: { xs: 3, md: 3 }, py: { xs: 8, md: 8 } }}>
-                    <Grid container spacing={6} alignItems="center">
-                        <Grid item xs={12} md={6}>
+                    <Grid container spacing={6} alignItems="center" justifyContent="center">
+                        <Grid item xs={12} md={8}>
                             <motion.div
                                 initial={{ opacity: 0, x: -50 }}
                                 animate={{ opacity: 1, x: 0 }}
@@ -206,15 +190,13 @@ export default function Home() {
                                 <Typography
                                     variant="h1"
                                     sx={{
-                                        fontSize: '4.5rem',
+                                        fontSize: '3.5rem',
                                         fontWeight: 800,
                                         color: 'white',
                                         mb: 3,
                                         lineHeight: 1.1,
-                                        background: 'linear-gradient(45deg, #ffffff 0%, #f8fafc 100%)',
-                                        backgroundClip: 'text',
-                                        WebkitBackgroundClip: 'text',
-                                        WebkitTextFillColor: 'transparent'
+                                        textAlign: 'center',
+                                        textShadow: '0 4px 12px rgba(0,0,0,0.5)'
                                     }}
                                 >
                                     {t('home-hero-title')}
@@ -222,11 +204,13 @@ export default function Home() {
                                 
                                 <Typography
                                     sx={{
-                                        fontSize: '1.5rem',
+                                        fontSize: '1.2rem',
                                         color: 'rgba(255,255,255,0.95)',
+                                        mt: 10,
                                         mb: 4,
                                         fontWeight: 300,
                                         lineHeight: 1.6,
+                                        textAlign: 'center',
                                         textShadow: '0 2px 10px rgba(0,0,0,0.4)',
                                         background: 'rgba(0,0,0,0.1)',
                                         padding: { xs: 2.5, md: 2 },
@@ -238,94 +222,29 @@ export default function Home() {
                                     {t('home-hero-subtitle')}
                                 </Typography>
 
-                                <Box sx={{ display: 'flex', gap: { xs: 2.5, md: 2 }, flexWrap: 'wrap', mb: 4 }}>
-                                    <Chip 
-                                        icon={<LocationOn sx={{ fontSize: '1.2rem !important' }} />} 
-                                        label={t('home-badge-routes')} 
-                                        sx={{ 
-                                            background: 'rgba(255,255,255,0.15)', 
-                                            color: 'white',
-                                            backdropFilter: 'blur(15px)',
-                                            border: '1px solid rgba(255,255,255,0.25)',
-                                            fontWeight: 500,
-                                            fontSize: '0.9rem',
-                                            height: '32px',
-                                            '& .MuiChip-label': {
-                                                padding: { xs: '0 16px', md: '0 12px' }
-                                            },
-                                            '&:hover': {
-                                                background: 'rgba(255,255,255,0.25)',
-                                                transform: 'translateY(-1px)'
-                                            },
-                                            transition: 'all 0.3s ease'
-                                        }} 
-                                    />
-                                    <Chip 
-                                        icon={<Explore sx={{ fontSize: '1.2rem !important' }} />} 
-                                        label={t('home-badge-map')} 
-                                        sx={{ 
-                                            background: 'rgba(255,255,255,0.15)', 
-                                            color: 'white',
-                                            backdropFilter: 'blur(15px)',
-                                            border: '1px solid rgba(255,255,255,0.25)',
-                                            fontWeight: 500,
-                                            fontSize: '0.9rem',
-                                            height: '32px',
-                                            '& .MuiChip-label': {
-                                                padding: { xs: '0 16px', md: '0 12px' }
-                                            },
-                                            '&:hover': {
-                                                background: 'rgba(255,255,255,0.25)',
-                                                transform: 'translateY(-1px)'
-                                            },
-                                            transition: 'all 0.3s ease'
-                                        }} 
-                                    />
-                                    <Chip 
-                                        icon={<History sx={{ fontSize: '1.2rem !important' }} />} 
-                                        label={t('home-badge-history')} 
-                                        sx={{ 
-                                            background: 'rgba(255,255,255,0.15)', 
-                                            color: 'white',
-                                            backdropFilter: 'blur(15px)',
-                                            border: '1px solid rgba(255,255,255,0.25)',
-                                            fontWeight: 500,
-                                            fontSize: '0.9rem',
-                                            height: '32px',
-                                            '& .MuiChip-label': {
-                                                padding: { xs: '0 16px', md: '0 12px' }
-                                            },
-                                            '&:hover': {
-                                                background: 'rgba(255,255,255,0.25)',
-                                                transform: 'translateY(-1px)'
-                                            },
-                                            transition: 'all 0.3s ease'
-                                        }} 
-                                    />
-                                </Box>
 
                                 <Button
                                     variant="contained"
                                     size="large"
-                                    endIcon={<ArrowForward sx={{ fontSize: '1.2rem !important' }} />}
+                                    endIcon={<ArrowForward sx={{ fontSize: '0.6rem !important' }} />}
                                     onClick={() => routesRef.current?.scrollIntoView({ behavior: 'smooth' })}
                                     sx={{
-                                        px: 5,
-                                        py: 2.5,
-                                        fontSize: '1.2rem',
+                                        px: 1.5,
+                                        py: 0.5,
+                                        fontSize: '0.5rem',
                                         fontWeight: 600,
-                                        background: 'linear-gradient(45deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
-                                        color: '#1a202c',
+                                        background: 'linear-gradient(45deg, #dc2626 0%, #b91c1c 100%)',
+                                        color: 'white',
                                         borderRadius: 4,
                                         textTransform: 'none',
-                                        boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
-                                        border: '1px solid rgba(255,255,255,0.3)',
+                                        boxShadow: '0 10px 40px rgba(220, 38, 38, 0.4)',
+                                        border: '1px solid rgba(185, 28, 28, 0.3)',
                                         backdropFilter: 'blur(10px)',
                                         transition: 'all 0.3s ease',
                                         '&:hover': {
-                                            background: 'linear-gradient(45deg, rgba(255,255,255,1) 0%, rgba(248,250,252,1) 100%)',
+                                            background: 'linear-gradient(45deg, #ef4444 0%, #dc2626 100%)',
                                             transform: 'translateY(-3px)',
-                                            boxShadow: '0 15px 50px rgba(0,0,0,0.4)'
+                                            boxShadow: '0 15px 50px rgba(220, 38, 38, 0.6)'
                                         }
                                     }}
                                 >
@@ -334,62 +253,12 @@ export default function Home() {
                             </motion.div>
                         </Grid>
 
-                        <Grid item xs={12} md={6}>
-                            <motion.div
-                                initial={{ opacity: 0, x: 50 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.8, delay: 0.2 }}
-                            >
-                                <Box
-                                    sx={{
-                                        position: 'relative',
-                                        borderRadius: 6,
-                                        overflow: 'hidden',
-                                        boxShadow: '0 25px 80px rgba(0,0,0,0.4)',
-                                        background: 'rgba(255,255,255,0.08)',
-                                        backdropFilter: 'blur(25px)',
-                                        border: '2px solid rgba(255,255,255,0.15)',
-                                        '&:hover': {
-                                            transform: 'translateY(-5px)',
-                                            boxShadow: '0 35px 100px rgba(0,0,0,0.5)',
-                                            border: '2px solid rgba(255,255,255,0.25)'
-                                        },
-                                        transition: 'all 0.4s ease'
-                                    }}
-                                >
-                                    <Image
-                                        src="/13.jpg"
-                                        alt="Jerusalem Old City"
-                                        width={600}
-                                        height={400}
-                                        style={{ 
-                                            width: '100%', 
-                                            height: 'auto',
-                                            borderRadius: '24px'
-                                        }}
-                                    />
-                                    {/* Subtle overlay for extra depth */}
-                                    <Box
-                                        sx={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            left: 0,
-                                            right: 0,
-                                            bottom: 0,
-                                            background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
-                                            borderRadius: '24px',
-                                            pointerEvents: 'none'
-                                        }}
-                                    />
-                                </Box>
-                            </motion.div>
-                        </Grid>
                     </Grid>
                 </Container>
             </Box>
 
             {/* VIDEO SECTION */}
-            <Box sx={{ py: { xs: 8, md: 12 }, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+            <Box sx={{ py: { xs: 4, md: 6 }, background: '#000000' }}>
                 <Container maxWidth="lg" sx={{ px: { xs: 3, md: 3 } }}>
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
@@ -398,17 +267,6 @@ export default function Home() {
                         transition={{ duration: 0.6 }}
                     >
                         <Box sx={{ textAlign: 'center', mb: { xs: 5, md: 6 } }}>
-                            <Typography
-                                variant="h2"
-                                sx={{
-                                    fontSize: '3.5rem',
-                                    fontWeight: 700,
-                                    color: 'white',
-                                    mb: 3
-                                }}
-                            >
-                                {t('home-video-title')}
-                            </Typography>
                             <Typography
                                 sx={{
                                     fontSize: '1.2rem',
@@ -481,20 +339,20 @@ export default function Home() {
                                 flex: '0 0 auto',
                                 display: 'flex',
                                 justifyContent: 'center',
-                                alignItems: 'center',
-                                width: '100%',
-                                maxWidth: '350px'
+                                alignItems: 'center'
                             }}
                         >
                                 <Box
                                     sx={{
                                         position: 'relative',
                                         borderRadius: '50%',
-                                        width: { xs: '250px', sm: '300px', md: '350px' },
-                                        height: { xs: '250px', sm: '300px', md: '350px' },
+                                        width: { xs: '250px', sm: '300px', md: '350px', lg: '400px' },
+                                        height: { xs: '250px', sm: '300px', md: '350px', lg: '400px' },
+                                        aspectRatio: '1 / 1',
                                         overflow: 'hidden',
                                         boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
                                         margin: '0 auto',
+                                        flexShrink: 0,
                                         '&:hover': {
                                             transform: 'scale(1.05)',
                                             boxShadow: '0 30px 80px rgba(0,0,0,0.2)'
@@ -505,11 +363,8 @@ export default function Home() {
                                 <Image
                                     src="/14.jpg"
                                     alt="Alquds Old City Market"
-                                    width={350}
-                                    height={350}
+                                    fill
                                     style={{ 
-                                        width: '100%', 
-                                        height: '100%',
                                         objectFit: 'cover'
                                     }}
                                 />
@@ -530,7 +385,7 @@ export default function Home() {
                         >
                             <Box 
                                 sx={{ 
-                                    textAlign: { xs: 'center', md: 'left' },
+                                    textAlign: 'center',
                                     pl: { md: 2 }
                                 }}
                             >
@@ -597,7 +452,7 @@ export default function Home() {
                         <Typography
                             variant="h2"
                             sx={{
-                                fontSize: '3.5rem',
+                                fontSize: '2.5rem',
                                 fontWeight: 700,
                                 textAlign: 'center',
                                 mb: 8,
@@ -608,7 +463,7 @@ export default function Home() {
                         </Typography>
                     </motion.div>
 
-                    <Grid container spacing={{ xs: 3, md: 4 }} sx={{ justifyContent: 'center' }}>
+                    <Grid container spacing={{ xs: 6, md: 8 }} sx={{ justifyContent: 'center' }}>
                         {routes.map((route, index) => (
                             <Grid item xs={12} sm={6} md={4} key={route.id}
                                 sx={{
@@ -659,7 +514,6 @@ export default function Home() {
                                     >
                                         <Card
                                             sx={{
-                                                height: '450px',
                                                 borderRadius: { xs: 4, md: 3 },
                                                 overflow: 'hidden',
                                                 boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
@@ -692,27 +546,6 @@ export default function Home() {
                                                     pointerEvents: 'none' // Allow clicks to pass through
                                                 }}
                                             />
-                                            <Box
-                                                sx={{
-                                                    position: 'absolute',
-                                                    top: 16,
-                                                    right: 16,
-                                                    background: 'rgba(255,255,255,0.9)',
-                                                    borderRadius: 2,
-                                                    px: 2,
-                                                    py: 1
-                                                }}
-                                            >
-                                                <Typography
-                                                    sx={{
-                                                        fontSize: '0.875rem',
-                                                        fontWeight: 600,
-                                                        color: '#667eea'
-                                                    }}
-                                                >
-                                                    #{route.id}
-                                                </Typography>
-                                            </Box>
                                             {imageLinks[route.id] && (
                                                 <Box
                                                     sx={{
@@ -741,45 +574,32 @@ export default function Home() {
                                             )}
                                         </Box>
 
-                                        <CardContent sx={{ p: { xs: 3.5, md: 3 }, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                                            <Box>
-                                                <Chip
-                                                    label={route.type}
-                                                    size="medium"
-                                                    sx={{
-                                                        background: 'rgba(102, 126, 234, 0.1)',
-                                                        color: '#667eea',
-                                                        fontWeight: 500,
-                                                        mb: 2,
-                                                        fontSize: '0.85rem',
-                                                        height: '32px'
-                                                    }}
-                                                />
-                                                
-                                                <Typography
-                                                    variant="h6"
-                                                    sx={{
-                                                        fontWeight: 600,
-                                                        mb: 1,
-                                                        color: '#1a202c',
-                                                        fontSize: '1.1rem'
-                                                    }}
-                                                >
-                                                    {route.name}
-                                                </Typography>
-                                                
-                                                <Typography
-                                                    sx={{
-                                                        color: '#4a5568',
-                                                        fontSize: '1rem',
-                                                        direction: 'rtl',
-                                                        fontFamily: 'Arial, sans-serif',
-                                                        lineHeight: 1.5
-                                                    }}
-                                                >
-                                                    {route.ar}
-                                                </Typography>
-                                            </Box>
+                                        <CardContent sx={{ p: { xs: 1, md: 1 }, mt: 2 }}>
+                                            <Typography
+                                                variant="h6"
+                                                sx={{
+                                                    fontWeight: 600,
+                                                    mb: 1,
+                                                    color: '#1a202c',
+                                                    fontSize: '1.1rem',
+                                                    textAlign: 'center'
+                                                }}
+                                            >
+                                                {currentLanguage === 'ar' ? route.ar : route.name}
+                                            </Typography>
+                                            
+                                            <Typography
+                                                sx={{
+                                                    color: '#4a5568',
+                                                    fontSize: '1rem',
+                                                    direction: currentLanguage === 'ar' ? 'rtl' : 'ltr',
+                                                    fontFamily: 'Arial, sans-serif',
+                                                    lineHeight: 1.5,
+                                                    textAlign: 'center'
+                                                }}
+                                            >
+                                                {currentLanguage === 'ar' ? route.ar : route.name}
+                                            </Typography>
                                         </CardContent>
                                         </Card>
                                     </Box>
@@ -791,7 +611,7 @@ export default function Home() {
             </Box>
 
             {/* MAP SECTION */}
-            <Box ref={mapRef} sx={{ py: { xs: 8, md: 12 }, background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' }}>
+            <Box ref={mapRef} sx={{ py: { xs: 6, md: 8 }, background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' }}>
                 <Container maxWidth="lg" sx={{ px: { xs: 3, md: 3 } }}>
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
@@ -800,23 +620,6 @@ export default function Home() {
                         transition={{ duration: 0.6 }}
                     >
                         <Box sx={{ textAlign: 'center', mb: { xs: 6, md: 8 } }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3 }}>
-                                <Map sx={{ fontSize: '2rem', color: '#667eea', mr: 2 }} />
-                                <Typography
-                                    variant="h2"
-                                    sx={{
-                                        fontSize: '3.5rem',
-                                        fontWeight: 700,
-                                        color: '#1a202c',
-                                        background: 'linear-gradient(45deg, #667eea 0%, #764ba2 100%)',
-                                        backgroundClip: 'text',
-                                        WebkitBackgroundClip: 'text',
-                                        WebkitTextFillColor: 'transparent'
-                                    }}
-                                >
-                                    {t('home-map-title')}
-                                </Typography>
-                            </Box>
                             <Typography
                                 sx={{
                                     fontSize: '1.2rem',
@@ -878,7 +681,8 @@ export default function Home() {
                                         fontSize: '0.875rem',
                                         fontWeight: 600,
                                         color: '#667eea',
-                                        mb: 0.5
+                                        mb: 0.5,
+                                        textAlign: 'center'
                                     }}
                                 >
                                     {t('home-map-location')}
@@ -886,7 +690,8 @@ export default function Home() {
                                 <Typography
                                     sx={{
                                         fontSize: '0.75rem',
-                                        color: '#4a5568'
+                                        color: '#4a5568',
+                                        textAlign: 'center'
                                     }}
                                 >
                                     10 Sacred Routes
@@ -945,21 +750,21 @@ export default function Home() {
                         <Button
                             variant="contained"
                             size="large"
-                            endIcon={<ArrowForward sx={{ fontSize: '1.2rem !important' }} />}
+                            endIcon={<ArrowForward sx={{ fontSize: '0.8rem !important' }} />}
                             onClick={() => mapRef.current?.scrollIntoView({ behavior: 'smooth' })}
                             sx={{
-                                px: 6,
-                                py: 2,
-                                fontSize: '1.2rem',
+                                px: 2,
+                                py: 0.8,
+                                fontSize: '0.8rem',
                                 fontWeight: 600,
-                                background: 'linear-gradient(45deg, #667eea 0%, #764ba2 100%)',
+                                background: 'linear-gradient(45deg, #dc2626 0%, #b91c1c 100%)',
                                 borderRadius: 3,
                                 textTransform: 'none',
-                                boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
+                                boxShadow: '0 8px 32px rgba(220, 38, 38, 0.3)',
                                 transition: 'all 0.3s ease',
                                 '&:hover': {
                                     transform: 'translateY(-2px)',
-                                    boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)'
+                                    boxShadow: '0 12px 40px rgba(220, 38, 38, 0.4)'
                                 }
                             }}
                         >
