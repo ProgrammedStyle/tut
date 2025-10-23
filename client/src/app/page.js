@@ -438,7 +438,7 @@ export default function Home() {
             </Box>
 
             {/* IMAGE SLIDER SECTION */}
-            <Box sx={{ py: { xs: 6, md: 8 }, background: '#781818', overflow: 'hidden', maxWidth: { xs: '90%', md: '60%' }, mx: 'auto', borderRadius: '13px' }}>
+            <Box sx={{ py: { xs: 3, md: 4 }, background: '#781818', overflow: 'hidden', borderRadius: '13px' }}>
                 <Container maxWidth="lg" sx={{ px: { xs: 2, md: 3 } }}>
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
@@ -449,7 +449,7 @@ export default function Home() {
                         <Box
                             sx={{
                                 position: 'relative',
-                                height: { xs: '300px', md: '400px' },
+                                height: { xs: '200px', md: '250px' },
                                 borderRadius: 4,
                                 overflow: 'hidden',
                                 boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
@@ -757,7 +757,7 @@ export default function Home() {
             </Box>
 
             {/* IMAGE SLIDER SECTION B2 */}
-            <Box sx={{ py: { xs: 6, md: 8 }, background: '#781818', overflow: 'hidden', maxWidth: { xs: '90%', md: '60%' }, mx: 'auto', borderRadius: '13px' }}>
+            <Box sx={{ py: { xs: 3, md: 4 }, background: '#781818', overflow: 'hidden', borderRadius: '13px' }}>
                 <Container maxWidth="lg" sx={{ px: { xs: 2, md: 3 } }}>
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
@@ -768,7 +768,7 @@ export default function Home() {
                         <Box
                             sx={{
                                 position: 'relative',
-                                height: { xs: '300px', md: '400px' },
+                                height: { xs: '200px', md: '250px' },
                                 borderRadius: 4,
                                 overflow: 'hidden',
                                 boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
