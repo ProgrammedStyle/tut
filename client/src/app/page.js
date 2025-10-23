@@ -194,7 +194,7 @@ export default function Home() {
                                         fontWeight: 800,
                                         color: 'white',
                                         mb: 3,
-                                        mt: -10,
+                                        mt: '19px',
                                         lineHeight: 1.1,
                                         textAlign: 'center',
                                         textShadow: '0 4px 12px rgba(0,0,0,0.5)'
