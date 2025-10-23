@@ -438,8 +438,8 @@ export default function Home() {
             </Box>
 
             {/* IMAGE SLIDER SECTION */}
-            <Box sx={{ py: { xs: 6, md: 8 }, background: '#000', overflow: 'hidden' }}>
-                <Container maxWidth="xl" sx={{ px: { xs: 2, md: 3 } }}>
+            <Box sx={{ py: { xs: 6, md: 8 }, background: '#781818', overflow: 'hidden', maxWidth: { xs: '90%', md: '60%' }, mx: 'auto', borderRadius: '13px' }}>
+                <Container maxWidth="lg" sx={{ px: { xs: 2, md: 3 } }}>
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -587,7 +587,7 @@ export default function Home() {
             </Box>
 
             {/* FEATURES SECTION */}
-            <Box ref={routesRef} sx={{ py: { xs: 8, md: 12 }, background: '#f8fafc' }}>
+            <Box ref={routesRef} sx={{ py: { xs: 8, md: 12 }, background: '#f5e8e8' }}>
                 <Container maxWidth="lg" sx={{ px: { xs: 3, md: 3 } }}>
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
@@ -757,8 +757,8 @@ export default function Home() {
             </Box>
 
             {/* IMAGE SLIDER SECTION B2 */}
-            <Box sx={{ py: { xs: 6, md: 8 }, background: '#000', overflow: 'hidden' }}>
-                <Container maxWidth="xl" sx={{ px: { xs: 2, md: 3 } }}>
+            <Box sx={{ py: { xs: 6, md: 8 }, background: '#781818', overflow: 'hidden', maxWidth: { xs: '90%', md: '60%' }, mx: 'auto', borderRadius: '13px' }}>
+                <Container maxWidth="lg" sx={{ px: { xs: 2, md: 3 } }}>
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}

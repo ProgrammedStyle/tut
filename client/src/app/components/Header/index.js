@@ -201,115 +201,131 @@ const Header = () => {
         <div className={styles.hLeftB}>
           <Logo click={true} />
           
-          {/* Google Search Field - Desktop - Only render on client side */}
+          {/* Google Search Field with text below - Desktop - Only render on client side */}
           {isClient && (
-            <form onSubmit={handleSearch} style={{ marginLeft: '20px' }}>
-              <Box
-                sx={{
-                  position: 'relative',
-                  display: { xs: 'none', md: 'flex' },
-                  alignItems: 'center',
-                  width: '320px',
-                  height: '44px',
-                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  backdropFilter: 'blur(20px)',
-                  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.2)',
-                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                  overflow: 'hidden',
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: '-100%',
-                    width: '100%',
-                    height: '100%',
-                    background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent)',
-                    transition: 'left 0.5s ease',
-                  },
-                  '&:hover': {
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    boxShadow: '0 8px 32px 0 rgba(255, 255, 255, 0.1), inset 0 0 20px rgba(255, 255, 255, 0.05)',
-                    transform: 'translateY(-2px)',
+            <Box sx={{ marginLeft: '20px', display: { xs: 'none', md: 'block' } }}>
+              <form onSubmit={handleSearch}>
+                <Box
+                  sx={{
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    width: '320px',
+                    height: '44px',
+                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    backdropFilter: 'blur(20px)',
+                    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.2)',
+                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    overflow: 'hidden',
                     '&::before': {
-                      left: '100%',
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: '-100%',
+                      width: '100%',
+                      height: '100%',
+                      background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent)',
+                      transition: 'left 0.5s ease',
                     },
-                  },
-                  '&:focus-within': {
-                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08))',
-                    border: '1px solid rgba(255, 255, 255, 0.4)',
-                    boxShadow: '0 12px 40px 0 rgba(255, 255, 255, 0.15), inset 0 0 30px rgba(255, 255, 255, 0.08)',
-                    transform: 'translateY(-2px)',
-                  },
-                }}
-              >
-              <SearchIcon 
-                sx={{ 
-                  color: 'rgba(255, 255, 255, 0.8)', 
-                  ml: 2,
-                  fontSize: '22px',
-                  transition: 'all 0.3s ease',
-                  filter: 'drop-shadow(0 2px 4px rgba(255, 255, 255, 0.2))',
-                }} 
-              />
-              <input
-                type="text"
-                placeholder="Search anything..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSearch(e);
-                  }
-                }}
-                style={{
-                  flex: 1,
-                  border: 'none',
-                  outline: 'none',
-                  backgroundColor: 'transparent',
-                  color: '#fff',
-                  fontSize: '14.5px',
-                  fontWeight: '500',
-                  padding: '12px 16px',
-                  fontFamily: 'inherit',
+                    '&:hover': {
+                      border: '1px solid rgba(255, 255, 255, 0.3)',
+                      boxShadow: '0 8px 32px 0 rgba(255, 255, 255, 0.1), inset 0 0 20px rgba(255, 255, 255, 0.05)',
+                      transform: 'translateY(-2px)',
+                      '&::before': {
+                        left: '100%',
+                      },
+                    },
+                    '&:focus-within': {
+                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08))',
+                      border: '1px solid rgba(255, 255, 255, 0.4)',
+                      boxShadow: '0 12px 40px 0 rgba(255, 255, 255, 0.15), inset 0 0 30px rgba(255, 255, 255, 0.08)',
+                      transform: 'translateY(-2px)',
+                    },
+                  }}
+                >
+                <SearchIcon 
+                  sx={{ 
+                    color: 'rgba(255, 255, 255, 0.8)', 
+                    ml: 2,
+                    fontSize: '22px',
+                    transition: 'all 0.3s ease',
+                    filter: 'drop-shadow(0 2px 4px rgba(255, 255, 255, 0.2))',
+                  }} 
+                />
+                <input
+                  type="text"
+                  placeholder="Search anything..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSearch(e);
+                    }
+                  }}
+                  style={{
+                    flex: 1,
+                    border: 'none',
+                    outline: 'none',
+                    backgroundColor: 'transparent',
+                    color: '#fff',
+                    fontSize: '14.5px',
+                    fontWeight: '500',
+                    padding: '12px 16px',
+                    fontFamily: 'inherit',
+                    letterSpacing: '0.5px',
+                  }}
+                />
+                  {searchQuery && (
+                    <Box
+                      component="button"
+                      type="submit"
+                      sx={{
+                        mr: 1,
+                        width: '36px',
+                        height: '36px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1))',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '8px',
+                        color: '#fff',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2))',
+                          transform: 'scale(1.08) rotate(5deg)',
+                          boxShadow: '0 6px 20px rgba(255, 255, 255, 0.3)',
+                          border: '1px solid rgba(255, 255, 255, 0.4)',
+                        },
+                        '&:active': {
+                          transform: 'scale(0.95)',
+                        },
+                      }}
+                    >
+                      <SearchIcon sx={{ fontSize: '18px' }} />
+                    </Box>
+                  )}
+                </Box>
+              </form>
+              
+              {/* Small "Alquds Virtual Guide" text below search field */}
+              <Typography
+                sx={{
+                  fontSize: '0.6rem',
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  textAlign: 'left',
+                  mt: 0.5,
+                  fontWeight: 300,
                   letterSpacing: '0.5px',
                 }}
-              />
-                {searchQuery && (
-                  <Box
-                    component="button"
-                    type="submit"
-                    sx={{
-                      mr: 1,
-                      width: '36px',
-                      height: '36px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1))',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      borderRadius: '8px',
-                      color: '#fff',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2))',
-                        transform: 'scale(1.08) rotate(5deg)',
-                        boxShadow: '0 6px 20px rgba(255, 255, 255, 0.3)',
-                        border: '1px solid rgba(255, 255, 255, 0.4)',
-                      },
-                      '&:active': {
-                        transform: 'scale(0.95)',
-                      },
-                    }}
-                  >
-                    <SearchIcon sx={{ fontSize: '18px' }} />
-                  </Box>
-                )}
-              </Box>
-            </form>
+              >
+                Alquds Virtual Guide
+              </Typography>
+            </Box>
           )}
         </div>
         
@@ -559,6 +575,20 @@ const Header = () => {
               )}
             </Box>
           </form>
+          
+          {/* Small "Alquds Virtual Guide" text below mobile search field */}
+          <Typography
+            sx={{
+              fontSize: '0.6rem',
+              color: 'rgba(255, 255, 255, 0.6)',
+              textAlign: 'left',
+              mt: 1,
+              fontWeight: 300,
+              letterSpacing: '0.5px',
+            }}
+          >
+            Alquds Virtual Guide
+          </Typography>
         </DialogContent>
       </Dialog>
     </header>
