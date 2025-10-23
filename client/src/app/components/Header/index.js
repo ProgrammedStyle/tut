@@ -316,7 +316,7 @@ const Header = () => {
               <Typography
                 sx={{
                   fontSize: '0.6rem',
-                  color: 'rgba(255, 255, 255, 0.6)',
+                  color: '#fff',
                   textAlign: 'left',
                   mt: 0.5,
                   fontWeight: 300,
@@ -580,7 +580,7 @@ const Header = () => {
           <Typography
             sx={{
               fontSize: '0.6rem',
-              color: 'rgba(255, 255, 255, 0.6)',
+              color: '#fff',
               textAlign: 'left',
               mt: 1,
               fontWeight: 300,

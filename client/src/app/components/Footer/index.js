@@ -29,10 +29,10 @@ export default function Footer() {
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
                                 mb: 2,
-                                fontSize: '2.5rem'
+                                fontSize: '1.8rem'
                             }}
                         >
-                            AL-QUDS
+                            ALQUDS VIRTUAL GUIDE
                         </Typography>
                         <Typography
                             sx={{
@@ -158,7 +158,7 @@ export default function Footer() {
                             textAlign: { xs: 'center', md: 'left' }
                         }}
                     >
-                        © {currentYear} AL-QUDS. All rights reserved.
+                        © {currentYear} ALQUDS VIRTUAL GUIDE. All rights reserved.
                     </Typography>
                     
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: { xs: 'center', md: 'flex-end' } }}>

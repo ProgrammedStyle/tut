@@ -439,7 +439,7 @@ export default function Home() {
 
             {/* IMAGE SLIDER SECTION */}
             <Box sx={{ py: { xs: 3, md: 4 }, background: '#781818', overflow: 'hidden', borderRadius: '13px' }}>
-                <Container maxWidth="lg" sx={{ px: { xs: 2, md: 3 } }}>
+                <Container maxWidth={false} sx={{ px: { xs: 2, md: 3 } }}>
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -455,7 +455,7 @@ export default function Home() {
                                 boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
                                 border: '2px solid rgba(255, 255, 255, 0.2)',
                                 background: 'rgba(255, 255, 255, 0.1)',
-                                backdropFilter: 'blur(10px)'
+                                backdropFilter: 'blur(10px)',
                             }}
                         >
                             {/* Slider Container - Perfect seamless loop */}
@@ -758,7 +758,7 @@ export default function Home() {
 
             {/* IMAGE SLIDER SECTION B2 */}
             <Box sx={{ py: { xs: 3, md: 4 }, background: '#781818', overflow: 'hidden', borderRadius: '13px' }}>
-                <Container maxWidth="lg" sx={{ px: { xs: 2, md: 3 } }}>
+                <Container maxWidth={false} sx={{ px: { xs: 2, md: 3 } }}>
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -774,7 +774,7 @@ export default function Home() {
                                 boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
                                 border: '2px solid rgba(255, 255, 255, 0.2)',
                                 background: 'rgba(255, 255, 255, 0.1)',
-                                backdropFilter: 'blur(10px)'
+                                backdropFilter: 'blur(10px)',
                             }}
                         >
                             {/* Slider Container - Perfect seamless loop */}
