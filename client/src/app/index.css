@@ -50,3 +50,13 @@ input, textarea, select {
     padding: 12px 16px !important;
     min-height: 48px !important;
 }
+
+/* Slider Animation - Seamless infinite scroll */
+@keyframes slideRightToLeft {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}

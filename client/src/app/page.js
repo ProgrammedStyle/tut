@@ -183,9 +183,9 @@ export default function Home() {
                     <Grid container spacing={6} alignItems="center" justifyContent="center">
                         <Grid item xs={12} md={8}>
                             <motion.div
-                                initial={{ opacity: 0, x: -50 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.8 }}
+                                initial={{ opacity: 0, scale: 0.1 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.8, ease: "easeOut" }}
                             >
                                 <Typography
                                     variant="h1"
@@ -194,6 +194,7 @@ export default function Home() {
                                         fontWeight: 800,
                                         color: 'white',
                                         mb: 3,
+                                        mt: -10,
                                         lineHeight: 1.1,
                                         textAlign: 'center',
                                         textShadow: '0 4px 12px rgba(0,0,0,0.5)'
@@ -206,17 +207,12 @@ export default function Home() {
                                     sx={{
                                         fontSize: '1.2rem',
                                         color: 'rgba(255,255,255,0.95)',
-                                        mt: 10,
+                                        mt: 16,
                                         mb: 4,
                                         fontWeight: 300,
                                         lineHeight: 1.6,
                                         textAlign: 'center',
-                                        textShadow: '0 2px 10px rgba(0,0,0,0.4)',
-                                        background: 'rgba(0,0,0,0.1)',
-                                        padding: { xs: 2.5, md: 2 },
-                                        borderRadius: 2,
-                                        backdropFilter: 'blur(10px)',
-                                        border: '1px solid rgba(255,255,255,0.1)'
+                                        textShadow: '0 2px 10px rgba(0,0,0,0.4)'
                                     }}
                                 >
                                     {t('home-hero-subtitle')}
@@ -233,6 +229,7 @@ export default function Home() {
                                         py: 0.5,
                                         fontSize: '0.5rem',
                                         fontWeight: 600,
+                                        mt: 4,
                                         background: 'linear-gradient(45deg, #dc2626 0%, #b91c1c 100%)',
                                         color: 'white',
                                         borderRadius: 4,
@@ -440,6 +437,155 @@ export default function Home() {
                 </Container>
             </Box>
 
+            {/* IMAGE SLIDER SECTION */}
+            <Box sx={{ py: { xs: 6, md: 8 }, background: '#000', overflow: 'hidden' }}>
+                <Container maxWidth="xl" sx={{ px: { xs: 2, md: 3 } }}>
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                    >
+                        <Box
+                            sx={{
+                                position: 'relative',
+                                height: { xs: '300px', md: '400px' },
+                                borderRadius: 4,
+                                overflow: 'hidden',
+                                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+                                border: '2px solid rgba(255, 255, 255, 0.2)',
+                                background: 'rgba(255, 255, 255, 0.1)',
+                                backdropFilter: 'blur(10px)'
+                            }}
+                        >
+                            {/* Slider Container - Perfect seamless loop */}
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    height: '100%'
+                                }}
+                                style={{
+                                    width: 'calc((100vw / 3) * 14)', // 7 images × 2 sets × (100vw/3 per image)
+                                    animation: 'slideRightToLeft 20s linear infinite'
+                                }}
+                            >
+                                {/* First Complete Set */}
+                                {[
+                                    '/B/B1/WhatsApp Image 2025-10-22 at 10.05.18 PM.jpeg',
+                                    '/B/B1/WhatsApp Image 2025-10-22 at 10.05.19 PM (1).jpeg',
+                                    '/B/B1/WhatsApp Image 2025-10-22 at 10.05.19 PM (4).jpeg',
+                                    '/B/B1/WhatsApp Image 2025-10-22 at 10.05.19 PM.jpeg',
+                                    '/B/B1/WhatsApp Image 2025-10-22 at 10.05.20 PM (1).jpeg',
+                                    '/B/B1/WhatsApp Image 2025-10-22 at 10.05.20 PM (3).jpeg',
+                                    '/B/B1/WhatsApp Image 2025-10-22 at 10.05.20 PM.jpeg'
+                                ].map((imagePath, index) => (
+                                    <Box
+                                        key={`first-${index}`}
+                                        sx={{
+                                            width: 'calc(100vw / 3)',
+                                            height: '100%',
+                                            flexShrink: 0,
+                                            position: 'relative',
+                                            overflow: 'hidden'
+                                        }}
+                                    >
+                                        <img
+                                            src={imagePath}
+                                            alt={`Slider image ${index + 1}`}
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                                imageRendering: 'high-quality',
+                                                imageRendering: '-webkit-optimize-contrast',
+                                                imageRendering: 'crisp-edges',
+                                                filter: 'none'
+                                            }}
+                                        />
+                                    </Box>
+                                ))}
+                                
+                                {/* Second Complete Set - Exact duplicate for seamless loop */}
+                                {[
+                                    '/B/B1/WhatsApp Image 2025-10-22 at 10.05.18 PM.jpeg',
+                                    '/B/B1/WhatsApp Image 2025-10-22 at 10.05.19 PM (1).jpeg',
+                                    '/B/B1/WhatsApp Image 2025-10-22 at 10.05.19 PM (4).jpeg',
+                                    '/B/B1/WhatsApp Image 2025-10-22 at 10.05.19 PM.jpeg',
+                                    '/B/B1/WhatsApp Image 2025-10-22 at 10.05.20 PM (1).jpeg',
+                                    '/B/B1/WhatsApp Image 2025-10-22 at 10.05.20 PM (3).jpeg',
+                                    '/B/B1/WhatsApp Image 2025-10-22 at 10.05.20 PM.jpeg'
+                                ].map((imagePath, index) => (
+                                    <Box
+                                        key={`second-${index}`}
+                                        sx={{
+                                            width: 'calc(100vw / 3)',
+                                            height: '100%',
+                                            flexShrink: 0,
+                                            position: 'relative',
+                                            overflow: 'hidden'
+                                        }}
+                                    >
+                                        <img
+                                            src={imagePath}
+                                            alt={`Slider image ${index + 1}`}
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                                imageRendering: 'high-quality',
+                                                imageRendering: '-webkit-optimize-contrast',
+                                                imageRendering: 'crisp-edges',
+                                                filter: 'none'
+                                            }}
+                                        />
+                                    </Box>
+                                ))}
+                            </Box>
+                            
+                            {/* Decorative Elements */}
+                            <Box
+                                sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    background: 'linear-gradient(90deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.1) 100%)',
+                                    pointerEvents: 'none'
+                                }}
+                            />
+                            
+                            {/* Floating Particles Effect */}
+                            {[...Array(6)].map((_, i) => (
+                                <Box
+                                    key={i}
+                                    sx={{
+                                        position: 'absolute',
+                                        width: '4px',
+                                        height: '4px',
+                                        background: 'rgba(255, 255, 255, 0.6)',
+                                        borderRadius: '50%',
+                                        top: `${20 + (i * 15)}%`,
+                                        left: `${10 + (i * 15)}%`,
+                                        animation: `float${i} 3s ease-in-out infinite`,
+                                        [`@keyframes float${i}`]: {
+                                            '0%, 100%': {
+                                                transform: 'translateY(0px)',
+                                                opacity: 0.6
+                                            },
+                                            '50%': {
+                                                transform: 'translateY(-20px)',
+                                                opacity: 1
+                                            }
+                                        }
+                                    }}
+                                />
+                            ))}
+                        </Box>
+                    </motion.div>
+                </Container>
+            </Box>
+
             {/* FEATURES SECTION */}
             <Box ref={routesRef} sx={{ py: { xs: 8, md: 12 }, background: '#f8fafc' }}>
                 <Container maxWidth="lg" sx={{ px: { xs: 3, md: 3 } }}>
@@ -607,6 +753,155 @@ export default function Home() {
                             </Grid>
                         ))}
                     </Grid>
+                </Container>
+            </Box>
+
+            {/* IMAGE SLIDER SECTION B2 */}
+            <Box sx={{ py: { xs: 6, md: 8 }, background: '#000', overflow: 'hidden' }}>
+                <Container maxWidth="xl" sx={{ px: { xs: 2, md: 3 } }}>
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                    >
+                        <Box
+                            sx={{
+                                position: 'relative',
+                                height: { xs: '300px', md: '400px' },
+                                borderRadius: 4,
+                                overflow: 'hidden',
+                                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+                                border: '2px solid rgba(255, 255, 255, 0.2)',
+                                background: 'rgba(255, 255, 255, 0.1)',
+                                backdropFilter: 'blur(10px)'
+                            }}
+                        >
+                            {/* Slider Container - Perfect seamless loop */}
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    height: '100%'
+                                }}
+                                style={{
+                                    width: 'calc((100vw / 3) * 14)', // 7 images × 2 sets × (100vw/3 per image)
+                                    animation: 'slideRightToLeft 20s linear infinite'
+                                }}
+                            >
+                                {/* First Complete Set */}
+                                {[
+                                    '/B/B2/WhatsApp Image 2025-10-22 at 10.05.18 PM (1).jpeg',
+                                    '/B/B2/WhatsApp Image 2025-10-22 at 10.05.18 PM (2).jpeg',
+                                    '/B/B2/WhatsApp Image 2025-10-22 at 10.05.19 PM (2).jpeg',
+                                    '/B/B2/WhatsApp Image 2025-10-22 at 10.05.19 PM (3).jpeg',
+                                    '/B/B2/WhatsApp Image 2025-10-22 at 10.05.19 PM (5).jpeg',
+                                    '/B/B2/WhatsApp Image 2025-10-22 at 10.05.19 PM (6).jpeg',
+                                    '/B/B2/WhatsApp Image 2025-10-22 at 10.05.20 PM (2).jpeg'
+                                ].map((imagePath, index) => (
+                                    <Box
+                                        key={`first-${index}`}
+                                        sx={{
+                                            width: 'calc(100vw / 3)',
+                                            height: '100%',
+                                            flexShrink: 0,
+                                            position: 'relative',
+                                            overflow: 'hidden'
+                                        }}
+                                    >
+                                        <img
+                                            src={imagePath}
+                                            alt={`Slider image ${index + 1}`}
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                                imageRendering: 'high-quality',
+                                                imageRendering: '-webkit-optimize-contrast',
+                                                imageRendering: 'crisp-edges',
+                                                filter: 'none'
+                                            }}
+                                        />
+                                    </Box>
+                                ))}
+                                
+                                {/* Second Complete Set - Exact duplicate for seamless loop */}
+                                {[
+                                    '/B/B2/WhatsApp Image 2025-10-22 at 10.05.18 PM (1).jpeg',
+                                    '/B/B2/WhatsApp Image 2025-10-22 at 10.05.18 PM (2).jpeg',
+                                    '/B/B2/WhatsApp Image 2025-10-22 at 10.05.19 PM (2).jpeg',
+                                    '/B/B2/WhatsApp Image 2025-10-22 at 10.05.19 PM (3).jpeg',
+                                    '/B/B2/WhatsApp Image 2025-10-22 at 10.05.19 PM (5).jpeg',
+                                    '/B/B2/WhatsApp Image 2025-10-22 at 10.05.19 PM (6).jpeg',
+                                    '/B/B2/WhatsApp Image 2025-10-22 at 10.05.20 PM (2).jpeg'
+                                ].map((imagePath, index) => (
+                                    <Box
+                                        key={`second-${index}`}
+                                        sx={{
+                                            width: 'calc(100vw / 3)',
+                                            height: '100%',
+                                            flexShrink: 0,
+                                            position: 'relative',
+                                            overflow: 'hidden'
+                                        }}
+                                    >
+                                        <img
+                                            src={imagePath}
+                                            alt={`Slider image ${index + 1}`}
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                                imageRendering: 'high-quality',
+                                                imageRendering: '-webkit-optimize-contrast',
+                                                imageRendering: 'crisp-edges',
+                                                filter: 'none'
+                                            }}
+                                        />
+                                    </Box>
+                                ))}
+                            </Box>
+                            
+                            {/* Decorative Elements */}
+                            <Box
+                                sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    background: 'linear-gradient(90deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.1) 100%)',
+                                    pointerEvents: 'none'
+                                }}
+                            />
+                            
+                            {/* Floating Particles Effect */}
+                            {[...Array(6)].map((_, i) => (
+                                <Box
+                                    key={i}
+                                    sx={{
+                                        position: 'absolute',
+                                        width: '4px',
+                                        height: '4px',
+                                        background: 'rgba(255, 255, 255, 0.6)',
+                                        borderRadius: '50%',
+                                        top: `${20 + (i * 15)}%`,
+                                        left: `${10 + (i * 15)}%`,
+                                        animation: `floatB2${i} 3s ease-in-out infinite`,
+                                        [`@keyframes floatB2${i}`]: {
+                                            '0%, 100%': {
+                                                transform: 'translateY(0px)',
+                                                opacity: 0.6
+                                            },
+                                            '50%': {
+                                                transform: 'translateY(-20px)',
+                                                opacity: 1
+                                            }
+                                        }
+                                    }}
+                                />
+                            ))}
+                        </Box>
+                    </motion.div>
                 </Container>
             </Box>
 
