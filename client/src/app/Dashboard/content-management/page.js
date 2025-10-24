@@ -950,7 +950,7 @@ const ContentManagement = () => {
               Manage YouTube Video Links for Each Language
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-              Set different YouTube videos for each language. The video will be displayed on the home page based on the user's selected language.
+              Set different YouTube videos for each language. The video will be displayed on the home page based on the user&apos;s selected language.
             </Typography>
             
             <Grid container spacing={3}>
