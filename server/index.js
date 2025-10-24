@@ -121,6 +121,11 @@ const corsOptions = {
             console.log('✅ CORS: Allowing frontend domain');
             callback(null, true);
         }
+        // Allow requests from Render frontend domains (fallback for deployment)
+        else if (origin && origin.includes('onrender.com')) {
+            console.log('✅ CORS: Allowing Render frontend domain');
+            callback(null, true);
+        }
         // Allow requests from CLIENT_URL if set
         else if (process.env.CLIENT_URL && origin === process.env.CLIENT_URL) {
             console.log('✅ CORS: Allowing CLIENT_URL');

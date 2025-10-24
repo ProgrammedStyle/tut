@@ -6,10 +6,24 @@ import axios from 'axios';
 let API_URL = process.env.NEXT_PUBLIC_API_URL;
 if (!API_URL) {
     if (typeof window !== 'undefined') {
-        const isRender = window.location.hostname.includes('onrender.com');
-        API_URL = isRender ? 'https://tut-be9h.onrender.com' : 'http://localhost:5000';
+        const hostname = window.location.hostname;
+        console.log('🌐 Detected hostname:', hostname);
+        
+        // Check if we're on Render frontend
+        const isRenderFrontend = hostname.includes('onrender.com');
+        // Check if we're in production (not localhost)
+        const isProduction = !hostname.includes('localhost') && !hostname.includes('127.0.0.1');
+        
+        if (isRenderFrontend || isProduction) {
+            API_URL = 'https://tut-be9h.onrender.com';
+            console.log('🚀 Using Render backend URL for production');
+        } else {
+            API_URL = 'http://localhost:5000';
+            console.log('🏠 Using localhost backend URL for development');
+        }
     } else {
         API_URL = 'http://localhost:5000';
+        console.log('🏠 Server-side: Using localhost backend URL');
     }
 }
 

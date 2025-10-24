@@ -25,16 +25,28 @@ export const usePageTracking = () => {
                 const sessionId = getSessionId();
                 
                 if (sessionId) {
-                    await axios.post('/api/analytics/track', {
+                    console.log('📊 Tracking page view:', { path: pathname, sessionId });
+                    
+                    const response = await axios.post('/api/analytics/track', {
                         path: pathname,
                         sessionId
                     });
                     
-                    console.log('Page view tracked:', pathname);
+                    console.log('✅ Page view tracked successfully:', pathname, response.data);
+                } else {
+                    console.warn('⚠️ No session ID available for tracking');
                 }
             } catch (error) {
-                // Silently fail - don't block the app if tracking fails
-                console.error('Failed to track page view:', error);
+                // Log detailed error information for debugging
+                console.error('❌ Failed to track page view:', {
+                    path: pathname,
+                    error: error.message,
+                    status: error.response?.status,
+                    statusText: error.response?.statusText,
+                    data: error.response?.data,
+                    url: error.config?.url,
+                    baseURL: error.config?.baseURL
+                });
             }
         };
 
