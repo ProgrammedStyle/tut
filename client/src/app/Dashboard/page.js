@@ -851,7 +851,7 @@ const DashboardContent = () => {
                                                 <ImageIcon sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
                                                 <Typography variant="h6">{t('dashboard-nav-image-links')}</Typography>
                                                 <Typography variant="body2" color="text.secondary">
-                                                    Manage clickable image links
+                                                    Manage images & clickable links
                                                 </Typography>
                                             </Paper>
                                         </Grid>

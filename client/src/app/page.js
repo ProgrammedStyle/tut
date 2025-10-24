@@ -19,6 +19,7 @@ export default function Home() {
     const [animationDistance, setAnimationDistance] = useState(-50); // Default for SSR
     const [pageReady, setPageReady] = useState(false);
     const [imageLinks, setImageLinks] = useState({});
+    const [homepageImages, setHomepageImages] = useState([]);
     
     useEffect(() => {
         // Set animation distance based on screen size after mount
@@ -65,17 +66,42 @@ export default function Home() {
                 console.error('='.repeat(50));
             }
         };
+
+        const fetchHomepageImages = async () => {
+            try {
+                console.log('🖼️ [HOMEPAGE IMAGES] Starting fetch...');
+                console.log('📍 [HOMEPAGE IMAGES] Current language:', currentLanguage);
+                
+                const response = await axios.get(`/api/homepage-images?language=${currentLanguage}`);
+                
+                if (response.data.success) {
+                    setHomepageImages(response.data.images || []);
+                    console.log('✅ [HOMEPAGE IMAGES] Images loaded:', response.data.images?.length || 0);
+                } else {
+                    console.warn('⚠️ [HOMEPAGE IMAGES] Response not successful');
+                }
+            } catch (error) {
+                console.error('❌ [HOMEPAGE IMAGES] Error fetching images:', error);
+            }
+        };
         
-        console.log('🔄 [IMAGE LINKS] useEffect triggered, currentLanguage:', currentLanguage);
+        console.log('🔄 [FETCH] useEffect triggered, currentLanguage:', currentLanguage);
         if (currentLanguage) {
             fetchImageLinks();
+            fetchHomepageImages();
         } else {
-            console.log('⏸️ [IMAGE LINKS] Waiting for currentLanguage...');
+            console.log('⏸️ [FETCH] Waiting for currentLanguage...');
         }
     }, [currentLanguage]);
 
     // Signal that the page is ready after rendering completes
     usePageReady(pageReady);
+
+    // Function to get the correct image path for a route
+    const getImagePath = (routeId) => {
+        const homepageImage = homepageImages.find(img => img.id === routeId);
+        return homepageImage ? homepageImage.img : routes.find(r => r.id === routeId)?.img || '/1.jpg';
+    };
 
     const routes = [
         { 
@@ -681,7 +707,7 @@ export default function Home() {
                                             pointerEvents: 'none' // Allow clicks to pass through
                                         }}>
                                             <Image
-                                                src={route.img}
+                                                src={getImagePath(route.id)}
                                                 alt={route.name}
                                                 fill
                                                 unoptimized={true}
