@@ -179,6 +179,7 @@ import contactRoute from "./routes/contact.js";
 import locationRoute from "./routes/location/index.js";
 import imageLinksRoute from "./routes/imageLinks/index.js";
 import homepageImagesRoute from "./routes/homepageImages/index.js";
+import videoLinksRoute from "./routes/videoLinks.js";
 import checkPasswordExpiry from "./middleware/passwordExpiry.js";
 
 app.use("/api/user", userRoute);
@@ -188,6 +189,7 @@ app.use("/api/contact", contactRoute);
 app.use("/api/location", locationRoute);
 app.use("/api/image-links", imageLinksRoute);
 app.use("/api/homepage-images", homepageImagesRoute);
+app.use("/api/video-links", videoLinksRoute);
 
 // Apply password expiry check to all protected routes
 app.use(checkPasswordExpiry);

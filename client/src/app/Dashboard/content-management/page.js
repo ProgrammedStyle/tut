@@ -473,6 +473,8 @@ const ContentManagement = () => {
   const [currentPage, setCurrentPage] = useState('home');
   const [pageRendered, setPageRendered] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [videoLinks, setVideoLinks] = useState({});
+  const [editingVideoLink, setEditingVideoLink] = useState(null);
 
   // Set client flag on mount
   useEffect(() => {
@@ -511,7 +513,8 @@ const ContentManagement = () => {
     { id: 'about', name: 'About Page', icon: <Person />, description: 'About us page' },
     { id: 'contact', name: 'Contact Page', icon: <Email />, description: 'Contact us page' },
     { id: 'buttons', name: 'General Buttons', icon: <Edit />, description: 'Common button text and labels' },
-    { id: 'forms', name: 'Form Elements', icon: <Edit />, description: 'Form labels and placeholders' }
+    { id: 'forms', name: 'Form Elements', icon: <Edit />, description: 'Form labels and placeholders' },
+    { id: 'video-links', name: 'Video Links', icon: <Edit />, description: 'YouTube video links for each language' }
   ];
 
   useEffect(() => {
@@ -581,6 +584,11 @@ const ContentManagement = () => {
     };
     
     loadTexts();
+    
+    // Load video links if on video-links page
+    if (currentPage === 'video-links') {
+      loadVideoLinks();
+    }
   }, [isClient, currentLanguage, currentPage]);
 
   // Page is ready after translations are loaded and rendered
@@ -658,6 +666,87 @@ const ContentManagement = () => {
     setEditedTexts(defaultTexts[currentLanguage] || {});
     
     alert('✅ Old unused texts cleared! Content management now shows only texts that are actually used in the website.');
+  };
+
+  // Video Links Management Functions
+  const loadVideoLinks = async () => {
+    try {
+      console.log('🎥 Loading video links...');
+      const response = await axios.get('/api/video-links');
+      
+      if (response.data.success) {
+        setVideoLinks(response.data.data || {});
+        console.log('✅ Video links loaded:', response.data.data);
+      } else {
+        console.warn('⚠️ Failed to load video links');
+      }
+    } catch (error) {
+      console.error('❌ Error loading video links:', error);
+    }
+  };
+
+  const handleVideoLinkChange = (language, field, value) => {
+    setVideoLinks(prev => ({
+      ...prev,
+      [language]: {
+        ...prev[language],
+        [field]: value
+      }
+    }));
+  };
+
+  const handleSaveVideoLink = async (language) => {
+    try {
+      const videoData = videoLinks[language];
+      
+      // Enhanced validation for video ID
+      if (!videoData || !videoData.videoId || videoData.videoId.trim() === '') {
+        alert('❌ Please enter a YouTube Video ID\n\nExample: EDh8pgxsp8k');
+        return;
+      }
+
+      // Validate YouTube video ID format (11 characters, alphanumeric + underscore + dash)
+      const trimmedVideoId = videoData.videoId.trim();
+      if (!trimmedVideoId.match(/^[a-zA-Z0-9_-]{11}$/)) {
+        alert('❌ Invalid YouTube Video ID!\n\nYouTube Video IDs are exactly 11 characters\nExample: EDh8pgxsp8k');
+        return;
+      }
+
+      console.log('🎥 Saving video ID for language:', language);
+      console.log('🎥 Video ID:', trimmedVideoId);
+
+      const response = await axios.put('/api/video-links', {
+        language,
+        videoId: trimmedVideoId,
+        title: videoData.title || 'Jerusalem Virtual Guide Video'
+      });
+
+      if (response.data.success) {
+        alert(`✅ Video link saved successfully for ${languages.find(l => l.code === language)?.name}!`);
+        setEditingVideoLink(null);
+        // Reload video links to get updated data
+        loadVideoLinks();
+      } else {
+        alert('❌ Failed to save video link: ' + response.data.message);
+      }
+    } catch (error) {
+      console.error('Error saving video link:', error);
+      
+      if (error.code === 'NETWORK_ERROR' || error.message.includes('Network Error')) {
+        alert('❌ Network Error!\n\nPlease check:\n1. Backend server is running on port 5000\n2. Internet connection is working\n3. Try refreshing the page');
+      } else if (error.response?.status === 400) {
+        alert('❌ Invalid data: ' + (error.response.data.message || 'Please check your input'));
+      } else if (error.response?.status === 500) {
+        alert('❌ Server Error: ' + (error.response.data.message || 'Please try again later'));
+      } else {
+        alert('❌ Error saving video link: ' + (error.response?.data?.message || error.message));
+      }
+    }
+  };
+
+  const handleCancelVideoEdit = () => {
+    setEditingVideoLink(null);
+    loadVideoLinks(); // Reload to reset any unsaved changes
   };
 
   const currentLanguageData = languages.find(lang => lang.code === currentLanguage);
@@ -854,7 +943,121 @@ const ContentManagement = () => {
           {currentPageInfo?.description}
         </Typography>
         
-        {Object.keys(currentPageTexts).length === 0 ? (
+        {/* Video Links Management */}
+        {currentPage === 'video-links' ? (
+          <Box>
+            <Typography variant="h6" sx={{ mb: 3 }}>
+              Manage YouTube Video Links for Each Language
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+              Set different YouTube videos for each language. The video will be displayed on the home page based on the user's selected language.
+            </Typography>
+            
+            <Grid container spacing={3}>
+              {languages.map((language) => {
+                const videoData = videoLinks[language.code] || {
+                  videoId: '',
+                  title: 'Jerusalem Virtual Guide Video'
+                };
+                const isEditing = editingVideoLink === language.code;
+                
+                return (
+                  <Grid item xs={12} md={6} key={language.code}>
+                    <Card sx={{ p: 3 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                        <Typography sx={{ fontSize: '1.5rem' }}>{language.flag}</Typography>
+                        <Box>
+                          <Typography variant="h6">{language.name}</Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {language.englishName}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      
+                      <TextField
+                        fullWidth
+                        label="YouTube Video ID"
+                        placeholder="EDh8pgxsp8k"
+                        value={videoData.videoId || ''}
+                        onChange={(e) => handleVideoLinkChange(language.code, 'videoId', e.target.value)}
+                        disabled={!isEditing}
+                        sx={{ mb: 2 }}
+                        helperText="Enter only the YouTube Video ID (11 characters, e.g., EDh8pgxsp8k)"
+                      />
+                      
+                      <TextField
+                        fullWidth
+                        label="Video Title"
+                        value={videoData.title || ''}
+                        onChange={(e) => handleVideoLinkChange(language.code, 'title', e.target.value)}
+                        disabled={!isEditing}
+                        sx={{ mb: 2 }}
+                        helperText="Title for the video (used for accessibility)"
+                      />
+                      
+                      {videoData.videoId && (
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                            Preview:
+                          </Typography>
+                          <Box
+                            sx={{
+                              width: '100%',
+                              height: '200px',
+                              borderRadius: 1,
+                              overflow: 'hidden',
+                              border: '1px solid #ddd'
+                            }}
+                          >
+                            <iframe
+                              src={`https://www.youtube.com/embed/${videoData.videoId}?mute=0&showinfo=0&controls=0&start=0`}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                border: 'none'
+                              }}
+                              title={videoData.title}
+                            />
+                          </Box>
+                        </Box>
+                      )}
+                      
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        {!isEditing ? (
+                          <Button
+                            variant="contained"
+                            onClick={() => setEditingVideoLink(language.code)}
+                            size="small"
+                          >
+                            Edit Video
+                          </Button>
+                        ) : (
+                          <>
+                            <Button
+                              variant="contained"
+                              color="success"
+                              onClick={() => handleSaveVideoLink(language.code)}
+                              size="small"
+                            >
+                              Save
+                            </Button>
+                            <Button
+                              variant="outlined"
+                              onClick={handleCancelVideoEdit}
+                              size="small"
+                            >
+                              Cancel
+                            </Button>
+                          </>
+                        )}
+                      </Box>
+                    </Card>
+                  </Grid>
+                );
+              })}
+            </Grid>
+          </Box>
+        ) : Object.keys(currentPageTexts).length === 0 ? (
           <Paper sx={{ p: 4, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary">
               No content found for this page

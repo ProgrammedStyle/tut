@@ -21,6 +21,11 @@ export default function Home() {
     const [pageReady, setPageReady] = useState(false);
     const [imageLinks, setImageLinks] = useState({});
     const [homepageImages, setHomepageImages] = useState([]);
+    const [videoData, setVideoData] = useState({
+        videoUrl: "https://www.youtube.com/embed/EDh8pgxsp8k?mute=0&showinfo=0&controls=0&start=0",
+        videoId: "EDh8pgxsp8k",
+        title: "Jerusalem Virtual Guide Video"
+    });
     
     useEffect(() => {
         // Set animation distance based on screen size after mount
@@ -85,11 +90,30 @@ export default function Home() {
                 console.error('❌ [HOMEPAGE IMAGES] Error fetching images:', error);
             }
         };
+
+        const fetchVideoData = async () => {
+            try {
+                console.log('🎥 [VIDEO DATA] Starting fetch...');
+                console.log('📍 [VIDEO DATA] Current language:', currentLanguage);
+                
+                const response = await axios.get(`/api/video-links?language=${currentLanguage}`);
+                
+                if (response.data.success) {
+                    setVideoData(response.data.data);
+                    console.log('✅ [VIDEO DATA] Video loaded:', response.data.data);
+                } else {
+                    console.warn('⚠️ [VIDEO DATA] Response not successful');
+                }
+            } catch (error) {
+                console.error('❌ [VIDEO DATA] Error fetching video:', error);
+            }
+        };
         
         console.log('🔄 [FETCH] useEffect triggered, currentLanguage:', currentLanguage);
         if (currentLanguage) {
             fetchImageLinks();
             fetchHomepageImages();
+            fetchVideoData();
         } else {
             console.log('⏸️ [FETCH] Waiting for currentLanguage...');
         }
@@ -329,10 +353,10 @@ export default function Home() {
                                     border: 'none'
                                 }}
                                 className="embed-responsive-item"
-                                src="https://www.youtube.com/embed/EDh8pgxsp8k?mute=0&showinfo=0&controls=0&start=0"
+                                src={videoData.videoUrl}
                                 frameBorder="0"
                                 allowFullScreen=""
-                                title="Jerusalem Virtual Guide Video"
+                                title={videoData.title}
                             />
                         </Box>
                     </motion.div>
