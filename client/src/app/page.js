@@ -8,6 +8,7 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { useLanguage } from './contexts/LanguageContext';
 import { usePageReady } from './hooks/usePageReady';
+import { getImageUrl } from './utils/axios';
 import axios from './utils/axios';
 
 const MapComponent = dynamic(() => import('./components/Map'), { ssr: false });
@@ -100,7 +101,8 @@ export default function Home() {
     // Function to get the correct image path for a route
     const getImagePath = (routeId) => {
         const homepageImage = homepageImages.find(img => img.id === routeId);
-        return homepageImage ? homepageImage.img : routes.find(r => r.id === routeId)?.img || '/1.jpg';
+        const imageSrc = homepageImage ? homepageImage.img : routes.find(r => r.id === routeId)?.img || '/1.jpg';
+        return getImageUrl(imageSrc);
     };
 
     const routes = [

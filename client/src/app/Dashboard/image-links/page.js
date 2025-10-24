@@ -17,7 +17,7 @@ import { useDispatch } from 'react-redux';
 import { showLoading, hideLoading } from '../../slices/loadingSlice';
 import { useProtectedRoute } from '../../hooks/useProtectedRoute';
 import { usePageReady } from '../../hooks/usePageReady';
-import axios from '../../utils/axios';
+import axios, { getImageUrl } from '../../utils/axios';
 import Image from 'next/image';
 
 const ImageLinksManagement = () => {
@@ -473,27 +473,47 @@ const ImageLinksManagement = () => {
                                 <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                                     {/* Image */}
                                     <Box sx={{ position: 'relative', height: 200, overflow: 'hidden' }}>
-                                        <Image
-                                            key={`${route.id}-${imagePaths[route.id] || route.img}-${imageRefreshTrigger}`}
-                                            src={(() => {
-                                                const imageSrc = imagePaths[route.id] || route.img;
-                                                const finalSrc = imageSrc + (imageSrc.includes('?') ? '&' : '?') + `t=${Date.now()}`;
-                                                console.log(`🖼️ [IMAGE RENDER] Route ${route.id} (${route.name}):`, {
-                                                    imagePathsValue: imagePaths[route.id],
-                                                    defaultImg: route.img,
-                                                    originalSrc: imageSrc,
-                                                    finalSrc: finalSrc,
-                                                    allImagePaths: imagePaths,
-                                                    refreshTrigger: imageRefreshTrigger,
-                                                    timestamp: Date.now()
-                                                });
-                                                return finalSrc;
-                                            })()}
-                                            alt={route.name}
-                                            fill
-                                            style={{ objectFit: 'cover' }}
-                                            unoptimized={true}
-                                        />
+                                        {(() => {
+                                            const imageSrc = imagePaths[route.id] || route.img;
+                                            const correctUrl = getImageUrl(imageSrc);
+                                            const finalSrc = correctUrl ? correctUrl + (correctUrl.includes('?') ? '&' : '?') + `t=${Date.now()}` : null;
+                                            
+                                            console.log(`🖼️ [IMAGE RENDER] Route ${route.id} (${route.name}):`, {
+                                                imagePathsValue: imagePaths[route.id],
+                                                defaultImg: route.img,
+                                                originalSrc: imageSrc,
+                                                correctUrl: correctUrl,
+                                                finalSrc: finalSrc,
+                                                allImagePaths: imagePaths,
+                                                refreshTrigger: imageRefreshTrigger,
+                                                timestamp: Date.now()
+                                            });
+                                            
+                                            return finalSrc ? (
+                                                <Image
+                                                    key={`${route.id}-${imagePaths[route.id] || route.img}-${imageRefreshTrigger}`}
+                                                    src={finalSrc}
+                                                    alt={route.name}
+                                                    fill
+                                                    style={{ objectFit: 'cover' }}
+                                                    unoptimized={true}
+                                                />
+                                            ) : (
+                                                <Box sx={{ 
+                                                    width: '100%', 
+                                                    height: '100%', 
+                                                    display: 'flex', 
+                                                    alignItems: 'center', 
+                                                    justifyContent: 'center',
+                                                    backgroundColor: '#f5f5f5',
+                                                    color: '#999'
+                                                }}>
+                                                    <Typography variant="body2">
+                                                        No image
+                                                    </Typography>
+                                                </Box>
+                                            );
+                                        })()}
                                         <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
                                             <Chip 
                                                 label={`#${route.id}`} 
@@ -614,17 +634,37 @@ const ImageLinksManagement = () => {
                                 Current Image:
                             </Typography>
                             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-                                <img 
-                                    src={imagePaths[selectedImage?.id] || selectedImage?.img} 
-                                    alt={selectedImage?.name}
-                                    style={{ 
-                                        maxWidth: '300px', 
-                                        maxHeight: '200px', 
-                                        objectFit: 'cover',
-                                        borderRadius: '8px',
-                                        border: '2px solid #e0e0e0'
-                                    }}
-                                />
+                                {(() => {
+                                    const imageSrc = getImageUrl(imagePaths[selectedImage?.id] || selectedImage?.img);
+                                    return imageSrc ? (
+                                        <img 
+                                            src={imageSrc} 
+                                            alt={selectedImage?.name}
+                                            style={{ 
+                                                maxWidth: '300px', 
+                                                maxHeight: '200px', 
+                                                objectFit: 'cover',
+                                                borderRadius: '8px',
+                                                border: '2px solid #e0e0e0'
+                                            }}
+                                        />
+                                    ) : (
+                                        <Box sx={{ 
+                                            width: '300px', 
+                                            height: '200px', 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            justifyContent: 'center',
+                                            backgroundColor: '#f5f5f5',
+                                            borderRadius: '8px',
+                                            border: '2px solid #e0e0e0'
+                                        }}>
+                                            <Typography variant="body2" color="text.secondary">
+                                                No image available
+                                            </Typography>
+                                        </Box>
+                                    );
+                                })()}
                             </Box>
                         </Box>
 

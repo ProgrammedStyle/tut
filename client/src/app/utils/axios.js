@@ -17,6 +17,47 @@ if (!API_URL) {
 console.log('🔗 Axios configured with baseURL:', API_URL);
 console.log('🌍 Environment:', process.env.NODE_ENV);
 
+// Helper function to get the correct image URL
+export const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    
+    // Check if we're in development mode
+    const isDevelopment = process.env.NODE_ENV === 'development' || 
+                         (typeof window !== 'undefined' && 
+                          (window.location.hostname === 'localhost' || 
+                           window.location.hostname === '127.0.0.1' ||
+                           window.location.hostname.includes('localhost')));
+    
+    // If it's a custom uploaded image (like /gb_1_timestamp.jpg), always serve from backend
+    if (imagePath.match(/^\/[a-z]{2}_[0-9]+_[0-9]+\.(jpg|jpeg|png|gif|webp|bmp)$/)) {
+        console.log(`🔗 [getImageUrl] Custom uploaded image from backend: ${API_URL}${imagePath}`);
+        return `${API_URL}${imagePath}`;
+    }
+    
+    // In development, serve default images from frontend to avoid CORS issues
+    if (isDevelopment) {
+        console.log(`🔗 [getImageUrl] Development mode - serving from frontend: ${imagePath}`);
+        return imagePath;
+    }
+    
+    // Production logic:
+    // If it's a default image (like /1.jpg, /3.jpg, /4.jpg, etc.), serve from frontend
+    if (imagePath.match(/^\/[0-9]+\.jpg$/)) {
+        console.log(`🔗 [getImageUrl] Production - default image from frontend: ${imagePath}`);
+        return imagePath;
+    }
+    
+    // If it's a slider image (like /B/B1/... or /B/B2/...), serve from frontend
+    if (imagePath.match(/^\/B\/B[12]\//)) {
+        console.log(`🔗 [getImageUrl] Production - slider image from frontend: ${imagePath}`);
+        return imagePath;
+    }
+    
+    // For any other image paths, try to serve from frontend first
+    console.log(`🔗 [getImageUrl] Fallback - serving from frontend: ${imagePath}`);
+    return imagePath;
+};
+
 // Create axios instance with default config
 const axiosInstance = axios.create({
     baseURL: API_URL,

@@ -144,6 +144,13 @@ router.post('/upload', upload.single('image'), async (req, res) => {
     const newImagePath = `/${newFilename}`;
     console.log('🎯 [SUCCESS] New image path:', newImagePath);
     console.log('🎯 [SUCCESS] File exists check:', existsSync(newPath));
+    console.log('🎯 [SUCCESS] Upload details:', {
+      imageId: imageId,
+      language: language,
+      newFilename: newFilename,
+      newImagePath: newImagePath,
+      oldImagePath: oldImagePath
+    });
     
     // Check file size and details
     try {
@@ -165,27 +172,32 @@ router.post('/upload', upload.single('image'), async (req, res) => {
       console.error('🎯 [SUCCESS] Error listing files:', listError);
     }
 
-    // Delete old image if it exists and is not a default image
-    if (oldImagePath && oldImagePath !== newImagePath) {
-      try {
-        const oldImageFullPath = path.join(__dirname, '../../../client/public', oldImagePath.replace('/', ''));
-        console.log('Attempting to delete old image:', oldImageFullPath);
-        
-        // Check if file exists before trying to delete
-        await fs.access(oldImageFullPath);
-        
-        // Only delete if it's not a default image (1.jpg, 3.jpg, etc.)
-        const isDefaultImage = /^\/[0-9]+\.jpg$/.test(oldImagePath);
-        if (!isDefaultImage) {
-          await fs.unlink(oldImageFullPath);
-          console.log(`✅ Deleted old image: ${oldImagePath}`);
-        } else {
-          console.log(`⚠️ Skipped deleting default image: ${oldImagePath}`);
+    // Delete ALL old images for this language and image ID combination
+    try {
+      const publicDir = path.join(__dirname, '../../../client/public');
+      const filesInPublic = await fs.readdir(publicDir);
+      
+      // Find all old images for this language and image ID
+      const oldImagePattern = new RegExp(`^${language}_${imageId}_.*\\.(jpg|jpeg|png|gif|webp|bmp)$`);
+      const oldImages = filesInPublic.filter(file => oldImagePattern.test(file));
+      
+      console.log(`🗑️ [CLEANUP] Found ${oldImages.length} old images to delete for ${language}_${imageId}`);
+      
+      // Delete all old images (except the one we just uploaded)
+      for (const oldImage of oldImages) {
+        if (oldImage !== newFilename) {
+          try {
+            const oldImagePath = path.join(publicDir, oldImage);
+            await fs.unlink(oldImagePath);
+            console.log(`✅ [CLEANUP] Deleted old image: ${oldImage}`);
+          } catch (deleteError) {
+            console.log(`⚠️ [CLEANUP] Could not delete old image ${oldImage}:`, deleteError.message);
+          }
         }
-      } catch (error) {
-        console.log(`⚠️ Could not delete old image ${oldImagePath}:`, error.message);
-        // Don't fail the upload if we can't delete the old image
       }
+    } catch (error) {
+      console.log(`⚠️ [CLEANUP] Error during cleanup:`, error.message);
+      // Don't fail the upload if cleanup fails
     }
 
     console.log('Upload successful, returning response');
@@ -301,15 +313,35 @@ router.get('/', async (req, res) => {
         let foundLanguageSpecific = false;
         const filesInPublic = await fs.readdir(publicDir);
         
-        for (const file of filesInPublic) {
-          if (languageSpecificFilenamePattern.test(file)) {
-            languageSpecificImages.push({
-              ...image,
-              img: `/${file}` // Use the actual filename found
-            });
-            foundLanguageSpecific = true;
-            break;
-          }
+        // Find all matching files and get the most recent one
+        const matchingFiles = filesInPublic.filter(file => languageSpecificFilenamePattern.test(file));
+        
+        if (matchingFiles.length > 0) {
+          console.log(`🖼️ [IMAGE FETCH] Found ${matchingFiles.length} matching files for ${language}_${image.id}:`, matchingFiles);
+          
+          // Sort by modification time to get the most recent file
+          const filesWithStats = await Promise.all(
+            matchingFiles.map(async (file) => {
+              const filePath = path.join(publicDir, file);
+              const stats = await fs.stat(filePath);
+              return { file, mtime: stats.mtime };
+            })
+          );
+          
+          console.log(`🖼️ [IMAGE FETCH] Files with stats for ${language}_${image.id}:`, filesWithStats.map(f => ({ file: f.file, mtime: f.mtime })));
+          
+          // Sort by modification time (most recent first)
+          filesWithStats.sort((a, b) => b.mtime - a.mtime);
+          
+          const mostRecentFile = filesWithStats[0].file;
+          
+          languageSpecificImages.push({
+            ...image,
+            img: `/${mostRecentFile}` // Use the most recent filename found
+          });
+          foundLanguageSpecific = true;
+          
+          console.log(`🖼️ [IMAGE FETCH] Selected most recent file for ${language}_${image.id}: ${mostRecentFile}`);
         }
         
         if (!foundLanguageSpecific) {

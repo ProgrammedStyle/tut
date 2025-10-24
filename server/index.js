@@ -26,11 +26,57 @@ import passport from 'passport';
 
 const app = express();
 
+// IMPORTANT: Static file serving MUST be defined BEFORE helmet middleware
+// Static file serving for _html5 directory
+app.use('/_html5', express.static(path.join(__dirname, '..', '_html5'), {
+    setHeaders: (res, path) => {
+        // Set CORS headers for all static files
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+        
+        // Set cache headers for better performance
+        res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year
+        
+        // Set appropriate content type for HTML files
+        if (path.endsWith('.html')) {
+            res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        }
+    }
+}));
+
+// Static file serving for uploaded homepage images
+app.use('/', express.static(path.join(__dirname, '..', 'client', 'public'), {
+    setHeaders: (res, path) => {
+        // Set CORS headers for all static files
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+        
+        // Set cache headers for better performance
+        res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year
+    }
+}));
+
 // Security middleware
 app.use(helmet({
     crossOriginEmbedderPolicy: false, // Allow cross-origin requests for OAuth
     contentSecurityPolicy: false, // Disable CSP for OAuth redirects
 }));
+
+// Override CORS headers for image files after helmet
+app.use((req, res, next) => {
+    if (req.path.match(/\.(jpg|jpeg|png|gif|webp|bmp)$/)) {
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+    }
+    next();
+});
 
 // Rate limiting (disable globally in development)
 if (process.env.NODE_ENV === 'production') {
@@ -101,25 +147,6 @@ app.use(passport.initialize());
 // Load passport config AFTER environment variables are set
 await import("./config/passport.js");
 console.log('✓ Passport configuration loaded');
-
-// IMPORTANT: Static file serving and test routes MUST be defined BEFORE any other middleware
-// Static file serving for _html5 directory
-app.use('/_html5', express.static(path.join(__dirname, '..', '_html5'), {
-    setHeaders: (res, path) => {
-        // Set CORS headers for all static files
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-        
-        // Set cache headers for better performance
-        res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year
-        
-        // Set appropriate content type for HTML files
-        if (path.endsWith('.html')) {
-            res.setHeader('Content-Type', 'text/html; charset=utf-8');
-        }
-    }
-}));
 
 // Test routes (must be before any middleware that might interfere)
 app.get("/api/test", (req, res) => {
