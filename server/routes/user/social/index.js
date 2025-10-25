@@ -109,12 +109,15 @@ router.get('/google/callback',
     const userData = {
       email: req.user.email,
       id: req.user._id,
-      hasPassword: req.user.hasPassword || false
+      hasPassword: req.user.hasPassword || false,
+      role: req.user.role || 'user' // Include role in OAuth callback
     };
     
     const encodedUserData = encodeURIComponent(JSON.stringify(userData));
-    // Redirect to Dashboard (capital D) to match your route
-    res.redirect(`${process.env.CLIENT_URL}/Dashboard?oauth_success=true&user_data=${encodedUserData}`);
+    // Redirect based on user role
+    const redirectPath = req.user.role === 'admin' ? '/Dashboard' : '/';
+    console.log(`🔄 OAuth redirecting to ${redirectPath} (role: ${req.user.role})...`);
+    res.redirect(`${process.env.CLIENT_URL}${redirectPath}?oauth_success=true&user_data=${encodedUserData}`);
   }
 );
 
@@ -219,12 +222,15 @@ router.get('/facebook/callback',
     const userData = {
       email: req.user.email,
       id: req.user._id,
-      hasPassword: req.user.hasPassword || false
+      hasPassword: req.user.hasPassword || false,
+      role: req.user.role || 'user' // Include role in OAuth callback
     };
     
     const encodedUserData = encodeURIComponent(JSON.stringify(userData));
-    // Redirect to Dashboard (capital D) to match your route
-    res.redirect(`${process.env.CLIENT_URL}/Dashboard?oauth_success=true&user_data=${encodedUserData}`);
+    // Redirect based on user role
+    const redirectPath = req.user.role === 'admin' ? '/Dashboard' : '/';
+    console.log(`🔄 OAuth redirecting to ${redirectPath} (role: ${req.user.role})...`);
+    res.redirect(`${process.env.CLIENT_URL}${redirectPath}?oauth_success=true&user_data=${encodedUserData}`);
   }
 );
 

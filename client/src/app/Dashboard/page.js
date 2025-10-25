@@ -120,8 +120,8 @@ const OAuthSuccessHandler = () => {
 };
 
 const DashboardContent = () => {
-    // Protect this route - redirect to sign in if not authenticated
-    const { isChecking, isAuthenticated } = useProtectedRoute();
+    // Protect this route - redirect to sign in if not authenticated AND admin
+    const { isChecking, isAuthenticated, isAdmin } = useProtectedRoute(true);
     // Check if password is expired
     const { checking: checkingPasswordExpiry } = usePasswordExpiry();
     
@@ -151,7 +151,30 @@ const DashboardContent = () => {
     const [loading, setLoading] = useState(true);
     const [pageRendered, setPageRendered] = useState(false);
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-    const [userHasPassword, setUserHasPassword] = useState(true); // Default to true until we check
+    // Initialize userHasPassword from userData if available
+    const [userHasPassword, setUserHasPassword] = useState(() => {
+        // If userData is not available yet, check localStorage as fallback
+        let initialValue = userData?.hasPassword === true;
+        
+        if (userData === null || userData === undefined) {
+            try {
+                const storedUserData = localStorage.getItem('userData');
+                if (storedUserData) {
+                    const parsed = JSON.parse(storedUserData);
+                    initialValue = parsed?.hasPassword === true;
+                }
+            } catch (error) {
+                console.log('Failed to parse localStorage userData:', error);
+            }
+        }
+        
+        console.log('🔍 Initializing userHasPassword:', {
+            userData: userData,
+            hasPassword: userData?.hasPassword,
+            initialValue: initialValue
+        });
+        return initialValue;
+    });
     const hasCheckedPassword = useRef(false); // Track if we've already checked
     const [pendingEmail, setPendingEmail] = useState(null); // Track pending email change
     
@@ -191,6 +214,7 @@ const DashboardContent = () => {
                     };
                     dispatch(setUserData(updatedUserData));
                     localStorage.setItem('userData', JSON.stringify(updatedUserData));
+                    console.log('Setting userHasPassword from API response:', response.data.user.hasPassword);
                     setUserHasPassword(response.data.user.hasPassword === true);
                     setPendingEmail(response.data.user.pendingEmail || null);
                     hasCheckedPassword.current = true;
@@ -205,11 +229,26 @@ const DashboardContent = () => {
         if (userData && userData.hasPassword === undefined && !hasCheckedPassword.current) {
             fetchUserData();
         } else if (userData && userData.hasPassword !== undefined && !hasCheckedPassword.current) {
+            console.log('Setting userHasPassword from userData:', userData.hasPassword);
             setUserHasPassword(userData.hasPassword === true);
             setPendingEmail(userData.pendingEmail || null);
             hasCheckedPassword.current = true;
         }
     }, [userData, dispatch]);
+
+    // Update userHasPassword when userData changes
+    useEffect(() => {
+        if (userData?.hasPassword !== undefined) {
+            const newValue = userData.hasPassword === true;
+            console.log('🔄 userData changed, updating userHasPassword:', {
+                userData: userData,
+                hasPassword: userData.hasPassword,
+                newValue: newValue,
+                currentUserHasPassword: userHasPassword
+            });
+            setUserHasPassword(newValue);
+        }
+    }, [userData]); // Watch entire userData object for any changes
 
     // Fetch real statistics (useEffect MUST be before conditional return!)
     useEffect(() => {
@@ -317,6 +356,8 @@ const DashboardContent = () => {
         console.log('=== FRONTEND SUBMIT DEBUG ===');
         console.log('userData:', userData);
         console.log('hasPassword:', hasPassword);
+        console.log('userHasPassword (state):', userHasPassword);
+        console.log('localStorage userData:', localStorage.getItem('userData'));
         console.log('Submitting password?', !!data.password);
         console.log('Submitting currentPassword?', !!data.currentPassword);
         console.log('Form data:', data);
@@ -329,7 +370,9 @@ const DashboardContent = () => {
         // Only include password fields if they're actually filled
         if (data.password && data.password.trim() !== '') {
             // If user has a password and is trying to change it, they need current password
-            if (hasPassword && !data.currentPassword) {
+            // Check both state and userData to be more robust
+            const userActuallyHasPassword = userHasPassword || userData?.hasPassword;
+            if (userActuallyHasPassword && !data.currentPassword) {
                 console.log('Frontend validation FAILED - current password required');
                 setError('currentPassword', {
                     type: 'manual',
@@ -361,7 +404,8 @@ const DashboardContent = () => {
                     id: response.data.user.id,
                     email: response.data.user.email, // This is the CURRENT (old) email, not the pending one
                     hasPassword: response.data.user.hasPassword,
-                    pendingEmail: response.data.user.pendingEmail || null
+                    pendingEmail: response.data.user.pendingEmail || null,
+                    role: userData.role // Preserve the existing role
                 };
                 
                 console.log('Saving to Redux/localStorage:', updatedUserData);
@@ -372,6 +416,7 @@ const DashboardContent = () => {
                 
                 // Update hasPassword state if password was changed
                 if (cleanedData.password && response.data.user.hasPassword !== undefined) {
+                    console.log('Password was set, updating userHasPassword to:', response.data.user.hasPassword);
                     setUserHasPassword(response.data.user.hasPassword);
                 }
                 
@@ -914,7 +959,23 @@ const DashboardContent = () => {
                                     }
                                 </Alert>
                                 
-                                {userHasPassword && (
+                                {/* Show current password field based on localStorage check */}
+                                {(() => {
+                                    // Check localStorage directly for hasPassword
+                                    try {
+                                        const storedUserData = localStorage.getItem('userData');
+                                        console.log('🔍 localStorage check for current password field:', storedUserData);
+                                        if (storedUserData) {
+                                            const parsed = JSON.parse(storedUserData);
+                                            console.log('🔍 Parsed localStorage data:', parsed);
+                                            console.log('🔍 hasPassword value:', parsed?.hasPassword);
+                                            return parsed?.hasPassword === true;
+                                        }
+                                    } catch (error) {
+                                        console.log('Failed to parse localStorage userData:', error);
+                                    }
+                                    return false;
+                                })() && (
                                     <Box>
                                         <TextField
                                             fullWidth

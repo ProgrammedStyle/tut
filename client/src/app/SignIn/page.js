@@ -107,9 +107,13 @@ const SignIn = () => {
                 // Wait a moment for Redux state to update before navigating
                 setTimeout(() => {
                     shouldNavigate = true;
-                    console.log('🔄 Redirecting to Dashboard...');
+                    
+                    // Redirect based on user role
+                    const redirectPath = data.user.role === 'admin' ? "/Dashboard" : "/";
+                    console.log(`🔄 Redirecting to ${redirectPath} (role: ${data.user.role})...`);
+                    
                     // Keep loading visible during navigation
-                    router.push("/Dashboard");
+                    router.push(redirectPath);
                 }, 100);
             } else {
                 console.error('⚠️ Sign in response missing user data:', data);

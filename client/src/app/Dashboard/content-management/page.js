@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { usePageReady } from '../../hooks/usePageReady';
+import { useProtectedRoute } from '../../hooks/useProtectedRoute';
 import axios from '../../utils/axios';
 import { 
   Box, 
@@ -465,6 +466,8 @@ import {
   };
 
 const ContentManagement = () => {
+  // Protect this route - redirect to sign in if not authenticated AND admin
+  const { isChecking, isAuthenticated, isAdmin } = useProtectedRoute(true);
   const { updateTranslations, languageData } = useLanguage();
   const [currentLanguage, setCurrentLanguage] = useState('gb');
   const [editableTexts, setEditableTexts] = useState({});

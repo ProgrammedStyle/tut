@@ -16,6 +16,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import axios from "../../utils/axios";
 import { usePageReady } from "../../hooks/usePageReady";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 // Animation for the email icon
 const bounceAnimation = keyframes`
@@ -40,6 +41,7 @@ const VerifyEmail_PendingContent = () => {
     const dispatch = useDispatch();
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { t } = useLanguage();
     const email = searchParams.get("email");
     const [resending, setResending] = useState(false);
     const [resendSuccess, setResendSuccess] = useState(false);

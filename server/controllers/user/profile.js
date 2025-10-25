@@ -162,7 +162,7 @@ const verifyNewEmail = async (req, res) => {
                     emailVerifyToken: 1 
                 }
             },
-            { new: true, select: '-password -emailVerifyToken' }
+            { new: true, select: '-emailVerifyToken' } // Don't exclude password field
         );
 
         if (!user) {
@@ -172,6 +172,12 @@ const verifyNewEmail = async (req, res) => {
             });
         }
 
+        console.log('=== EMAIL VERIFICATION SUCCESS ===');
+        console.log('User ID:', user._id);
+        console.log('New email:', user.email);
+        console.log('Has password field?', !!user.password);
+        console.log('Password length:', user.password ? user.password.length : 0);
+        
         res.status(200).json({
             success: true,
             message: "Email address verified successfully",

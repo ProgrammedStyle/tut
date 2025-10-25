@@ -145,7 +145,10 @@ const Header = () => {
     ) }
   ];
 
-  const tools = ((userData === null) ? signedoutTools:adminTools);
+  // Check if user is admin to show dashboard option
+  const isAdmin = userData && userData.role === 'admin';
+  
+  const tools = ((userData === null) ? signedoutTools : (isAdmin ? adminTools : []));
 
   const signout = ((userData === null) ? []:signoutTool);
 
@@ -463,7 +466,8 @@ const Header = () => {
             menuItems={[
               ...tools
               ,
-              { role: "Divider", link: null, content: null },
+              // Only show divider if there are tools (admin users)
+              ...(tools.length > 0 ? [{ role: "Divider", link: null, content: null }] : []),
               { role: "item", link: "/about", content: (
                 <Fragment>
                   <InfoOutlinedIcon sx={personalIconSX} />

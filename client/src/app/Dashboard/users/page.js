@@ -53,8 +53,8 @@ import { clearUserData } from '../../slices/userSlice';
 import { useProtectedRoute } from '../../hooks/useProtectedRoute';
 
 const Users = () => {
-    // Protect this route - redirect to sign in if not authenticated
-    const { isChecking, isAuthenticated } = useProtectedRoute();
+    // Protect this route - redirect to sign in if not authenticated AND admin
+    const { isChecking, isAuthenticated, isAdmin } = useProtectedRoute(true);
     
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));

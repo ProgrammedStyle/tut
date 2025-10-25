@@ -9,6 +9,7 @@ import resetPassword from "../../controllers/user/resetPassword.js";
 import getStats from "../../controllers/user/stats.js";
 import { updateProfile, verifyNewEmail } from "../../controllers/user/profile.js";
 import authenticateUser from "../../middleware/auth.js";
+import requireAdmin from "../../middleware/requireAdmin.js";
 import listUsers from "../../controllers/user/list.js";
 import deleteUser from "../../controllers/user/delete.js";
 import updateStatus from "../../controllers/user/updateStatus.js";
@@ -39,13 +40,15 @@ console.log('Social routes registered');
 
 // Protected routes (require authentication)
 router.get("/me", authenticateUser, me); // Get current user from cookie
-router.get("/stats", authenticateUser, getStats); // NOW PROTECTED - requires valid user in database
 router.put("/profile", authenticateUser, updateProfile);
 router.post("/verify-email", verifyNewEmail);
-router.get("/list", authenticateUser, listUsers);
-router.get("/export", authenticateUser, exportUsers);
-router.delete("/:id", authenticateUser, deleteUser);
-router.put("/:id/status", authenticateUser, updateStatus);
+
+// Admin-only routes (require admin role)
+router.get("/stats", requireAdmin, getStats); // Dashboard stats - admin only
+router.get("/list", requireAdmin, listUsers); // User list - admin only
+router.get("/export", requireAdmin, exportUsers); // Export users - admin only
+router.delete("/:id", requireAdmin, deleteUser); // Delete user - admin only
+router.put("/:id/status", requireAdmin, updateStatus); // Update user status - admin only
 
 // Test route
 router.get("/test", (req, res) => {

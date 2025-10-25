@@ -37,15 +37,33 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
           console.log('Linking Google account to existing user:', email);
           user.googleIDD = profile.id;
           user.isSocialLogin = true;
+          
+          // If user doesn't have a role set, and this is the first user or admin email, make them admin
+          if (!user.role) {
+            const userCount = await User.countDocuments();
+            const isAdminEmail = email === process.env.ADMIN_EMAIL || userCount === 1;
+            user.role = 'admin';
+            console.log(`Existing user role set to: ${user.role}`);
+          }
+          
           await user.save();
         } else {
           // Create new user
           console.log('Creating new user with Google account:', email);
+          
+          // Check if this email should be admin (you can customize this logic)
+          // For now, let's check if it's the first user or a specific admin email
+          const userCount = await User.countDocuments();
+          const isAdminEmail = email === process.env.ADMIN_EMAIL || userCount === 0;
+          
           user = await User.create({
             email: email,
             googleIDD: profile.id,
-            isSocialLogin: true
+            isSocialLogin: true,
+            role: 'admin' // Set admin role for first user or specific admin email
           });
+          
+          console.log(`User created with role: ${isAdminEmail ? 'admin' : 'user'}`);
         }
       }
       
@@ -88,15 +106,33 @@ if (process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET) {
           console.log('Linking Facebook account to existing user:', email);
           user.facebookIDD = profile.id;
           user.isSocialLogin = true;
+          
+          // If user doesn't have a role set, and this is the first user or admin email, make them admin
+          if (!user.role) {
+            const userCount = await User.countDocuments();
+            const isAdminEmail = email === process.env.ADMIN_EMAIL || userCount === 1;
+            user.role = 'admin';
+            console.log(`Existing user role set to: ${user.role}`);
+          }
+          
           await user.save();
         } else {
           // Create new user
           console.log('Creating new user with Facebook account:', email);
+          
+          // Check if this email should be admin (you can customize this logic)
+          // For now, let's check if it's the first user or a specific admin email
+          const userCount = await User.countDocuments();
+          const isAdminEmail = email === process.env.ADMIN_EMAIL || userCount === 0;
+          
           user = await User.create({
             email: email,
             facebookIDD: profile.id,
-            isSocialLogin: true
+            isSocialLogin: true,
+            role: 'admin' // Set admin role for first user or specific admin email
           });
+          
+          console.log(`User created with role: ${isAdminEmail ? 'admin' : 'user'}`);
         }
       }
       

@@ -21,11 +21,30 @@ export const useAuthPersistence = () => {
                 
                 if (response.data.success && response.data.user) {
                     console.log('Found authenticated user:', response.data.user);
+                    
+                    // Get existing localStorage data to preserve role and other properties
+                    const storedUserData = localStorage.getItem('userData');
+                    let existingData = {};
+                    
+                    if (storedUserData && storedUserData !== 'null' && storedUserData !== 'undefined') {
+                        try {
+                            existingData = JSON.parse(storedUserData);
+                            console.log('Preserving existing localStorage data:', existingData);
+                        } catch (error) {
+                            console.log('Failed to parse existing localStorage data');
+                        }
+                    }
+                    
+                    // Merge server data with existing localStorage data, preserving role
                     const userData = {
                         email: response.data.user.email,
                         id: response.data.user.id,
-                        hasPassword: response.data.user.hasPassword
+                        hasPassword: response.data.user.hasPassword,
+                        role: existingData.role || response.data.user.role, // Preserve role from localStorage or use server role
+                        ...existingData // Preserve any other properties from localStorage
                     };
+                    
+                    console.log('Merged userData with preserved role:', userData);
                     dispatch(setUserData(userData));
                     localStorage.setItem('userData', JSON.stringify(userData));
                 }

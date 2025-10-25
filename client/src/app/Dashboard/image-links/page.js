@@ -21,7 +21,8 @@ import axios, { getImageUrl } from '../../utils/axios';
 import Image from 'next/image';
 
 const ImageLinksManagement = () => {
-    const { isChecking, isAuthenticated } = useProtectedRoute();
+    // Protect this route - redirect to sign in if not authenticated AND admin
+    const { isChecking, isAuthenticated, isAdmin } = useProtectedRoute(true);
     const router = useRouter();
     const dispatch = useDispatch();
     

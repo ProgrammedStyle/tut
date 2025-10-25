@@ -55,9 +55,16 @@ const VerifyEmailContent = () => {
                     
                     // Update Redux and localStorage with new email immediately
                     if (response.data.user) {
-                        dispatch(setUserData(response.data.user));
-                        localStorage.setItem('userData', JSON.stringify(response.data.user));
-                        console.log('✅ User data updated with new email:', response.data.user);
+                        // Preserve existing hasPassword value from current userData
+                        const currentUserData = JSON.parse(localStorage.getItem('userData') || '{}');
+                        const updatedUserData = {
+                            ...response.data.user,
+                            hasPassword: response.data.user.hasPassword !== undefined ? response.data.user.hasPassword : currentUserData.hasPassword
+                        };
+                        
+                        dispatch(setUserData(updatedUserData));
+                        localStorage.setItem('userData', JSON.stringify(updatedUserData));
+                        console.log('✅ User data updated with new email:', updatedUserData);
                     }
                 } else {
                     setStatus('error');

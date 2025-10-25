@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: false
         },
+        isSocialLogin: {
+            type: Boolean,
+            default: false
+        },
         role: {
             type: String,
             required: false

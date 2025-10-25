@@ -81,8 +81,12 @@ const CreateAccount = () => {
             sessionStorage.removeItem("emailToRegister");
             sessionStorage.removeItem("emailVerified");
             
+            // Redirect based on user role
+            const redirectPath = res.data.user.role === 'admin' ? "/Dashboard" : "/";
+            console.log(`🔄 Redirecting to ${redirectPath} (role: ${res.data.user.role})...`);
+            
             // Keep loading visible during navigation
-            router.push("/Dashboard");
+            router.push(redirectPath);
         } catch ( error ) {
             console.error("User creation error:", error);
             console.error("Error response:", error.response);
