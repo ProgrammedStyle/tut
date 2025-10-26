@@ -13,14 +13,16 @@ const getAllImageLinks = async (req, res) => {
         // Get all image links, sorted by imageId
         const imageLinks = await ImageLink.find(filter).sort({ imageId: 1 });
         
-        // If language is specified, return as object keyed by imageId
+        // If language is specified, return as object keyed by imageId with all data
         if (language) {
             const linksMap = {};
             imageLinks.forEach(link => {
-                // Only include links that are not null or empty
-                if (link.link && link.link.trim() !== '') {
-                    linksMap[link.imageId] = link.link;
-                }
+                // Include all image link data
+                linksMap[link.imageId] = {
+                    link: link.link || null,
+                    titleText: link.titleText || null,
+                    subtitleText: link.subtitleText || null
+                };
             });
             
             return res.status(200).json({

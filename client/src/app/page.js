@@ -20,6 +20,7 @@ export default function Home() {
     const [animationDistance, setAnimationDistance] = useState(-50); // Default for SSR
     const [pageReady, setPageReady] = useState(false);
     const [imageLinks, setImageLinks] = useState({});
+    const [imageTexts, setImageTexts] = useState({});
     const [homepageImages, setHomepageImages] = useState([]);
     const [videoData, setVideoData] = useState({
         videoUrl: "https://www.youtube.com/embed/EDh8pgxsp8k?mute=0&showinfo=0&controls=0&start=0",
@@ -56,9 +57,21 @@ export default function Home() {
                 console.log('   - Data:', JSON.stringify(response.data.data, null, 2));
                 
                 if (response.data.success) {
-                    const links = response.data.data || {};
+                    const linksData = response.data.data || {};
+                    // Convert the new structure to the old structure for backward compatibility
+                    const links = {};
+                    const texts = {};
+                    Object.keys(linksData).forEach(imageId => {
+                        links[imageId] = linksData[imageId].link || linksData[imageId];
+                        texts[imageId] = {
+                            titleText: linksData[imageId].titleText || null,
+                            subtitleText: linksData[imageId].subtitleText || null
+                        };
+                    });
                     setImageLinks(links);
+                    setImageTexts(texts);
                     console.log('✅ [IMAGE LINKS] State updated with:', links);
+                    console.log('✅ [IMAGE TEXTS] State updated with:', texts);
                     console.log('   - Number of links:', Object.keys(links).length);
                     console.log('   - Image IDs with links:', Object.keys(links).join(', '));
                 } else {
@@ -688,20 +701,20 @@ export default function Home() {
                                         allLinks: imageLinks
                                     })}
                                     <Box
-                                        component={imageLinks[route.id] ? 'a' : 'div'}
-                                        href={imageLinks[route.id] || undefined}
-                                        target={imageLinks[route.id] ? '_blank' : undefined}
-                                        rel={imageLinks[route.id] ? 'noopener noreferrer' : undefined}
+                                        component={(imageLinks[route.id] && typeof imageLinks[route.id] === 'string' && imageLinks[route.id].trim() !== '') ? 'a' : 'div'}
+                                        href={(imageLinks[route.id] && typeof imageLinks[route.id] === 'string' && imageLinks[route.id].trim() !== '') ? imageLinks[route.id] : undefined}
+                                        target={(imageLinks[route.id] && typeof imageLinks[route.id] === 'string' && imageLinks[route.id].trim() !== '') ? '_blank' : undefined}
+                                        rel={(imageLinks[route.id] && typeof imageLinks[route.id] === 'string' && imageLinks[route.id].trim() !== '') ? 'noopener noreferrer' : undefined}
                                         onClick={(e) => {
                                             console.log('🖱️ Clicked on image:', route.id);
                                             console.log('🔗 Link:', imageLinks[route.id]);
-                                            console.log('📦 Component type:', imageLinks[route.id] ? 'a' : 'div');
-                                            if (imageLinks[route.id]) {
+                                            const hasLink = imageLinks[route.id] && typeof imageLinks[route.id] === 'string' && imageLinks[route.id].trim() !== '';
+                                            console.log('📦 Component type:', hasLink ? 'a' : 'div');
+                                            if (hasLink) {
                                                 console.log('✅ Should redirect to:', imageLinks[route.id]);
-                                                // Force navigation as backup
-                                                window.open(imageLinks[route.id], '_blank');
                                             } else {
                                                 console.log('❌ No link set for this image');
+                                                e.preventDefault(); // Prevent any navigation if no link
                                             }
                                         }}
                                         sx={{
@@ -716,10 +729,10 @@ export default function Home() {
                                                 overflow: 'hidden',
                                                 boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                                                 transition: 'all 0.3s ease',
-                                                cursor: imageLinks[route.id] ? 'pointer' : 'default',
+                                                cursor: (imageLinks[route.id] && typeof imageLinks[route.id] === 'string' && imageLinks[route.id].trim() !== '') ? 'pointer' : 'default',
                                                 display: 'flex',
                                                 flexDirection: 'column',
-                                                '&:hover': imageLinks[route.id] ? {
+                                                '&:hover': (imageLinks[route.id] && typeof imageLinks[route.id] === 'string' && imageLinks[route.id].trim() !== '') ? {
                                                     transform: 'translateY(-8px)',
                                                     boxShadow: '0 12px 40px rgba(0,0,0,0.15)'
                                                 } : {}
@@ -744,7 +757,7 @@ export default function Home() {
                                                     pointerEvents: 'none' // Allow clicks to pass through
                                                 }}
                                             />
-                                            {imageLinks[route.id] && (
+                                            {(imageLinks[route.id] && typeof imageLinks[route.id] === 'string' && imageLinks[route.id].trim() !== '') && (
                                                 <Box
                                                     sx={{
                                                         position: 'absolute',
@@ -773,31 +786,35 @@ export default function Home() {
                                         </Box>
 
                                         <CardContent sx={{ p: { xs: 1, md: 1 }, mt: 2 }}>
-                                            <Typography
-                                                variant="h6"
-                                                sx={{
-                                                    fontWeight: 600,
-                                                    mb: 1,
-                                                    color: '#1a202c',
-                                                    fontSize: '1.1rem',
-                                                    textAlign: 'center'
-                                                }}
-                                            >
-                                                {currentLanguage === 'ar' ? route.ar : route.name}
-                                            </Typography>
+                                            {(imageTexts[route.id]?.titleText && imageTexts[route.id].titleText.trim() !== '') && (
+                                                <Typography
+                                                    variant="h6"
+                                                    sx={{
+                                                        fontWeight: 600,
+                                                        mb: 1,
+                                                        color: '#1a202c',
+                                                        fontSize: '1.1rem',
+                                                        textAlign: 'center'
+                                                    }}
+                                                >
+                                                    {imageTexts[route.id].titleText}
+                                                </Typography>
+                                            )}
                                             
-                                            <Typography
-                                                sx={{
-                                                    color: '#4a5568',
-                                                    fontSize: '1rem',
-                                                    direction: currentLanguage === 'ar' ? 'rtl' : 'ltr',
-                                                    fontFamily: 'Arial, sans-serif',
-                                                    lineHeight: 1.5,
-                                                    textAlign: 'center'
-                                                }}
-                                            >
-                                                {currentLanguage === 'ar' ? route.ar : route.name}
-                                            </Typography>
+                                            {(imageTexts[route.id]?.subtitleText && imageTexts[route.id].subtitleText.trim() !== '') && (
+                                                <Typography
+                                                    sx={{
+                                                        color: '#4a5568',
+                                                        fontSize: '1rem',
+                                                        direction: currentLanguage === 'ar' ? 'rtl' : 'ltr',
+                                                        fontFamily: 'Arial, sans-serif',
+                                                        lineHeight: 1.5,
+                                                        textAlign: 'center'
+                                                    }}
+                                                >
+                                                    {imageTexts[route.id].subtitleText}
+                                                </Typography>
+                                            )}
                                         </CardContent>
                                         </Card>
                                     </Box>

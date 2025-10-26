@@ -2,7 +2,7 @@ import ImageLink from "../../models/ImageLink.js";
 
 const updateImageLink = async (req, res) => {
     try {
-        const { imageId, language, link } = req.body;
+        const { imageId, language, link, titleText, subtitleText } = req.body;
         
         // Validation
         if (!imageId || imageId < 1 || imageId > 10) {
@@ -31,15 +31,20 @@ const updateImageLink = async (req, res) => {
             }
         }
         
+        // Prepare update object
+        const updateData = {
+            imageId, 
+            language, 
+            link: link === '' ? null : link,  // Empty string = null (no link)
+            titleText: titleText === '' ? null : (titleText || null),  // Empty string = null
+            subtitleText: subtitleText === '' ? null : (subtitleText || null),  // Empty string = null
+            isActive: true 
+        };
+        
         // Update or create the image link
         const imageLink = await ImageLink.findOneAndUpdate(
             { imageId, language },
-            { 
-                imageId, 
-                language, 
-                link: link === '' ? null : link,  // Empty string = null (no link)
-                isActive: true 
-            },
+            updateData,
             { 
                 new: true,  // Return updated document
                 upsert: true,  // Create if doesn't exist

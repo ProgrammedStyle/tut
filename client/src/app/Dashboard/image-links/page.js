@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     Box, Container, Card, CardContent, Typography, TextField, Button, 
     Grid, Select, MenuItem, FormControl, InputLabel, IconButton, Alert,
@@ -26,8 +26,11 @@ const ImageLinksManagement = () => {
     const router = useRouter();
     const dispatch = useDispatch();
     
+    // Shared TextField styling - using inline object is fine for simple styles
+    
     const [selectedLanguage, setSelectedLanguage] = useState('gb');
-    const [imageLinks, setImageLinks] = useState({});
+    const [imageLinks, setImageLinks] = useState({}); // Now contains {link, titleText, subtitleText}
+    const [imageTexts, setImageTexts] = useState({}); // Store separate text data {titleText, subtitleText}
     const [imagePaths, setImagePaths] = useState({}); // Store language-specific image paths
     const [imageRefreshTrigger, setImageRefreshTrigger] = useState(0); // Force image refresh
     const [loading, setLoading] = useState(true);
@@ -77,10 +80,22 @@ const ImageLinksManagement = () => {
         try {
             setLoading(true);
             
-            // Fetch image links
+            // Fetch image links (now includes text data)
             const linksResponse = await axios.get(`/api/image-links?language=${selectedLanguage}`);
             if (linksResponse.data.success) {
-                setImageLinks(linksResponse.data.data || {});
+                const linksData = linksResponse.data.data || {};
+                // Store just the links for backward compatibility
+                const linksOnly = {};
+                const textsData = {};
+                Object.keys(linksData).forEach(imageId => {
+                    linksOnly[imageId] = linksData[imageId].link || '';
+                    textsData[imageId] = {
+                        titleText: linksData[imageId].titleText || '',
+                        subtitleText: linksData[imageId].subtitleText || ''
+                    };
+                });
+                setImageLinks(linksOnly);
+                setImageTexts(textsData);
             }
             
             // Fetch image paths for this language
@@ -113,17 +128,46 @@ const ImageLinksManagement = () => {
         fetchImageLinks();
     }, [fetchImageLinks]);
     
+    // Use refs to track if we're currently updating to prevent loops
+    const isUpdatingRef = useRef(false);
+    
+    const handleTextChange = (imageId, field, value) => {
+        if (isUpdatingRef.current) {
+            return;
+        }
+        isUpdatingRef.current = true;
+        setImageTexts(prev => ({
+            ...prev,
+            [imageId]: {
+                ...(prev[imageId] || {}),
+                [field]: value
+            }
+        }));
+        setTimeout(() => {
+            isUpdatingRef.current = false;
+        }, 0);
+    };
+    
     const handleLinkChange = (imageId, value) => {
+        if (isUpdatingRef.current) {
+            return;
+        }
+        isUpdatingRef.current = true;
         setImageLinks(prev => ({
             ...prev,
             [imageId]: value
         }));
+        setTimeout(() => {
+            isUpdatingRef.current = false;
+        }, 0);
     };
     
     const handleSaveLink = async (imageId) => {
         try {
             setSaving(true);
             const link = imageLinks[imageId] || null;
+            const titleText = imageTexts[imageId]?.titleText || '';
+            const subtitleText = imageTexts[imageId]?.subtitleText || '';
             
             // Frontend validation for link format
             if (link && link.trim() !== '') {
@@ -141,13 +185,15 @@ const ImageLinksManagement = () => {
             const response = await axios.put('/api/image-links', {
                 imageId,
                 language: selectedLanguage,
-                link: link === '' ? null : link
+                link: link === '' ? null : link,
+                titleText: titleText || null,
+                subtitleText: subtitleText || null
             });
             
             if (response.data.success) {
                 setSnackbar({
                     open: true,
-                    message: 'Link saved successfully!',
+                    message: 'Link and text saved successfully!',
                     severity: 'success'
                 });
                 // Refresh data
@@ -396,7 +442,7 @@ const ImageLinksManagement = () => {
     
     return (
         <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', py: 4 }}>
-            <Container maxWidth="xl">
+            <Container maxWidth={false} sx={{ px: 0 }}>
                 {/* Header */}
                 <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -458,20 +504,30 @@ const ImageLinksManagement = () => {
                             How to use:
                         </Typography>
                         <Typography variant="body2">
-                            • Enter a URL (starting with http:// or https://) to make an image clickable<br/>
-                            • Leave blank or remove to make an image non-clickable<br/>
-                            • Links are language-specific - set different links for different languages<br/>
-                            • Click &quot;Save Link&quot; after entering/modifying a URL
+                            • <strong>Title & Subtitle:</strong> Customize the text displayed under each image<br/>
+                            • <strong>Link URL:</strong> Enter a URL (starting with http:// or https://) to make an image clickable<br/>
+                            • Leave fields blank or remove to use defaults or make an image non-clickable<br/>
+                            • All settings are language-specific - set different values for different languages<br/>
+                            • Click &quot;Save&quot; after entering/modifying any field
                         </Typography>
                     </Alert>
                 </Fade>
                 
                 {/* Image Cards Grid */}
-                <Grid container spacing={3}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 3 }}>
                     {routes.map((route, index) => (
-                        <Grid item xs={12} sm={6} md={4} lg={3} key={route.id}>
+                        <Box key={route.id} sx={{ display: 'flex', width: '100%', maxWidth: '100%', minWidth: 0 }}>
                             <Fade in={true} timeout={300 + index * 100}>
-                                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                                <Card sx={{ 
+                                    height: '100%', 
+                                    display: 'flex', 
+                                    flexDirection: 'column',
+                                    width: '100%',
+                                    maxWidth: '100%',
+                                    overflow: 'hidden',
+                                    boxSizing: 'border-box',
+                                    minWidth: 0
+                                }}>
                                     {/* Image */}
                                     <Box sx={{ position: 'relative', height: 200, overflow: 'hidden' }}>
                                         {(() => {
@@ -553,23 +609,96 @@ const ImageLinksManagement = () => {
                                     </Box>
                                     
                                     {/* Content */}
-                                    <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
+                                    <CardContent sx={{ 
+                                        flexGrow: 1, 
+                                        display: 'flex', 
+                                        flexDirection: 'column', 
+                                        p: 2,
+                                        width: '100%',
+                                        maxWidth: '100%',
+                                        overflow: 'hidden',
+                                        boxSizing: 'border-box',
+                                        position: 'relative',
+                                        minWidth: 0
+                                    }}>
                                         <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, fontSize: '1rem' }}>
-                                            {route.name}
+                                            {(imageTexts[route.id]?.titleText && imageTexts[route.id].titleText.trim() !== '') 
+                                                ? imageTexts[route.id].titleText 
+                                                : ''}
                                         </Typography>
-                                        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2, direction: 'rtl' }}>
-                                            {route.ar}
+                                        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2, direction: 'ltr' }}>
+                                            {(imageTexts[route.id]?.subtitleText && imageTexts[route.id].subtitleText.trim() !== '') 
+                                                ? imageTexts[route.id].subtitleText 
+                                                : ''}
                                         </Typography>
+                                        
+                                        {/* Title Input */}
+                                        <Box sx={{ mb: 1.5, width: '100%', maxWidth: '100%', minWidth: 0, overflow: 'visible' }}>
+                                            <TextField
+                                                label="Title Text"
+                                                placeholder={route.name}
+                                                value={imageTexts[route.id]?.titleText || ''}
+                                                onChange={(e) => handleTextChange(route.id, 'titleText', e.target.value)}
+                                                fullWidth
+                                                size="small"
+                                                sx={{ 
+                                                    width: '100%',
+                                                    '& .MuiInputBase-root': { 
+                                                        width: '100%',
+                                                        maxWidth: '100%',
+                                                        minWidth: 0 
+                                                    },
+                                                    '& .MuiInputBase-input': {
+                                                        width: '100%',
+                                                        maxWidth: '100%'
+                                                    }
+                                                }}
+                                                inputProps={{
+                                                    maxLength: 200
+                                                }}
+                                                helperText="Displayed text under image (leave empty for default)"
+                                            />
+                                        </Box>
+                                        
+                                        {/* Subtitle Input */}
+                                        <Box sx={{ mb: 1.5, width: '100%', maxWidth: '100%', minWidth: 0, overflow: 'visible' }}>
+                                            <TextField
+                                                label="Subtitle Text"
+                                                placeholder={route.ar}
+                                                value={imageTexts[route.id]?.subtitleText || ''}
+                                                onChange={(e) => handleTextChange(route.id, 'subtitleText', e.target.value)}
+                                                fullWidth
+                                                size="small"
+                                                sx={{ 
+                                                    width: '100%',
+                                                    '& .MuiInputBase-root': { 
+                                                        width: '100%',
+                                                        maxWidth: '100%',
+                                                        minWidth: 0 
+                                                    },
+                                                    '& .MuiInputBase-input': {
+                                                        width: '100%',
+                                                        maxWidth: '100%'
+                                                    }
+                                                }}
+                                                inputProps={{
+                                                    maxLength: 200
+                                                }}
+                                                helperText="Secondary text (leave empty for default)"
+                                            />
+                                        </Box>
                                         
                                         {/* Link Input */}
                                         <TextField
-                                            fullWidth
-                                            size="small"
                                             label="Link URL"
                                             placeholder="https://example.com"
                                             value={imageLinks[route.id] || ''}
                                             onChange={(e) => handleLinkChange(route.id, e.target.value)}
-                                            sx={{ mb: 1.5 }}
+                                            sx={{ mb: 1.5, width: '100%', maxWidth: '100%', '& .MuiInputBase-root': { overflow: 'hidden' } }}
+                                            size="small"
+                                            inputProps={{
+                                                maxLength: 500
+                                            }}
                                             InputProps={{
                                                 startAdornment: <LinkIcon sx={{ mr: 0.5, fontSize: '1.2rem', color: 'text.secondary' }} />
                                             }}
@@ -577,7 +706,7 @@ const ImageLinksManagement = () => {
                                         />
                                         
                                         {/* Action Buttons */}
-                                        <Box sx={{ display: 'flex', gap: 1 }}>
+                                        <Box sx={{ display: 'flex', gap: 1, width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
                                             <Button
                                                 fullWidth
                                                 variant="contained"
@@ -609,9 +738,9 @@ const ImageLinksManagement = () => {
                                     </CardContent>
                                 </Card>
                             </Fade>
-                        </Grid>
+                        </Box>
                     ))}
-                </Grid>
+                </Box>
                 
                 {/* Image Upload Dialog */}
                 <Dialog 

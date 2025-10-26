@@ -19,6 +19,16 @@ const imageLinkSchema = new mongoose.Schema({
         default: null,  // null means no link (image not clickable)
         trim: true
     },
+    titleText: {
+        type: String,
+        default: null,  // null means use default from routes array
+        trim: true
+    },
+    subtitleText: {
+        type: String,
+        default: null,  // null means use default from routes array
+        trim: true
+    },
     isActive: {
         type: Boolean,
         default: true
