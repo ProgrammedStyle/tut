@@ -91,7 +91,7 @@ router.post('/upload', upload.single('image'), async (req, res) => {
 
            // Rename the uploaded file with proper language and image ID prefix
            const tempPath = path.join(__dirname, '../../../client/public', req.file.filename);
-           const ext = path.extname(req.file.filename);
+           const ext = path.extname(req.file.filename).toLowerCase(); // Normalize to lowercase
            const newFilename = `${language}_${imageId}_${Date.now()}${ext}`;
            const newPath = path.join(__dirname, '../../../client/public', newFilename);
     

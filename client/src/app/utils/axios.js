@@ -43,7 +43,7 @@ export const getImageUrl = (imagePath) => {
                            window.location.hostname.includes('localhost')));
     
     // If it's a custom uploaded image (like /gb_1_timestamp.jpg), always serve from backend
-    if (imagePath.match(/^\/[a-z]{2}_[0-9]+_[0-9]+\.(jpg|jpeg|png|gif|webp|bmp)$/)) {
+    if (imagePath.match(/^\/[a-z]{2}_[0-9]+_[0-9]+\.(jpg|jpeg|png|gif|webp|bmp)$/i)) {
         console.log(`🔗 [getImageUrl] Custom uploaded image from backend: ${API_URL}${imagePath}`);
         return `${API_URL}${imagePath}`;
     }
