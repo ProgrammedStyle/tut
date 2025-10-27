@@ -254,6 +254,22 @@ import {
       'about-mission-paragraph-2': 'Through continuous innovation, unwavering commitment to security, and a user-first philosophy, we strive to create digital experiences that not only meet expectations but exceed them.',
       'about-values-title': 'What Drives Us',
       'about-values-subtitle': 'The core principles that shape our vision and guide our actions',
+      'about-value1-title': 'Innovation First',
+      'about-value1-description': 'We embrace cutting-edge technology and creative problem-solving to deliver solutions that anticipate future needs.',
+      'about-value2-title': 'Security & Trust',
+      'about-value2-description': 'Your data security is our top priority. We implement industry-leading practices to protect your information.',
+      'about-value3-title': 'People-Centered',
+      'about-value3-description': 'Every feature is designed with real users in mind, ensuring intuitive and accessible experiences for everyone.',
+      'about-value4-title': 'Growth Focused',
+      'about-value4-description': 'We continuously evolve to support your journey, scaling alongside your ambitions and adapting to changing needs.',
+      'about-stat1-value': '10K+',
+      'about-stat1-label': 'Active Users',
+      'about-stat2-value': '99.9%',
+      'about-stat2-label': 'Uptime',
+      'about-stat3-value': '24/7',
+      'about-stat3-label': 'Support',
+      'about-stat4-value': '150+',
+      'about-stat4-label': 'Countries Served',
       'about-cta-title': 'Join Us on This Journey',
       'about-cta-subtitle': 'Be part of a community that values innovation, security, and excellence. Together, we\'re shaping the future of digital interactions.'
     },
@@ -459,6 +475,22 @@ import {
       'about-mission-paragraph-2': 'من خلال الابتكار المستمر والالتزام الثابت بالأمان وفلسفة المستخدم أولاً، نسعى جاهدين لإنشاء تجارب رقمية لا تلبي التوقعات فحسب، بل تتجاوزها.',
       'about-values-title': 'ما يحركنا',
       'about-values-subtitle': 'المبادئ الأساسية التي تشكل رؤيتنا وتوجه أعمالنا',
+      'about-value1-title': 'الابتكار أولاً',
+      'about-value1-description': 'نتبنى أحدث التقنيات وحلول المشكلات الإبداعية لتقديم حلول تتوقع الاحتياجات المستقبلية.',
+      'about-value2-title': 'الأمان والثقة',
+      'about-value2-description': 'أمان بياناتك هو أولويتنا القصوى. نطبق أفضل ممارسات الصناعة لحماية معلوماتك.',
+      'about-value3-title': 'يركز على الناس',
+      'about-value3-description': 'تم تصميم كل ميزة مع مراعاة المستخدمين الحقيقيين، مما يضمن تجارب بديهية ويمكن الوصول إليها للجميع.',
+      'about-value4-title': 'التركيز على النمو',
+      'about-value4-description': 'نتطور باستمرار لدعم رحلتك، والتوسع جنبًا إلى جنب مع طموحاتك والتكيف مع الاحتياجات المتغيرة.',
+      'about-stat1-value': '10 آلاف+',
+      'about-stat1-label': 'المستخدمون النشطون',
+      'about-stat2-value': '99.9%',
+      'about-stat2-label': 'وقت التشغيل',
+      'about-stat3-value': '24/7',
+      'about-stat3-label': 'الدعم',
+      'about-stat4-value': '150+',
+      'about-stat4-label': 'الدول المخدومة',
       'about-cta-title': 'انضم إلينا في هذه الرحلة',
       'about-cta-subtitle': 'كن جزءًا من مجتمع يقدر الابتكار والأمان والتميز. معًا، نحن نشكل مستقبل التفاعلات الرقمية.'
     }
@@ -819,10 +851,19 @@ const ContentManagement = () => {
       'contact-form-name-label', 'contact-form-email-label', 'contact-form-subject-label',
       'contact-form-message-label', 'contact-form-submit-button',
       
-      // About page (8 texts)
+      // About page (27 texts)
       'about-badge', 'about-hero-title-1', 'about-hero-title-2', 'about-hero-subtitle',
       'about-mission-title', 'about-mission-paragraph-1', 'about-mission-paragraph-2',
-      'about-values-title', 'about-values-subtitle', 'about-cta-title', 'about-cta-subtitle'
+      'about-values-title', 'about-values-subtitle', 
+      'about-value1-title', 'about-value1-description',
+      'about-value2-title', 'about-value2-description',
+      'about-value3-title', 'about-value3-description',
+      'about-value4-title', 'about-value4-description',
+      'about-stat1-value', 'about-stat1-label',
+      'about-stat2-value', 'about-stat2-label',
+      'about-stat3-value', 'about-stat3-label',
+      'about-stat4-value', 'about-stat4-label',
+      'about-cta-title', 'about-cta-subtitle'
     ];
     
     console.log('🔍 getCurrentPageTexts called:');

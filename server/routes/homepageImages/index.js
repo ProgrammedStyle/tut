@@ -178,7 +178,7 @@ router.post('/upload', upload.single('image'), async (req, res) => {
       const filesInPublic = await fs.readdir(publicDir);
       
       // Find all old images for this language and image ID
-      const oldImagePattern = new RegExp(`^${language}_${imageId}_.*\\.(jpg|jpeg|png|gif|webp|bmp)$`);
+      const oldImagePattern = new RegExp(`^${language}_${imageId}_.*\\.(jpg|jpeg|png|gif|webp|bmp)$`, 'i');
       const oldImages = filesInPublic.filter(file => oldImagePattern.test(file));
       
       console.log(`🗑️ [CLEANUP] Found ${oldImages.length} old images to delete for ${language}_${imageId}`);
@@ -308,7 +308,7 @@ router.get('/', async (req, res) => {
       for (const image of defaultImages) {
         // Look for language-specific images with pattern: language_imageId_timestamp.ext
         // Match all common image extensions
-        const languageSpecificFilenamePattern = new RegExp(`^${language}_${image.id}_.*\\.(jpg|jpeg|png|gif|webp|bmp)$`);
+        const languageSpecificFilenamePattern = new RegExp(`^${language}_${image.id}_.*\\.(jpg|jpeg|png|gif|webp|bmp)$`, 'i');
         
         let foundLanguageSpecific = false;
         const filesInPublic = await fs.readdir(publicDir);
