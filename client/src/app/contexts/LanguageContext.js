@@ -788,8 +788,8 @@ const languageData = {
 };
 
 export const LanguageProvider = ({ children }) => {
-  const [currentLanguage, setCurrentLanguage] = useState('gb');
-  const [translations, setTranslations] = useState(languageData['gb']);
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  const [translations, setTranslations] = useState(languageData['tr']);
   const [isClient, setIsClient] = useState(false);
 
   // Set client flag on mount
@@ -802,7 +802,7 @@ export const LanguageProvider = ({ children }) => {
     if (!isClient) return;
     
     const loadTranslations = async () => {
-      const savedLanguage = localStorage.getItem('selectedLanguage') || 'gb';
+      const savedLanguage = localStorage.getItem('selectedLanguage') || 'tr';
       
       try {
         // Try to fetch translations from the database
@@ -815,14 +815,14 @@ export const LanguageProvider = ({ children }) => {
         } else {
           // Fallback to default translations
           setCurrentLanguage(savedLanguage);
-          setTranslations(languageData[savedLanguage] || languageData['gb']);
+          setTranslations(languageData[savedLanguage] || languageData['tr']);
           console.log('Using default translations for:', savedLanguage);
         }
       } catch (error) {
         console.log('No database translations found, using defaults');
         // Fallback to default translations if API fails
         setCurrentLanguage(savedLanguage);
-        setTranslations(languageData[savedLanguage] || languageData['gb']);
+        setTranslations(languageData[savedLanguage] || languageData['tr']);
       }
     };
     

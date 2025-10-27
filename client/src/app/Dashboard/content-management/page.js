@@ -501,7 +501,7 @@ const ContentManagement = () => {
   // Protect this route - redirect to sign in if not authenticated AND admin
   const { isChecking, isAuthenticated, isAdmin } = useProtectedRoute(true);
   const { updateTranslations, languageData } = useLanguage();
-  const [currentLanguage, setCurrentLanguage] = useState('gb');
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
   const [editableTexts, setEditableTexts] = useState({});
   const [editingMode, setEditingMode] = useState(false);
   const [editedTexts, setEditedTexts] = useState({});
@@ -569,7 +569,7 @@ const ContentManagement = () => {
         
         if (response.data.success && response.data.translations) {
           // Merge defaults with DB so missing new keys still show up
-          const defaults = defaultTexts[currentLanguage] || defaultTexts['gb'];
+          const defaults = defaultTexts[currentLanguage] || defaultTexts['tr'];
           const mergedFromDb = { ...defaults, ...response.data.translations };
           console.log('✓ Loaded translations from database, merged keys:', Object.keys(mergedFromDb));
           setEditableTexts(mergedFromDb);
@@ -593,16 +593,16 @@ const ContentManagement = () => {
       if (customTranslations) {
         try {
           const parsed = JSON.parse(customTranslations);
-          const defaults = defaultTexts[currentLanguage] || defaultTexts['gb'];
+          const defaults = defaultTexts[currentLanguage] || defaultTexts['tr'];
           // Merge defaults with local storage so new keys appear
           texts = { ...defaults, ...parsed };
           console.log('✓ Loaded translations from localStorage, merged keys:', Object.keys(texts));
         } catch (error) {
           console.error('Error loading custom translations:', error);
-          texts = defaultTexts[currentLanguage] || defaultTexts['gb'];
+          texts = defaultTexts[currentLanguage] || defaultTexts['tr'];
         }
       } else {
-        texts = defaultTexts[currentLanguage] || defaultTexts['gb'];
+        texts = defaultTexts[currentLanguage] || defaultTexts['tr'];
         console.log('Using default translations, keys:', Object.keys(texts));
       }
       

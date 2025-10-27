@@ -28,7 +28,7 @@ const ImageLinksManagement = () => {
     
     // Shared TextField styling - using inline object is fine for simple styles
     
-    const [selectedLanguage, setSelectedLanguage] = useState('gb');
+    const [selectedLanguage, setSelectedLanguage] = useState('tr');
     const [imageLinks, setImageLinks] = useState({}); // Now contains {link, titleText, subtitleText}
     const [imageTexts, setImageTexts] = useState({}); // Store separate text data {titleText, subtitleText}
     const [imagePaths, setImagePaths] = useState({}); // Store language-specific image paths
