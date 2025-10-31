@@ -12,10 +12,10 @@ const updateImageLink = async (req, res) => {
             });
         }
         
-        if (!language || !['sa', 'de', 'gb', 'it', 'es', 'ir', 'pk', 'tr', 'id', 'ru', 'in'].includes(language)) {
+        if (!language || !['sa', 'de', 'gb', 'it', 'es', 'pk', 'tr', 'id', 'ru', 'in', 'cn', 'my'].includes(language)) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid language. Must be one of: sa, de, gb, it, es, ir, pk, tr, id, ru, in'
+                message: 'Invalid language. Must be one of: sa, de, gb, it, es, pk, tr, id, ru, in, cn, my'
             });
         }
         

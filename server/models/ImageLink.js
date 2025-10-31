@@ -11,7 +11,7 @@ const imageLinkSchema = new mongoose.Schema({
     language: {
         type: String,
         required: true,
-        enum: ['sa', 'de', 'gb', 'it', 'es', 'ir', 'pk', 'tr', 'id', 'ru', 'in'],  // All supported languages from header
+        enum: ['sa', 'de', 'gb', 'it', 'es', 'pk', 'tr', 'id', 'ru', 'in', 'cn', 'my'],  // All supported languages from header
         default: 'gb'
     },
     link: {

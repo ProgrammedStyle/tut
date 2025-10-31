@@ -5,10 +5,10 @@ const updateVideoLink = async (req, res) => {
         const { language, videoId, title } = req.body;
         
         // Validation
-        if (!language || !['sa', 'de', 'gb', 'it', 'es', 'ir', 'pk', 'tr', 'id', 'ru', 'in'].includes(language)) {
+        if (!language || !['sa', 'de', 'gb', 'it', 'es', 'pk', 'tr', 'id', 'ru', 'in', 'cn', 'my'].includes(language)) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid language. Must be one of: sa, de, gb, it, es, ir, pk, tr, id, ru, in'
+                message: 'Invalid language. Must be one of: sa, de, gb, it, es, pk, tr, id, ru, in, cn, my'
             });
         }
         

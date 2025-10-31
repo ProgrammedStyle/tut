@@ -4,7 +4,7 @@ const videoLinkSchema = new mongoose.Schema({
     language: {
         type: String,
         required: true,
-        enum: ['sa', 'de', 'gb', 'it', 'es', 'ir', 'pk', 'tr', 'id', 'ru', 'in'],  // All supported languages
+        enum: ['sa', 'de', 'gb', 'it', 'es', 'pk', 'tr', 'id', 'ru', 'in', 'cn', 'my'],  // All supported languages
         default: 'gb'
     },
     videoId: {
