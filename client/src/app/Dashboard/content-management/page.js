@@ -522,7 +522,8 @@ const ContentManagement = () => {
     { code: 'gb', name: 'English', flag: '🇬🇧', englishName: 'English (UK)' },
     { code: 'it', name: 'Italiano', flag: '🇮🇹', englishName: 'Italian' },
     { code: 'es', name: 'Español', flag: '🇪🇸', englishName: 'Spanish' },
-    { code: 'ir', name: 'فارسی', flag: '🇮🇷', englishName: 'Persian' },
+    { code: 'cn', name: '中文', flag: '🇨🇳', englishName: 'Chinese' },
+    { code: 'my', name: 'Bahasa Melayu', flag: '🇲🇾', englishName: 'Malay' },
     { code: 'pk', name: 'اردو', flag: '🇵🇰', englishName: 'Urdu' },
     { code: 'tr', name: 'Türkçe', flag: '🇹🇷', englishName: 'Turkish' },
     { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩', englishName: 'Indonesian' },
@@ -569,7 +570,7 @@ const ContentManagement = () => {
         
         if (response.data.success && response.data.translations) {
           // Merge defaults with DB so missing new keys still show up
-          const defaults = defaultTexts[currentLanguage] || defaultTexts['tr'];
+          const defaults = defaultTexts[currentLanguage] || defaultTexts['gb'];
           const mergedFromDb = { ...defaults, ...response.data.translations };
           console.log('✓ Loaded translations from database, merged keys:', Object.keys(mergedFromDb));
           setEditableTexts(mergedFromDb);
@@ -593,16 +594,16 @@ const ContentManagement = () => {
       if (customTranslations) {
         try {
           const parsed = JSON.parse(customTranslations);
-          const defaults = defaultTexts[currentLanguage] || defaultTexts['tr'];
+          const defaults = defaultTexts[currentLanguage] || defaultTexts['gb'];
           // Merge defaults with local storage so new keys appear
           texts = { ...defaults, ...parsed };
           console.log('✓ Loaded translations from localStorage, merged keys:', Object.keys(texts));
         } catch (error) {
           console.error('Error loading custom translations:', error);
-          texts = defaultTexts[currentLanguage] || defaultTexts['tr'];
+          texts = defaultTexts[currentLanguage] || defaultTexts['gb'];
         }
       } else {
-        texts = defaultTexts[currentLanguage] || defaultTexts['tr'];
+        texts = defaultTexts[currentLanguage] || defaultTexts['gb'];
         console.log('Using default translations, keys:', Object.keys(texts));
       }
       
@@ -691,7 +692,7 @@ const ContentManagement = () => {
     if (!isClient) return;
     
     // Clear localStorage for all languages
-    const languages = ['gb', 'sa', 'de', 'it', 'es', 'ir', 'pk', 'tr', 'id', 'ru', 'in'];
+    const languages = ['gb', 'sa', 'de', 'it', 'es', 'cn', 'my', 'pk', 'tr', 'id', 'ru', 'in'];
     languages.forEach(lang => {
       localStorage.removeItem(`custom_translations_${lang}`);
     });
